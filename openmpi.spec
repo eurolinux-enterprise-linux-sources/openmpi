@@ -19,7 +19,7 @@
 
 Name:			openmpi%{?_cc_name_suffix}
 Version:		1.5.4
-Release:		1%{?dist}
+Release:		2%{?dist}
 Summary:		Open Message Passing Interface
 Group:			Development/Libraries
 License:		BSD, MIT and Romio
@@ -32,7 +32,6 @@ URL:			http://www.open-mpi.org/
 Source0:		openmpi-%{version}-RH.tbz
 Source1:		openmpi.module.in
 Source2:		macros.openmpi
-Patch1:			openmpi-1.5.3-build.patch
 BuildRoot:		%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:		flex
 BuildRequires:		gcc-gfortran, libtool, numactl-devel
@@ -146,8 +145,6 @@ Contains development headers and libraries for openmpi
 
 %prep
 %setup -q -n openmpi-%{version}
-%patch1 -p1 -b .build
-./autogen.sh
 %build
 XFLAGS="-fPIC"
 ./configure --prefix=%{_libdir}/%{name} --with-libnuma=/usr \
@@ -257,6 +254,11 @@ rm -rf %{buildroot}
 %{_sysconfdir}/rpm/macros.%{namearch}
 
 %changelog
+* Mon Mar 4 2013 Jay Fenlason <fenlason@redhat.com> 1.5.4-2
+- Fix the build process by getting rid of the -build patch
+  and autogen to fix
+  Resolves: rhbz749115
+
 * Mon Feb 13 2012 Jay Fenlason <fenlason@redhat.com> 1.5.4-1
 - Clean up provides and requires to close
   Resolves: rhbz768457

@@ -14,6 +14,7 @@
  * Copyright (c) 2008      Cisco Systems, Inc.  All rights reserved.
  * Copyright (c) 2013      Los Alamos National Security, LLC. All rights
  *                         reserved.
+ * Copyright (c) 2015      Intel, Inc. All rights reserved.
  * $COPYRIGHT$
  * 
  * Additional copyrights may follow
@@ -33,9 +34,18 @@
 
 /* need to include our own topo prototypes so we can malloc data on the comm correctly */
 #include "coll_tuned_topo.h"
+#include "opal/util/output.h"
 
 /* also need the dynamic rule structures */
 #include "coll_tuned_dynamic_rules.h"
+
+/* define a default verbosity so that debug
+ * errors only get reported in debug builds */
+#if OPAL_ENABLE_DEBUG
+#define COLL_TUNED_VERBOSITY   0
+#else
+#define COLL_TUNED_VERBOSITY   1
+#endif
 
 /* some fixed value index vars to simplify certain operations */
 typedef enum COLLTYPE {
@@ -88,6 +98,8 @@ extern char* ompi_coll_tuned_dynamic_rules_filename;
 extern int   ompi_coll_tuned_init_tree_fanout;
 extern int   ompi_coll_tuned_init_chain_fanout;
 extern int   ompi_coll_tuned_init_max_requests;
+extern int   ompi_coll_tuned_alltoall_small_msg;
+extern int   ompi_coll_tuned_alltoall_intermediate_msg;
 
 /* forced algorithm choices */
 /* this structure is for storing the indexes to the forced algorithm mca params... */
@@ -550,7 +562,6 @@ do {                                                                           \
     if (0 != SPLIT_INDEX) {                                                  \
         EARLY_BLOCK_COUNT = EARLY_BLOCK_COUNT + 1;                           \
     }                                                                        \
-
 
 #endif /* MCA_COLL_TUNED_EXPORT_H */
 

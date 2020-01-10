@@ -10,8 +10,8 @@
  *                         University of Stuttgart.  All rights reserved.
  * Copyright (c) 2004-2005 The Regents of the University of California.
  *                         All rights reserved.
- * Copyright (c) 2006-2012 Cisco Systems, Inc.  All rights reserved.
- * Copyright (c) 2010-2013 Los Alamos National Security, LLC.
+ * Copyright (c) 2006-2014 Cisco Systems, Inc.  All rights reserved.
+ * Copyright (c) 2010-2015 Los Alamos National Security, LLC.
  *                         All rights reserved.
  * Copyright (c) 2011-2012 University of Houston. All rights reserved.
  * $COPYRIGHT$
@@ -88,7 +88,7 @@ const char *opal_info_ver_mca = "mca";
 const char *opal_info_ver_type = "type";
 const char *opal_info_ver_component = "component";
 
-static bool opal_info_registered = false;
+static int opal_info_registered = 0;
 
 static void component_map_construct(opal_info_component_map_t *map)
 {
@@ -225,8 +225,6 @@ int opal_info_init(int argc, char **argv,
 
 void opal_info_finalize(void)
 {
-    opal_info_close_components ();
-    mca_base_close();
     opal_finalize_util();
 }
 
@@ -293,11 +291,9 @@ int opal_info_register_framework_params(opal_pointer_array_t *component_map)
 {
     int rc;
 
-    if (opal_info_registered) {
+    if (opal_info_registered++) {
         return OPAL_SUCCESS;
     }
-
-    opal_info_registered = true;
 
     /* Register mca/base parameters */
     if( OPAL_SUCCESS != mca_base_open() ) {
@@ -319,9 +315,17 @@ void opal_info_close_components(void)
 {
     int i;
 
+    assert(opal_info_registered);
+    if (--opal_info_registered) {
+        return;
+    }
+
     for (i=0; NULL != opal_frameworks[i]; i++) {
         (void) mca_base_framework_close(opal_frameworks[i]);
     }
+
+    /* release our reference to MCA */
+    mca_base_close ();
 }
 
 
@@ -941,15 +945,15 @@ void opal_info_show_mca_version(const mca_base_component_t* component,
     mca_version = opal_info_make_version_str(scope, component->mca_major_version,
                                              component->mca_minor_version,
                                              component->mca_release_version, "",
-                                             false, "");
+                                             "");
     api_version = opal_info_make_version_str(scope, component->mca_type_major_version,
                                              component->mca_type_minor_version,
                                              component->mca_type_release_version, "",
-                                             false, "");
+                                             "");
     component_version = opal_info_make_version_str(scope, component->mca_component_major_version,
                                                    component->mca_component_minor_version,
                                                    component->mca_component_release_version, 
-                                                   "", false, "");
+                                                   "", "");
     if (opal_info_pretty) {
         asprintf(&message, "MCA %s", component->mca_type_name);
         printed = false;
@@ -1032,8 +1036,8 @@ void opal_info_show_mca_version(const mca_base_component_t* component,
 
 char *opal_info_make_version_str(const char *scope,
                                  int major, int minor, int release,
-                                 const char *greek, 
-                                 bool want_repo_rev, const char *repo)
+                                 const char *greek,
+                                 const char *repo)
 {
     char *str = NULL, *tmp;
     char temp[BUFSIZ];
@@ -1041,21 +1045,10 @@ char *opal_info_make_version_str(const char *scope,
     temp[BUFSIZ - 1] = '\0';
     if (0 == strcmp(scope, opal_info_ver_full) ||
         0 == strcmp(scope, opal_info_ver_all)) {
-        snprintf(temp, BUFSIZ - 1, "%d.%d", major, minor);
+        snprintf(temp, BUFSIZ - 1, "%d.%d.%d", major, minor, release);
         str = strdup(temp);
-        if (release > 0) {
-            snprintf(temp, BUFSIZ - 1, ".%d", release);
-            asprintf(&tmp, "%s%s", str, temp);
-            free(str);
-            str = tmp;
-        }
         if (NULL != greek) {
             asprintf(&tmp, "%s%s", str, greek);
-            free(str);
-            str = tmp;
-        }
-        if (want_repo_rev && NULL != repo) {
-            asprintf(&tmp, "%s%s", str, repo);
             free(str);
             str = tmp;
         }
@@ -1087,7 +1080,7 @@ void opal_info_show_opal_version(const char *scope)
                                       OPAL_MAJOR_VERSION, OPAL_MINOR_VERSION, 
                                       OPAL_RELEASE_VERSION, 
                                       OPAL_GREEK_VERSION,
-                                      OPAL_WANT_REPO_REV, OPAL_REPO_REV);
+                                      OPAL_REPO_REV);
     opal_info_out("OPAL", tmp, tmp2);
     free(tmp);
     free(tmp2);

@@ -10,7 +10,7 @@
  *                         University of Stuttgart.  All rights reserved.
  * Copyright (c) 2004-2005 The Regents of the University of California.
  *                         All rights reserved.
- * Copyright (c) 2006-2009 Cisco Systems, Inc.  All rights reserved.
+ * Copyright (c) 2006-2014 Cisco Systems, Inc.  All rights reserved.
  * Copyright (c) 2013      Los Alamos National Security, LLC. All rights
  *                         reserved.
  * $COPYRIGHT$
@@ -157,7 +157,7 @@ FUNC_FUNC(max, fortran_real4, ompi_fortran_real4_t)
 #if OMPI_HAVE_FORTRAN_REAL8
 FUNC_FUNC(max, fortran_real8, ompi_fortran_real8_t)
 #endif
-#if OMPI_HAVE_FORTRAN_REAL16
+#if OMPI_HAVE_FORTRAN_REAL16 && OMPI_REAL16_MATCHES_C
 FUNC_FUNC(max, fortran_real16, ompi_fortran_real16_t)
 #endif
 
@@ -217,7 +217,7 @@ FUNC_FUNC(min, fortran_real4, ompi_fortran_real4_t)
 #if OMPI_HAVE_FORTRAN_REAL8
 FUNC_FUNC(min, fortran_real8, ompi_fortran_real8_t)
 #endif
-#if OMPI_HAVE_FORTRAN_REAL16
+#if OMPI_HAVE_FORTRAN_REAL16 && OMPI_REAL16_MATCHES_C
 FUNC_FUNC(min, fortran_real16, ompi_fortran_real16_t)
 #endif
 
@@ -274,7 +274,7 @@ OP_FUNC(sum, fortran_real4, ompi_fortran_real4_t, +=)
 #if OMPI_HAVE_FORTRAN_REAL8
 OP_FUNC(sum, fortran_real8, ompi_fortran_real8_t, +=)
 #endif
-#if OMPI_HAVE_FORTRAN_REAL16
+#if OMPI_HAVE_FORTRAN_REAL16 && OMPI_REAL16_MATCHES_C
 OP_FUNC(sum, fortran_real16, ompi_fortran_real16_t, +=)
 #endif
 /* Complex */
@@ -341,7 +341,7 @@ OP_FUNC(prod, fortran_real4, ompi_fortran_real4_t, *=)
 #if OMPI_HAVE_FORTRAN_REAL8
 OP_FUNC(prod, fortran_real8, ompi_fortran_real8_t, *=)
 #endif
-#if OMPI_HAVE_FORTRAN_REAL16
+#if OMPI_HAVE_FORTRAN_REAL16 && OMPI_REAL16_MATCHES_C
 OP_FUNC(prod, fortran_real16, ompi_fortran_real16_t, *=)
 #endif
 /* Complex */
@@ -737,7 +737,7 @@ FUNC_FUNC_3BUF(max, fortran_real4, ompi_fortran_real4_t)
 #if OMPI_HAVE_FORTRAN_REAL8
 FUNC_FUNC_3BUF(max, fortran_real8, ompi_fortran_real8_t)
 #endif
-#if OMPI_HAVE_FORTRAN_REAL16
+#if OMPI_HAVE_FORTRAN_REAL16 && OMPI_REAL16_MATCHES_C
 FUNC_FUNC_3BUF(max, fortran_real16, ompi_fortran_real16_t)
 #endif
 
@@ -797,7 +797,7 @@ FUNC_FUNC_3BUF(min, fortran_real4, ompi_fortran_real4_t)
 #if OMPI_HAVE_FORTRAN_REAL8
 FUNC_FUNC_3BUF(min, fortran_real8, ompi_fortran_real8_t)
 #endif
-#if OMPI_HAVE_FORTRAN_REAL16
+#if OMPI_HAVE_FORTRAN_REAL16 && OMPI_REAL16_MATCHES_C
 FUNC_FUNC_3BUF(min, fortran_real16, ompi_fortran_real16_t)
 #endif
 
@@ -806,14 +806,14 @@ FUNC_FUNC_3BUF(min, fortran_real16, ompi_fortran_real16_t)
  *************************************************************************/
 
 /* C integer */
-OP_FUNC_3BUF(sum,   int8_t,   int8_t, +=)
-OP_FUNC_3BUF(sum,  uint8_t,  uint8_t, +=)
-OP_FUNC_3BUF(sum,  int16_t,  int16_t, +=)
-OP_FUNC_3BUF(sum, uint16_t, uint16_t, +=)
-OP_FUNC_3BUF(sum,  int32_t,  int32_t, +=)
-OP_FUNC_3BUF(sum, uint32_t, uint32_t, +=)
-OP_FUNC_3BUF(sum,  int64_t,  int64_t, +=)
-OP_FUNC_3BUF(sum, uint64_t, uint64_t, +=)
+OP_FUNC_3BUF(sum,   int8_t,   int8_t, +)
+OP_FUNC_3BUF(sum,  uint8_t,  uint8_t, +)
+OP_FUNC_3BUF(sum,  int16_t,  int16_t, +)
+OP_FUNC_3BUF(sum, uint16_t, uint16_t, +)
+OP_FUNC_3BUF(sum,  int32_t,  int32_t, +)
+OP_FUNC_3BUF(sum, uint32_t, uint32_t, +)
+OP_FUNC_3BUF(sum,  int64_t,  int64_t, +)
+OP_FUNC_3BUF(sum, uint64_t, uint64_t, +)
 /* Fortran integer */
 #if OMPI_HAVE_FORTRAN_INTEGER
 OP_FUNC_3BUF(sum, fortran_integer, ompi_fortran_integer_t, +)
@@ -854,7 +854,7 @@ OP_FUNC_3BUF(sum, fortran_real4, ompi_fortran_real4_t, +)
 #if OMPI_HAVE_FORTRAN_REAL8
 OP_FUNC_3BUF(sum, fortran_real8, ompi_fortran_real8_t, +)
 #endif
-#if OMPI_HAVE_FORTRAN_REAL16
+#if OMPI_HAVE_FORTRAN_REAL16 && OMPI_REAL16_MATCHES_C
 OP_FUNC_3BUF(sum, fortran_real16, ompi_fortran_real16_t, +)
 #endif
 /* Complex */
@@ -873,14 +873,14 @@ OP_FUNC_3BUF(sum, c_long_double_complex, long double _Complex, +)
  *************************************************************************/
 
 /* C integer */
-OP_FUNC_3BUF(prod,   int8_t,   int8_t, *=)
-OP_FUNC_3BUF(prod,  uint8_t,  uint8_t, *=)
-OP_FUNC_3BUF(prod,  int16_t,  int16_t, *=)
-OP_FUNC_3BUF(prod, uint16_t, uint16_t, *=)
-OP_FUNC_3BUF(prod,  int32_t,  int32_t, *=)
-OP_FUNC_3BUF(prod, uint32_t, uint32_t, *=)
-OP_FUNC_3BUF(prod,  int64_t,  int64_t, *=)
-OP_FUNC_3BUF(prod, uint64_t, uint64_t, *=)
+OP_FUNC_3BUF(prod,   int8_t,   int8_t, *)
+OP_FUNC_3BUF(prod,  uint8_t,  uint8_t, *)
+OP_FUNC_3BUF(prod,  int16_t,  int16_t, *)
+OP_FUNC_3BUF(prod, uint16_t, uint16_t, *)
+OP_FUNC_3BUF(prod,  int32_t,  int32_t, *)
+OP_FUNC_3BUF(prod, uint32_t, uint32_t, *)
+OP_FUNC_3BUF(prod,  int64_t,  int64_t, *)
+OP_FUNC_3BUF(prod, uint64_t, uint64_t, *)
 /* Fortran integer */
 #if OMPI_HAVE_FORTRAN_INTEGER
 OP_FUNC_3BUF(prod, fortran_integer, ompi_fortran_integer_t, *)
@@ -921,7 +921,7 @@ OP_FUNC_3BUF(prod, fortran_real4, ompi_fortran_real4_t, *)
 #if OMPI_HAVE_FORTRAN_REAL8
 OP_FUNC_3BUF(prod, fortran_real8, ompi_fortran_real8_t, *)
 #endif
-#if OMPI_HAVE_FORTRAN_REAL16
+#if OMPI_HAVE_FORTRAN_REAL16 && OMPI_REAL16_MATCHES_C
 OP_FUNC_3BUF(prod, fortran_real16, ompi_fortran_real16_t, *)
 #endif
 /* Complex */

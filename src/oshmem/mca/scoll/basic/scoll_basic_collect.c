@@ -57,7 +57,7 @@ int mca_scoll_basic_collect(struct oshmem_group_t *group,
     int rc = OSHMEM_SUCCESS;
 
     /* Arguments validation */
-    if (!group) {
+    if (!group || !pSync) {
         SCOLL_ERROR("Active set (group) of PE is not defined");
         rc = OSHMEM_ERR_BAD_PARAM;
     }
@@ -127,7 +127,7 @@ int mca_scoll_basic_collect(struct oshmem_group_t *group,
         SCOLL_VERBOSE(12,
                       "[#%d] Restore special synchronization array",
                       group->my_pe);
-        for (i = 0; pSync && (i < _SHMEM_COLLECT_SYNC_SIZE); i++) {
+        for (i = 0; i < _SHMEM_COLLECT_SYNC_SIZE; i++) {
             pSync[i] = _SHMEM_SYNC_VALUE;
         }
     }
@@ -541,13 +541,13 @@ static int _algorithm_central_collector(struct oshmem_group_t *group,
                   group->my_pe);
 
     /* Set own data size */
-    pSync[0] = nlong;
+    pSync[0] = (nlong ? (long)nlong : SHMEM_SYNC_READY);
 
     if (PE_root == group->my_pe) {
         long value = 0;
         int pe_cur = 0;
         long wait_pe_count = 0;
-        size_t* wait_pe_array = NULL;
+        long* wait_pe_array = NULL;
 
         wait_pe_count = group->proc_count;
         wait_pe_array = malloc(sizeof(*wait_pe_array) * wait_pe_count);
@@ -569,9 +569,8 @@ static int _algorithm_central_collector(struct oshmem_group_t *group,
                         value = 0;
                         rc = MCA_SPML_CALL(get((void*)pSync, sizeof(value), (void*)&value, pe_cur));
                         if ((rc == OSHMEM_SUCCESS)
-                                && (value != _SHMEM_SYNC_VALUE)
-                                && (value > 0)) {
-                            wait_pe_array[i] = (size_t) value;
+                                && (value != _SHMEM_SYNC_VALUE)) {
+                            wait_pe_array[i] = value;
                             wait_pe_count--;
                             SCOLL_VERBOSE(14,
                                           "Got source data size as %d from #%d (wait list counter: %d)",
@@ -588,17 +587,23 @@ static int _algorithm_central_collector(struct oshmem_group_t *group,
 
             for (i = 1; (i < group->proc_count) && (rc == OSHMEM_SUCCESS);
                     i++) {
+
+                /* Skip zero size data */
+                if (wait_pe_array[i] == SHMEM_SYNC_READY) {
+                    continue;
+                }
+
                 /* Get PE ID of a peer from the group */
                 pe_cur = oshmem_proc_pe(group->proc_array[i]);
 
                 /* Get data from the current peer */
-                rc = MCA_SPML_CALL(get((void *)source, wait_pe_array[i], (void*)((unsigned char*)target + offset), pe_cur));
+                rc = MCA_SPML_CALL(get((void *)source, (size_t)wait_pe_array[i], (void*)((unsigned char*)target + offset), pe_cur));
 
                 SCOLL_VERBOSE(14,
                               "Got %d bytes of data from #%d (offset: %d)",
                               (int)wait_pe_array[i], pe_cur, (int)offset);
 
-                offset += wait_pe_array[i];
+                offset += (size_t)wait_pe_array[i];
             }
 
             free(wait_pe_array);

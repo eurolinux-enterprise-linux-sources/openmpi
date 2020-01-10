@@ -12,7 +12,7 @@
  * Copyright (c) 2008-2012 Cisco Systems, Inc.  All rights reserved.
  * Copyright (c) 2010-2012 Los Alamos National Security, LLC.
  *                         All rights reserved.
- * Copyright (c) 2013-2014 Intel, Inc. All rights reserved
+ * Copyright (c) 2013-2015 Intel, Inc. All rights reserved
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -55,6 +55,18 @@
 
 extern int opal_initialized;
 extern int opal_util_initialized;
+extern bool opal_init_called;
+
+static void __opal_attribute_destructor__ opal_cleanup (void)
+{
+    if (!opal_initialized) {
+        /* nothing to do */
+        return;
+    }
+
+    /* finalize the class/object system */
+    opal_class_finalize();
+}
 
 int
 opal_finalize_util(void)
@@ -67,14 +79,12 @@ opal_finalize_util(void)
     }
 
     /* close interfaces code. */
-    if (opal_if_base_framework.framework_refcnt > 1) {
-        /* opal if may have been opened many times -- FIXME */
-        opal_if_base_framework.framework_refcnt = 1;
-    }
-
     (void) mca_base_framework_close(&opal_if_base_framework);
 
+    (void) mca_base_framework_close(&opal_event_base_framework);
+
     /* Clear out all the registered MCA params */
+    opal_deregister_params();
     mca_base_param_finalize();
 
     opal_net_finalize();
@@ -99,8 +109,9 @@ opal_finalize_util(void)
     /* close the dss */
     opal_dss_close();
 
-    /* finalize the class/object system */
-    opal_class_finalize();
+#if OPAL_NO_LIB_DESTRUCTOR
+    opal_cleanup ();
+#endif
 
     return OPAL_SUCCESS;
 }
@@ -153,6 +164,9 @@ opal_finalize(void)
 
     /* close the memcpy framework */
     (void) mca_base_framework_close(&opal_memcpy_base_framework);
+
+    /* close the sec framework */
+    (void) mca_base_framework_close(&opal_sec_base_framework);
 
     /* finalize the mca */
     mca_base_close();

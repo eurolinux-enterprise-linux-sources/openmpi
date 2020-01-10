@@ -10,6 +10,8 @@ dnl                         University of Stuttgart.  All rights reserved.
 dnl Copyright (c) 2004-2005 The Regents of the University of California.
 dnl                         All rights reserved.
 dnl Copyright (c) 2012 Cisco Systems, Inc.  All rights reserved.
+dnl Copyright (c) 2014      Research Organization for Information Science
+dnl                         and Technology (RIST). All rights reserved.
 dnl $COPYRIGHT$
 dnl 
 dnl Additional copyrights may follow
@@ -38,10 +40,31 @@ AC_DEFUN([OMPI_INTL_PTHREAD_TRY_LINK], [
 # As long as this is not being run....
 # pthread_t may be anything from an int to a struct -- init with self-tid.
 #
-    AC_TRY_LINK([#include <pthread.h>],
-                 [pthread_t th=pthread_self(); pthread_join(th, 0);
-                 pthread_attr_init(0); pthread_cleanup_push(0, 0);
-                 pthread_create(0,0,0,0); pthread_cleanup_pop(0); ],
+    AC_LINK_IFELSE([AC_LANG_SOURCE([[
+#include <pthread.h>
+
+int i = 3;
+pthread_t me, newthread;
+
+void cleanup_routine(void *foo);
+void *thread_main(void *foo);
+
+void cleanup_routine(void *foo) { i = 4; }
+void *thread_main(void *foo) { i = 2; return (void*) &i; }
+
+int main(int argc, char* argv[])
+{
+    pthread_attr_t attr;
+
+    me = pthread_self(); 
+    pthread_attr_init(&attr); 
+    pthread_cleanup_push(cleanup_routine, 0);
+    pthread_create(&newthread, &attr, thread_main, 0); 
+    pthread_join(newthread, 0);
+    pthread_cleanup_pop(0); 
+
+    return 0;
+}]])],
                  [$1], [$2])
 # END: OMPI_INTL_PTHREAD_TRY_LINK
 ])dnl
@@ -75,15 +98,26 @@ $ompi_conftest_h
 #ifdef __cplusplus
 extern "C" {
 #endif
+int i = 3;
+pthread_t me, newthread;
+
+void cleanup_routine(void *foo);
+void *thread_main(void *foo);
+void pthreadtest_f(void);
+
+void cleanup_routine(void *foo) { i = 4; }
+void *thread_main(void *foo) { i = 2; return (void*) &i; }
+
 void pthreadtest_f(void)
 {
-  pthread_t th;
-  pthread_create(&th, NULL, NULL, NULL);
-  pthread_join(th, 0);
-  pthread_attr_init(0);
-  pthread_cleanup_push(0, 0);
-  pthread_create(0,0,0,0);
-  pthread_cleanup_pop(0); 
+    pthread_attr_t attr;
+
+    me = pthread_self(); 
+    pthread_attr_init(&attr); 
+    pthread_cleanup_push(cleanup_routine, 0);
+    pthread_create(&newthread, &attr, thread_main, 0); 
+    pthread_join(&newthread, 0);
+    pthread_cleanup_pop(0); 
 }
 
 void pthreadtest(void)
@@ -143,43 +177,15 @@ AC_DEFUN([OMPI_INTL_POSIX_THREADS_PLAIN_C], [
 #
 if test "$ompi_pthread_c_success" = "0"; then
   AC_MSG_CHECKING([if C compiler and POSIX threads work as is])
-  if test "$HAVE_POSIX_THREADS" = "1" ; then
-    run_this_test=1
-  else
-    case "${host_cpu}-${host_os}" in
-      *solaris*)
-        AC_MSG_RESULT([no - Solaris, not checked])
-        run_this_test=0
-      ;;
-      *-aix* | *-freebsd*)
-        if test "`echo $CPPFLAGS | $GREP 'D_THREAD_SAFE'`" = ""; then
-          PTHREAD_CPPFLAGS="-D_THREAD_SAFE"
-          CPPFLAGS="$CPPFLAGS $PTHREAD_CPPFLAGS"
-        fi
-        run_this_test=1
-      ;;
-      *)
-        if test "`echo $CPPFLAGS | $GREP 'D_REENTRANT'`" = ""; then
-          PTHREAD_CPPFLAGS="-D_REENTRANT"
-          CPPFLAGS="$CPPFLAGS $PTHREAD_CPPFLAGS"
-        fi
-        run_this_test=1
-      ;;
-    esac
-  fi
 
-  if test "$run_this_test" = "1" ; then
-    AC_LANG_PUSH(C)
-    OMPI_INTL_PTHREAD_TRY_LINK(ompi_pthread_c_success=1,
-                              ompi_pthread_c_success=0)
-    AC_LANG_POP(C)
-    if test "$ompi_pthread_c_success" = "1"; then
-      AC_MSG_RESULT([yes])
-    else
-      PTHREAD_CPPFLAGS=
-      CPPFLAGS="$orig_CPPFLAGS"
-      AC_MSG_RESULT([no])
-    fi
+  AC_LANG_PUSH(C)
+  OMPI_INTL_PTHREAD_TRY_LINK(ompi_pthread_c_success=1,
+                            ompi_pthread_c_success=0)
+  AC_LANG_POP(C)
+  if test "$ompi_pthread_c_success" = "1"; then
+    AC_MSG_RESULT([yes])
+  else
+    AC_MSG_RESULT([no])
   fi
 fi
 ])dnl
@@ -191,43 +197,15 @@ AC_DEFUN([OMPI_INTL_POSIX_THREADS_PLAIN_CXX], [
 #
 if test "$ompi_pthread_cxx_success" = "0"; then
   AC_MSG_CHECKING([if C++ compiler and POSIX threads work as is])
-  if test "$HAVE_POSIX_THREADS" = "1" ; then
-    run_this_test=1
-  else
-    case "${host_cpu}-${host_os}" in
-      *solaris*)
-        AC_MSG_RESULT([no - Solaris, not checked])
-        run_this_test=0
-      ;;
-      *-aix* | *-freebsd*)
-        if test "`echo $CXXCPPFLAGS | $GREP 'D_THREAD_SAFE'`" = ""; then
-          PTHREAD_CXXCPPFLAGS="-D_THREAD_SAFE"
-          CXXCPPFLAGS="$CXXCPPFLAGS $PTHREAD_CXXCPPFLAGS"
-        fi
-        run_this_test=1
-      ;;
-      *)
-        if test "`echo $CXXCPPFLAGS | $GREP 'D_REENTRANT'`" = ""; then
-          PTHREAD_CXXCPPFLAGS="-D_REENTRANT"
-          CXXCPPFLAGS="$CXXCPPFLAGS $PTHREAD_CXXCPPFLAGS"
-        fi
-        run_this_test=1
-      ;;
-    esac
-  fi
 
-  if test "$run_this_test" = "1" ; then
-    AC_LANG_PUSH(C++)
-    OMPI_INTL_PTHREAD_TRY_LINK(ompi_pthread_cxx_success=1, 
-                              ompi_pthread_cxx_success=0)
-    AC_LANG_POP(C++)
-    if test "$ompi_pthread_cxx_success" = "1"; then
-      AC_MSG_RESULT([yes])
-    else
-      PTHREAD_CXXCPPFLAGS=
-      CXXCPPFLAGS="$orig_CXXCPPFLAGS"
-      AC_MSG_RESULT([no])
-    fi
+  AC_LANG_PUSH(C++)
+  OMPI_INTL_PTHREAD_TRY_LINK(ompi_pthread_cxx_success=1, 
+                            ompi_pthread_cxx_success=0)
+  AC_LANG_POP(C++)
+  if test "$ompi_pthread_cxx_success" = "1"; then
+    AC_MSG_RESULT([yes])
+  else
+    AC_MSG_RESULT([no])
   fi
 fi
 ])dnl
@@ -239,30 +217,15 @@ AC_DEFUN([OMPI_INTL_POSIX_THREADS_PLAIN_FC], [
 #
 if test "$ompi_pthread_fortran_success" = "0" -a "$OMPI_WANT_FORTRAN_BINDINGS" = "1" -a $ompi_fortran_happy -eq 1; then
   AC_MSG_CHECKING([if Fortran compiler and POSIX threads work as is])
-  if test "$HAVE_POSIX_THREADS" = "1" ; then
-    run_this_test=1
-  else
-    case "${host_cpu}-${host_os}" in
-      *solaris*)
-        AC_MSG_RESULT([no - Solaris, not checked])
-        run_this_test=0
-      ;;
-      *)
-        run_this_test=1
-      ;;
-    esac
-  fi
 
-  if test "$run_this_test" = "1" ; then
-    AC_LANG_PUSH(C)
-    OMPI_INTL_PTHREAD_TRY_LINK_FORTRAN(ompi_pthread_fortran_success=1, 
-                                       ompi_pthread_fortran_success=0)
-    AC_LANG_POP(C)
-    if test "$ompi_pthread_fortran_success" = "1"; then
-      AC_MSG_RESULT([yes])
-    else
-      AC_MSG_RESULT([no])
-    fi
+  AC_LANG_PUSH(C)
+  OMPI_INTL_PTHREAD_TRY_LINK_FORTRAN(ompi_pthread_fortran_success=1, 
+                                     ompi_pthread_fortran_success=0)
+  AC_LANG_POP(C)
+  if test "$ompi_pthread_fortran_success" = "1"; then
+    AC_MSG_RESULT([yes])
+  else
+    AC_MSG_RESULT([no])
   fi
 fi
 ])dnl

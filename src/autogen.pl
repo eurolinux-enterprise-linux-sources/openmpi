@@ -1,9 +1,11 @@
 #!/usr/bin/env perl
 #
-# Copyright (c) 2009-2012 Cisco Systems, Inc.  All rights reserved.
+# Copyright (c) 2009-2015 Cisco Systems, Inc.  All rights reserved.
 # Copyright (c) 2010      Oracle and/or its affiliates.  All rights reserved.
 # Copyright (c) 2013      Mellanox Technologies, Inc.
 #                         All rights reserved.
+# Copyright (c) 2015      IBM Corporation.  All rights reserved.
+#
 # $COPYRIGHT$
 # 
 # Additional copyrights may follow
@@ -179,7 +181,6 @@ sub process_subdir {
         print "--- Found configure.in|ac; running autoreconf...\n";
         safe_system("autoreconf -ivf");
         print "--- Patching autotools output... :-(\n";
-        patch_autotools_output($start);
     } else {
         my_die "Found subdir, but no autogen.sh or configure.in|ac to do anything";
     }
@@ -187,6 +188,9 @@ sub process_subdir {
     # Ensure that we got a good configure executable.
     my_die "Did not generate a \"configure\" executable in $dir.\n"
         if (! -x "configure");
+
+    # Fix known issues in Autotools output
+    patch_autotools_output($start);
 
     # Chdir back to where we came from
     chdir($start);
@@ -969,6 +973,28 @@ sub patch_autotools_output {
     verbose "$indent_str"."Patching configure for IBM xlf libtool bug\n";
     $c =~ s/(\$LD -shared \$libobjs \$deplibs \$)compiler_flags( -soname \$soname)/$1linker_flags$2/g;
 
+    #Check if we are using a recent enough libtool that supports PowerPC little endian
+    if(index($c, 'powerpc64le-*linux*)') == -1) {
+        verbose "$indent_str"."Patching configure for PowerPC little endian support\n";
+        my $replace_string = "x86_64-*kfreebsd*-gnu|x86_64-*linux*|powerpc*-*linux*|";
+        $c =~ s/x86_64-\*kfreebsd\*-gnu\|x86_64-\*linux\*\|ppc\*-\*linux\*\|powerpc\*-\*linux\*\|/$replace_string/g;
+        $replace_string =
+        "powerpc64le-*linux*)\n\t    LD=\"\${LD-ld} -m elf32lppclinux\"\n\t    ;;\n\t  powerpc64-*linux*)";
+        $c =~ s/ppc64-\*linux\*\|powerpc64-\*linux\*\)/$replace_string/g;
+        $replace_string =
+        "powerpcle-*linux*)\n\t    LD=\"\${LD-ld} -m elf64lppc\"\n\t    ;;\n\t  powerpc-*linux*)";
+        $c =~ s/ppc\*-\*linux\*\|powerpc\*-\*linux\*\)/$replace_string/g;
+    }
+
+    # Fix consequence of broken libtool.m4
+    # see http://lists.gnu.org/archive/html/bug-libtool/2015-07/msg00002.html and
+    # https://github.com/open-mpi/ompi/issues/751
+    verbose "$indent_str"."Patching configure for libtool.m4 bug\n";
+    # patch for libtool < 2.4.3
+    $c =~ s/# Some compilers place space between "-{L,R}" and the path.\n       # Remove the space.\n       if test \$p = \"-L\" \|\|/# Some compilers place space between "-{L,-l,R}" and the path.\n       # Remove the spaces.\n       if test \$p = \"-L\" \|\|\n          test \$p = \"-l\" \|\|/g;
+    # patch for libtool >= 2.4.3
+    $c =~ s/# Some compilers place space between "-{L,R}" and the path.\n       # Remove the space.\n       if test x-L = \"\$p\" \|\|\n          test x-R = \"\$p\"\; then/# Some compilers place space between "-{L,-l,R}" and the path.\n       # Remove the spaces.\n       if test x-L = \"x\$p\" \|\|\n          test x-l = \"x\$p\" \|\|\n          test x-R = \"x\$p\"\; then/g;
+
     open(OUT, ">configure.patched") || my_die "Can't open configure.patched";
     print OUT $c;
     close(OUT);
@@ -1252,7 +1278,6 @@ verbose "\n$step. Running autotools on top-level tree\n\n";
 verbose "==> Remove stale files\n";
 find_and_delete(qw/config.guess config.sub depcomp compile install-sh ltconfig
     ltmain.sh missing mkinstalldirs libtool/);
-system("rm -rf opal/libltdl");
 
 # Remove the old m4 file and write the new one
 verbose "==> Writing m4 file with autogen.pl results\n";
@@ -1276,24 +1301,6 @@ foreach my $project (@{$projects}) {
         if (-d "$project->{dir}/config");
 }
 safe_system($cmd);
-
-#---------------------------------------------------------------------------
-
-# For FreeBSD (carried over from autogen.sh); apparently some versions
-# of automake don't so this (prior to 1.9.7...?).
-system("chmod u+w opal/libltdl/configure");
-
-#---------------------------------------------------------------------------
-
-++$step;
-verbose "\n$step. Patching autotools output on top-level tree :-(\n\n";
-
-# Patch preopen error in libltdl
-if (-f "opal/libltdl/loaders/preopen.c") {
-    verbose "=== Patching preopen error masking in libltdl\n";
-    safe_system("$patch_prog -N -p0 < config/libltdl-preopen-error.diff");
-    unlink("opal/libltdl/loaders/preopen.c.rej");
-}
 
 patch_autotools_output(".");
 

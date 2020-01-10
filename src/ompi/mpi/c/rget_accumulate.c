@@ -12,8 +12,10 @@
  *                         All rights reserved.
  * Copyright (c) 2009      Sun Microsystmes, Inc.  All rights reserved.
  * Copyright (c) 2011      Sandia National Laboratories. All rights reserved.
- * Copyright (c) 2014      Los Alamos National Security, LLC. All right
+ * Copyright (c) 2014-2015 Los Alamos National Security, LLC. All right
  *                         reserved.
+ * Copyright (c) 2015      Research Organization for Information Science
+ *                         and Technology (RIST). All rights reserved.
  * $COPYRIGHT$
  * 
  * Additional copyrights may follow
@@ -42,7 +44,7 @@
 #include "ompi/mpi/c/profile/defines.h"
 #endif
 
-static const char FUNC_NAME[] = "MPI_Rget_accumlate";
+static const char FUNC_NAME[] = "MPI_Rget_accumulate";
 
 int MPI_Rget_accumulate(const void *origin_addr, int origin_count, MPI_Datatype origin_datatype,
                         void *result_addr, int result_count, MPI_Datatype result_datatype,
@@ -74,7 +76,7 @@ int MPI_Rget_accumulate(const void *origin_addr, int origin_count, MPI_Datatype 
             rc = MPI_ERR_OP;
         } else if (!ompi_op_is_intrinsic(op)) {
             rc = MPI_ERR_OP;
-        } else if ( target_disp < 0 ) {
+        } else if ( MPI_WIN_FLAVOR_DYNAMIC != win->w_flavor && target_disp < 0 ) {
             rc = MPI_ERR_DISP;
         } else {
             /* the origin datatype is meaningless when using MPI_OP_NO_OP */
@@ -135,8 +137,7 @@ int MPI_Rget_accumulate(const void *origin_addr, int origin_count, MPI_Datatype 
 
     OPAL_CR_ENTER_LIBRARY();
 
-    /* TODO: do not cast away the const */
-    rc = ompi_win->w_osc_module->osc_rget_accumulate((void *) origin_addr,
+    rc = ompi_win->w_osc_module->osc_rget_accumulate(origin_addr,
                                                     origin_count,
                                                     origin_datatype,
                                                     result_addr,

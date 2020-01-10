@@ -7149,7 +7149,7 @@ ia64-*-hpux*)
   rm -rf conftest*
   ;;
 
-x86_64-*kfreebsd*-gnu|x86_64-*linux*|ppc*-*linux*|powerpc*-*linux*| \
+x86_64-*kfreebsd*-gnu|x86_64-*linux*|powerpc*-*linux*| \
 s390*-*linux*|s390*-*tpf*|sparc*-*linux*)
   # Find out which ABI we are using.
   echo 'int i;' > conftest.$ac_ext
@@ -7167,7 +7167,10 @@ s390*-*linux*|s390*-*tpf*|sparc*-*linux*)
 	  x86_64-*linux*)
 	    LD="${LD-ld} -m elf_i386"
 	    ;;
-	  ppc64-*linux*|powerpc64-*linux*)
+	  powerpc64le-*linux*)
+	    LD="${LD-ld} -m elf32lppclinux"
+	    ;;
+	  powerpc64-*linux*)
 	    LD="${LD-ld} -m elf32ppclinux"
 	    ;;
 	  s390x-*linux*)
@@ -7186,7 +7189,10 @@ s390*-*linux*|s390*-*tpf*|sparc*-*linux*)
 	  x86_64-*linux*)
 	    LD="${LD-ld} -m elf_x86_64"
 	    ;;
-	  ppc*-*linux*|powerpc*-*linux*)
+	  powerpcle-*linux*)
+	    LD="${LD-ld} -m elf64lppc"
+	    ;;
+	  powerpc-*linux*)
 	    LD="${LD-ld} -m elf64ppc"
 	    ;;
 	  s390*-*linux*|s390*-*tpf*)
@@ -13811,6 +13817,8 @@ haveepoll=no
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for epoll support" >&5
 $as_echo_n "checking for epoll support... " >&6; }
 if test "$enable_epoll" != "no" ; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: enabled" >&5
+$as_echo "enabled" >&6; }
     for ac_func in epoll_ctl
 do :
   ac_fn_c_check_func "$LINENO" "epoll_ctl" "ac_cv_func_epoll_ctl"
@@ -13856,8 +13864,6 @@ done
         # written to.
 
         haveepoll=no
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking for working epoll library interface" >&5
 $as_echo_n "checking for working epoll library interface... " >&6; }
         if test "$cross_compiling" = yes; then :
@@ -13922,9 +13928,14 @@ rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
   conftest.$ac_objext conftest.beam conftest.$ac_ext
 fi
 
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking if epoll can build" >&5
+$as_echo_n "checking if epoll can build... " >&6; }
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $haveepoll" >&5
 $as_echo "$haveepoll" >&6; }
     fi
+else
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled" >&5
+$as_echo "disabled" >&6; }
 fi
  if test "x$haveepoll" = "xyes" -a "$enable_epoll" != "no"; then
   EPOLL_BACKEND_TRUE=

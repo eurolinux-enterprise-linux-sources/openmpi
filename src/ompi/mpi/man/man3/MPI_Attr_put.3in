@@ -1,6 +1,8 @@
-.\" Copyright 2010 Cisco Systems, Inc.  All rights reserved.
+.\" -*- nroff -*-
+.\" Copyright (c) 2010-2014 Cisco Systems, Inc.  All rights reserved.
 .\" Copyright 2006-2008 Sun Microsystems, Inc.
 .\" Copyright (c) 1996 Thinking Machines Corporation
+.\" $COPYRIGHT$
 .TH MPI_Attr_put 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
 .SH NAME
 \fBMPI_Attr_put\fP \- Stores attribute value associated with a key -- use of this routine is deprecated.
@@ -19,12 +21,6 @@ INCLUDE 'mpif.h'
 MPI_ATTR_PUT(\fICOMM\fP,\fI KEYVAL\fP, \fIATTRIBUTE_VAL\fP,\fI IERROR\fP)
 	INTEGER	\fICOMM\fP,\fI KEYVAL\fP,\fI ATTRIBUTE_VAL\fP,\fI IERROR
 
-
-.fi
-.SH Java Syntax
-.nf
-import mpi.*;
-int MPI.COMM_WORLD.Attr_put(MPI.\fIkeyval\fP, int \fIattribute_val\fP)
 
 .fi
 .SH INPUT PARAMETERS
@@ -47,9 +43,9 @@ Fortran only: Error status (integer).
 
 .SH DESCRIPTION
 .ft R
-Note that use of this routine is \fIdeprecated\fP as of MPI-2. Please use MPI_Comm_set_attr instead. 
-.sp
-This deprecated routine is not available in C++. 
+Note that use of this routine is \fIdeprecated\fP as of MPI-2, and
+was \fIdeleted\fP in MPI-3. Please use MPI_Comm_set_attr.  This
+function does not have a C++ or mpi_f08 binding.
 .sp
 MPI_Attr_put stores the stipulated attribute value attribute_val for subsequent retrieval by MPI_Attr_get. If the value is already present, then the outcome is as if MPI_Attr_delete was first called to delete the previous value (and the callback function delete_fn was executed), and a new value was next stored. The call is erroneous if there is no key with value keyval; in particular MPI_KEYVAL_INVALID is an erroneous key value. The call will fail if the delete_fn function returned an error code other than MPI_SUCCESS.
 

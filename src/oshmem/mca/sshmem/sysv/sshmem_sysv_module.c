@@ -188,34 +188,38 @@ segment_create(map_segment_t *ds_buf,
      */
     flags = IPC_CREAT | IPC_EXCL | S_IRUSR | S_IWUSR;
 #if defined (SHM_HUGETLB)
-    flags |= (mca_sshmem_sysv_component.use_hp ? SHM_HUGETLB : 0);
+    flags |= ((0 != mca_sshmem_sysv_component.use_hp) ? SHM_HUGETLB : 0);
+    size = ((size + sshmem_sysv_gethugepagesize() - 1) / sshmem_sysv_gethugepagesize()) * sshmem_sysv_gethugepagesize();
 #endif
 
     /* Create a new shared memory segment and save the shmid. */
     shmid = shmget(IPC_PRIVATE, size, flags);
     if (shmid == MAP_SEGMENT_SHM_INVALID) {
-        OPAL_OUTPUT_VERBOSE(
-            (5, oshmem_sshmem_base_framework.framework_output,
-             "Failed to shmget() %llu bytes (errno=%d)",
-             (unsigned long long)size, errno));
-
-        opal_show_help("help-oshmem-sshmem-sysv.txt",
+        opal_show_help("help-oshmem-sshmem.txt",
                        "create segment failure",
                        true,
-                       orte_process_info.nodename, (unsigned) size,
+                       "sysv",
+                       orte_process_info.nodename, (unsigned long long) size,
                        strerror(errno), errno);
+        opal_show_help("help-oshmem-sshmem-sysv.txt",
+                       "sysv:create segment failure",
+                       true);
         return OSHMEM_ERROR;
     }
 
-    /* Attach to the sement */
+    /* Attach to the segment */
     addr = shmat(shmid, (void *) mca_sshmem_base_start_address, 0);
     if (addr == (void *) -1L) {
-        OPAL_OUTPUT_VERBOSE(
-           (5, oshmem_sshmem_base_framework.framework_output,
-           "Failed to shmat() %llu bytes (errno=%d)",
-                      (unsigned long long)size, errno)
-            );
-        shmctl(shmid, IPC_RMID, NULL );
+        opal_show_help("help-oshmem-sshmem.txt",
+                       "create segment failure",
+                       true,
+                       "sysv",
+                       orte_process_info.nodename, (unsigned long long) size,
+                       strerror(errno), errno);
+        opal_show_help("help-oshmem-sshmem-sysv.txt",
+                       "sysv:create segment failure",
+                       true);
+        shmctl(shmid, IPC_RMID, NULL);
         return OSHMEM_ERR_OUT_OF_RESOURCE;
     }
 
@@ -291,7 +295,7 @@ segment_detach(map_segment_t *ds_buf, sshmem_mkey_t *mkey)
         shmctl(ds_buf->seg_id, IPC_RMID, NULL );
     }
 
-    if (mca_sshmem_sysv_component.use_hp > 0) {
+    if (mca_sshmem_sysv_component.use_hp != 0) {
         /**
          *  Workaround kernel panic when detaching huge pages from user space simultanously from several processes
          *  dont detach here instead let kernel do it during process cleanup
@@ -332,4 +336,37 @@ segment_unlink(map_segment_t *ds_buf)
 
     return OSHMEM_SUCCESS;
 }
+
+/*
+ * Get current huge page size
+ *   
+ */
+size_t sshmem_sysv_gethugepagesize(void)
+{
+    static size_t huge_page_size = 0;
+    char buf[256];
+    int size_kb;
+    FILE *f;
+
+    /* Cache the huge page size value */
+    if (huge_page_size == 0) {
+        f = fopen("/proc/meminfo", "r");
+        if (f != NULL) {
+            while (fgets(buf, sizeof(buf), f)) {
+                if (sscanf(buf, "Hugepagesize: %d kB", &size_kb) == 1) {
+                    huge_page_size = size_kb * 1024L;
+                    break;
+                }
+            }
+            fclose(f);
+        }
+
+        if (huge_page_size == 0) {
+            huge_page_size = 2 * 1024L *1024L;
+        }
+    }
+
+    return huge_page_size;
+}
+
 

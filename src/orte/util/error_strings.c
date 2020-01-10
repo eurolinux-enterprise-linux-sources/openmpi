@@ -12,6 +12,7 @@
  * Copyright (c) 2010-2011 Cisco Systems, Inc.  All rights reserved. 
  * Copyright (c) 2011-2013 Los Alamos National Security, LLC.
  *                         All rights reserved.
+ * Copyright (c) 2014      Intel, Inc.  All rights reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -298,6 +299,10 @@ const char *orte_job_state_to_str(orte_job_state_t state)
         return "REPORT PROGRESS";
     case ORTE_JOB_STATE_ALLOC_FAILED:
         return "ALLOCATION FAILED";
+    case ORTE_JOB_STATE_MAP_FAILED:
+        return "MAP FAILED";
+    case ORTE_JOB_STATE_CANNOT_LAUNCH:
+        return "CANNOT LAUNCH";
     case ORTE_JOB_STATE_ANY:
         return "ANY";
     default:
@@ -381,6 +386,28 @@ const char *orte_proc_state_to_str(orte_proc_state_t state)
     case ORTE_PROC_STATE_ANY:
         return "ANY";
     default:
+        return "UNKNOWN STATE!";
+    }
+}
+
+const char *orte_node_state_to_str(orte_node_state_t state)
+{
+    switch(state) {
+    case ORTE_NODE_STATE_UNKNOWN:
+        return "UNKNOWN";
+    case ORTE_NODE_STATE_DOWN:
+        return "DOWN";
+    case ORTE_NODE_STATE_UP:
+        return "UP";
+    case ORTE_NODE_STATE_REBOOT:
+        return "REBOOT";
+    case ORTE_NODE_STATE_DO_NOT_USE:
+        return "DO_NOT_USE";
+    case ORTE_NODE_STATE_NOT_INCLUDED:
+        return "NOT_INCLUDED";
+    case ORTE_NODE_STATE_ADDED:
+        return "ADDED";
+   default:
         return "UNKNOWN STATE!";
     }
 }

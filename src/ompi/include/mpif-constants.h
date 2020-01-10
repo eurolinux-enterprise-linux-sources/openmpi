@@ -143,20 +143,6 @@
         integer MPI_TYPECLASS_COMPLEX
         integer MPI_TYPECLASS_INTEGER
         integer MPI_TYPECLASS_REAL
-        integer MPI_T_ERR_CANNOT_INIT
-        integer MPI_T_ERR_CVAR_SET_NEVER
-        integer MPI_T_ERR_CVAR_SET_NOT_NOW
-        integer MPI_T_ERR_INVALID_HANDLE
-        integer MPI_T_ERR_INVALID_INDEX
-        integer MPI_T_ERR_INVALID_ITEM
-        integer MPI_T_ERR_INVALID_SESSION
-        integer MPI_T_ERR_MEMORY
-        integer MPI_T_ERR_NOT_INITIALIZED
-        integer MPI_T_ERR_OUT_OF_HANDLES
-        integer MPI_T_ERR_OUT_OF_SESSIONS
-        integer MPI_T_ERR_PVAR_NO_ATOMIC
-        integer MPI_T_ERR_PVAR_NO_STARTSTOP
-        integer MPI_T_ERR_PVAR_NO_WRITE
         integer MPI_UNDEFINED
         integer MPI_UNEQUAL
         integer MPI_UNIVERSE_SIZE
@@ -223,7 +209,7 @@
         parameter (MPI_ERR_IN_STATUS=18)
         parameter (MPI_ERR_IO=35)
         parameter (MPI_ERR_KEYVAL=36)
-        parameter (MPI_ERR_LASTCODE=71)
+        parameter (MPI_ERR_LASTCODE=92)
         parameter (MPI_ERR_LOCKTYPE=37)
         parameter (MPI_ERR_NAME=38)
         parameter (MPI_ERR_NOT_SAME=40)
@@ -287,20 +273,6 @@
         parameter (MPI_TYPECLASS_COMPLEX=3)
         parameter (MPI_TYPECLASS_INTEGER=1)
         parameter (MPI_TYPECLASS_REAL=2)
-        parameter (MPI_T_ERR_CANNOT_INIT=56)
-        parameter (MPI_T_ERR_CVAR_SET_NEVER=64)
-        parameter (MPI_T_ERR_CVAR_SET_NOT_NOW=63)
-        parameter (MPI_T_ERR_INVALID_HANDLE=59)
-        parameter (MPI_T_ERR_INVALID_INDEX=57)
-        parameter (MPI_T_ERR_INVALID_ITEM=58)
-        parameter (MPI_T_ERR_INVALID_SESSION=62)
-        parameter (MPI_T_ERR_MEMORY=54)
-        parameter (MPI_T_ERR_NOT_INITIALIZED=55)
-        parameter (MPI_T_ERR_OUT_OF_HANDLES=60)
-        parameter (MPI_T_ERR_OUT_OF_SESSIONS=61)
-        parameter (MPI_T_ERR_PVAR_NO_ATOMIC=67)
-        parameter (MPI_T_ERR_PVAR_NO_STARTSTOP=65)
-        parameter (MPI_T_ERR_PVAR_NO_WRITE=66)
         parameter (MPI_UNDEFINED=-32766)
         parameter (MPI_UNEQUAL=3)
         parameter (MPI_UNIVERSE_SIZE=6)

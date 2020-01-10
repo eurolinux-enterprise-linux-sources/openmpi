@@ -50,6 +50,7 @@ mca_mtl_mxm_module_t ompi_mtl_mxm = {
 };
 
 
+#if MXM_API < MXM_VERSION(2,0)
 static uint32_t ompi_mtl_mxm_get_job_id(void)
 {
     uint8_t  unique_job_key[16];
@@ -81,6 +82,7 @@ static uint32_t ompi_mtl_mxm_get_job_id(void)
 
     return job_key;
 }
+#endif
 
 int ompi_mtl_mxm_progress(void);
 #if MXM_API >= MXM_VERSION(2,0)
@@ -98,7 +100,7 @@ static int ompi_mtl_mxm_get_ep_address(ompi_mtl_mxm_ep_conn_info_t *ep_info, mxm
     err = mxm_ep_address(ompi_mtl_mxm.ep, ptlid,
                          (struct sockaddr *) &ep_info->ptl_addr[ptlid], &addrlen);
     if (MXM_OK != err) {
-        opal_show_help("help-mtl-mxm.txt", "unable to extract endpoint address",
+        opal_show_help("help-mtl-mxm.txt", "unable to extract endpoint ptl address",
                        true, (int)ptlid, mxm_error_string(err));
         return OMPI_ERROR;
     }
@@ -125,7 +127,7 @@ static int ompi_mtl_mxm_get_ep_address(void **address_p, size_t *address_len_p)
 
     err = mxm_ep_get_address(ompi_mtl_mxm.ep, *address_p, address_len_p);
     if (MXM_OK != err) {
-        opal_show_help("help-mtl-mxm.txt", "unable to extract endpoint address",
+        opal_show_help("help-mtl-mxm.txt", "unable to extract endpoint ptl address",
                        true, mxm_error_string(err));
         return OMPI_ERROR;
     }
@@ -248,6 +250,9 @@ static int ompi_mtl_mxm_recv_ep_address(ompi_proc_t *source_proc, void **address
                                     &modex_cur_size);
         if (OMPI_SUCCESS != rc) {
             MXM_ERROR("Open MPI couldn't distribute EP connection details");
+            free(*address_p);
+            *address_p = NULL;
+            *address_len_p = 0;
             goto bail;
         }
 
@@ -281,12 +286,15 @@ int ompi_mtl_mxm_module_init(void)
 
     mxlr = 0;
     lr = -1;
+    jobid = 0;
 
+#if MXM_API < MXM_VERSION(2,0)
     jobid = ompi_mtl_mxm_get_job_id();
     if (0 == jobid) {
     	MXM_ERROR("Failed to generate jobid");
     	return OMPI_ERROR;
     }
+#endif
 
     if (NULL == (procs = ompi_proc_world(&totps))) {
         MXM_ERROR("Unable to obtain process list");
@@ -297,12 +305,14 @@ int ompi_mtl_mxm_module_init(void)
         MXM_VERBOSE(1, "MXM support will be disabled because of total number "
                     "of processes (%lu) is less than the minimum set by the "
                     "mtl_mxm_np MCA parameter (%u)", totps, ompi_mtl_mxm.mxm_np);
+        free(procs);
         return OMPI_ERR_NOT_SUPPORTED;
     }
     MXM_VERBOSE(1, "MXM support enabled");
 
     if (ORTE_NODE_RANK_INVALID == (lr = ompi_process_info.my_node_rank)) {
         MXM_ERROR("Unable to obtain local node rank");
+        free(procs);
         return OMPI_ERROR;
     }
     nlps = ompi_process_info.num_local_peers + 1;
@@ -312,6 +322,7 @@ int ompi_mtl_mxm_module_init(void)
             mxlr = max(mxlr, procs[proc]->proc_name.vpid);
         }
     }
+    free(procs);
 
     /* Setup the endpoint options and local addresses to bind to. */
 #if MXM_API < MXM_VERSION(2,0)
@@ -396,7 +407,7 @@ int ompi_mtl_mxm_add_procs(struct mca_mtl_base_module_t *mtl, size_t nprocs,
     mxm_conn_req_t *conn_reqs;
     size_t ep_index = 0;
 #endif
-    void *ep_address;
+    void *ep_address = NULL;
     size_t ep_address_len;
     mxm_error_t err;
     size_t i;
@@ -422,6 +433,7 @@ int ompi_mtl_mxm_add_procs(struct mca_mtl_base_module_t *mtl, size_t nprocs,
         }
         rc = ompi_mtl_mxm_recv_ep_address(procs[i], &ep_address, &ep_address_len);
         if (rc != OMPI_SUCCESS) {
+            free(ep_address);
             goto bail;
         }
 
@@ -429,6 +441,7 @@ int ompi_mtl_mxm_add_procs(struct mca_mtl_base_module_t *mtl, size_t nprocs,
         if (ep_address_len != sizeof(ep_info[i])) {
             MXM_ERROR("Invalid endpoint address length");
             rc = OMPI_ERROR;
+            free(ep_address);
             goto bail;
         }
 
@@ -445,6 +458,7 @@ int ompi_mtl_mxm_add_procs(struct mca_mtl_base_module_t *mtl, size_t nprocs,
         if (err != MXM_OK) {
             MXM_ERROR("MXM returned connect error: %s\n", mxm_error_string(err));
             rc = OMPI_ERROR;
+            free(ep_address);
             goto bail;
         }
         procs[i]->proc_endpoints[OMPI_PROC_ENDPOINT_TAG_MTL] = endpoint;
@@ -479,6 +493,12 @@ int ompi_mtl_mxm_add_procs(struct mca_mtl_base_module_t *mtl, size_t nprocs,
 
 #endif
 
+#if MXM_API >= MXM_VERSION(3,1)
+    if (ompi_mtl_mxm.bulk_connect) {
+        mxm_ep_wireup(ompi_mtl_mxm.ep);
+    }
+#endif
+
     rc = OMPI_SUCCESS;
 
 bail:
@@ -494,18 +514,32 @@ int ompi_mtl_mxm_del_procs(struct mca_mtl_base_module_t *mtl, size_t nprocs,
 {
     size_t i;
 
+    ompi_communicator_t *comm_world;
+
+    if (ompi_mpi_finalized) {
+        comm_world = &ompi_mpi_comm_world.comm;
+        if (ompi_comm_size(comm_world) > 1) {
+            comm_world->c_coll.coll_barrier(comm_world, comm_world->c_coll.coll_barrier_module);
+        }
+    }
+
+#if MXM_API >= MXM_VERSION(3,1)
+    if (ompi_mtl_mxm.bulk_disconnect &&
+            nprocs == ompi_comm_size(&ompi_mpi_comm_world.comm)) {
+        mxm_ep_powerdown(ompi_mtl_mxm.ep);
+    }
+#endif
+
     /* XXX: Directly accessing the obj_reference_count is an abstraction
      * violation of the object system. We know this needs to be fixed, but
      * are deferring the fix to a later time as it involves a design issue
      * in the way we handle endpoints as objects
      */
     for (i = 0; i < nprocs; ++i) {
-        if (((opal_object_t*)procs[i])->obj_reference_count == 1) {
-            mca_mtl_mxm_endpoint_t *endpoint = (mca_mtl_mxm_endpoint_t*)
-                            procs[i]->proc_endpoints[OMPI_PROC_ENDPOINT_TAG_MTL];
-            mxm_ep_disconnect(endpoint->mxm_conn);
-            OBJ_RELEASE(endpoint);
-        }
+        mca_mtl_mxm_endpoint_t *endpoint = (mca_mtl_mxm_endpoint_t*)
+            procs[i]->proc_endpoints[OMPI_PROC_ENDPOINT_TAG_MTL];
+        mxm_ep_disconnect(endpoint->mxm_conn);
+        OBJ_RELEASE(endpoint);
     }
     return OMPI_SUCCESS;
 }

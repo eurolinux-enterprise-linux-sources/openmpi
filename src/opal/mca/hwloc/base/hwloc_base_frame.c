@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2011-2014 Cisco Systems, Inc.  All rights reserved.
- * Copyright (c) 2013-2014 Intel, Inc. All rights reserved.
+ * Copyright (c) 2013-2015 Intel, Inc. All rights reserved.
  * $COPYRIGHT$
  * 
  * Additional copyrights may follow
@@ -124,7 +124,10 @@ static int opal_hwloc_base_register(mca_base_register_flag_t flags)
 
     opal_hwloc_base_binding_policy = NULL;
     (void) mca_base_var_register("opal", "hwloc", "base", "binding_policy",
-                                 "Policy for binding processes [none | hwthread | core (default) | l1cache | l2cache | l3cache | socket | numa | board] (supported qualifiers: overload-allowed,if-supported)",
+                                 "Policy for binding processes. Allowed values: none, hwthread, core, l1cache, l2cache, "
+                                 "l3cache, socket, numa, board (\"none\" is the default when oversubscribed, \"core\" is "
+                                 "the default when np<=2, and \"socket\" is the default when np>2). Allowed qualifiers: "
+                                 "overload-allowed, if-supported",
                                  MCA_BASE_VAR_TYPE_STRING, NULL, 0, 0, OPAL_INFO_LVL_9,
                                  MCA_BASE_VAR_SCOPE_READONLY, &opal_hwloc_base_binding_policy);
 
@@ -439,6 +442,7 @@ char* opal_hwloc_base_print_locality(opal_hwloc_locality_t locality)
 static void obj_data_const(opal_hwloc_obj_data_t *ptr)
 {
     ptr->available = NULL;
+    ptr->npus_calculated = false;
     ptr->npus = 0;
     ptr->idx = UINT_MAX;
     ptr->num_bound = 0;
@@ -510,48 +514,62 @@ int opal_hwloc_base_set_binding_policy(opal_binding_policy_t *policy, char *spec
 
     /* binding specification */
     if (NULL == spec) {
-        /* default to bind-to core, and that no binding policy was specified */
-        OPAL_SET_BINDING_POLICY(tmp, OPAL_BIND_TO_CORE);
-        tmp &= ~OPAL_BIND_GIVEN;
+        if (opal_hwloc_use_hwthreads_as_cpus) {
+            /* default to bind-to hwthread */
+            OPAL_SET_DEFAULT_BINDING_POLICY(tmp, OPAL_BIND_TO_HWTHREAD);
+        } else {
+            /* default to bind-to core */
+            OPAL_SET_DEFAULT_BINDING_POLICY(tmp, OPAL_BIND_TO_CORE);
+        }
     } else if (0 == strncasecmp(spec, "none", strlen("none"))) {
         OPAL_SET_BINDING_POLICY(tmp, OPAL_BIND_TO_NONE);
     } else {
         tmpvals = opal_argv_split(spec, ':');
-        if (1 < opal_argv_count(tmpvals)) {
-            quals = opal_argv_split(tmpvals[1], ',');
+        if (1 < opal_argv_count(tmpvals) || ':' == spec[0]) {
+            if (':' == spec[0]) {
+                quals = opal_argv_split(&spec[1], ',');
+            } else {
+                quals = opal_argv_split(tmpvals[1], ',');
+            }
             for (i=0; NULL != quals[i]; i++) {
-                if (0 == strcasecmp(quals[i], "if-supported")) {
+                if (0 == strncasecmp(quals[i], "if-supported", strlen(quals[i]))) {
                     tmp |= OPAL_BIND_IF_SUPPORTED;
-                } else if (0 == strcasecmp(quals[i], "overload-allowed")) {
+                } else if (0 == strncasecmp(quals[i], "overload-allowed", strlen(quals[i])) ||
+                           0 == strncasecmp(quals[i], "oversubscribe-allowed", strlen(quals[i]))) {
                     tmp |= OPAL_BIND_ALLOW_OVERLOAD;
                 } else {
                     /* unknown option */
-                    opal_output(0, "Unknown qualifier to orte_process_binding: %s", spec);
+                    opal_output(0, "Unknown qualifier to binding policy: %s", spec);
                     return OPAL_ERR_BAD_PARAM;
                 }
             }
             opal_argv_free(quals);
         }
-        if (0 == strcasecmp(tmpvals[0], "hwthread")) {
-            OPAL_SET_BINDING_POLICY(tmp, OPAL_BIND_TO_HWTHREAD);
-        } else if (0 == strcasecmp(tmpvals[0], "core")) {
+        if (NULL == tmpvals[0] || ':' == spec[0]) {
             OPAL_SET_BINDING_POLICY(tmp, OPAL_BIND_TO_CORE);
-        } else if (0 == strcasecmp(tmpvals[0], "l1cache")) {
-            OPAL_SET_BINDING_POLICY(tmp, OPAL_BIND_TO_L1CACHE);
-        } else if (0 == strcasecmp(tmpvals[0], "l2cache")) {
-            OPAL_SET_BINDING_POLICY(tmp, OPAL_BIND_TO_L2CACHE);
-        } else if (0 == strcasecmp(tmpvals[0], "l3cache")) {
-            OPAL_SET_BINDING_POLICY(tmp, OPAL_BIND_TO_L3CACHE);
-        } else if (0 == strcasecmp(tmpvals[0], "socket")) {
-            OPAL_SET_BINDING_POLICY(tmp, OPAL_BIND_TO_SOCKET);
-        } else if (0 == strcasecmp(tmpvals[0], "numa")) {
-            OPAL_SET_BINDING_POLICY(tmp, OPAL_BIND_TO_NUMA);
-        } else if (0 == strcasecmp(tmpvals[0], "board")) {
-            OPAL_SET_BINDING_POLICY(tmp, OPAL_BIND_TO_BOARD);
+            tmp &= ~OPAL_BIND_GIVEN;
         } else {
-            opal_show_help("help-opal-hwloc-base.txt", "invalid binding_policy", true, "binding", spec);
-            opal_argv_free(tmpvals);
-            return OPAL_ERR_BAD_PARAM;
+            if (0 == strcasecmp(tmpvals[0], "hwthread")) {
+                OPAL_SET_BINDING_POLICY(tmp, OPAL_BIND_TO_HWTHREAD);
+            } else if (0 == strcasecmp(tmpvals[0], "core")) {
+                OPAL_SET_BINDING_POLICY(tmp, OPAL_BIND_TO_CORE);
+            } else if (0 == strcasecmp(tmpvals[0], "l1cache")) {
+                OPAL_SET_BINDING_POLICY(tmp, OPAL_BIND_TO_L1CACHE);
+            } else if (0 == strcasecmp(tmpvals[0], "l2cache")) {
+                OPAL_SET_BINDING_POLICY(tmp, OPAL_BIND_TO_L2CACHE);
+            } else if (0 == strcasecmp(tmpvals[0], "l3cache")) {
+                OPAL_SET_BINDING_POLICY(tmp, OPAL_BIND_TO_L3CACHE);
+            } else if (0 == strcasecmp(tmpvals[0], "socket")) {
+                OPAL_SET_BINDING_POLICY(tmp, OPAL_BIND_TO_SOCKET);
+            } else if (0 == strcasecmp(tmpvals[0], "numa")) {
+                OPAL_SET_BINDING_POLICY(tmp, OPAL_BIND_TO_NUMA);
+            } else if (0 == strcasecmp(tmpvals[0], "board")) {
+                OPAL_SET_BINDING_POLICY(tmp, OPAL_BIND_TO_BOARD);
+            } else {
+                opal_show_help("help-opal-hwloc-base.txt", "invalid binding_policy", true, "binding", spec);
+                opal_argv_free(tmpvals);
+                return OPAL_ERR_BAD_PARAM;
+            }
         }
         opal_argv_free(tmpvals);
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013      Mellanox Technologies, Inc.
+ * Copyright (c) 2013-2015 Mellanox Technologies, Inc.
  *                         All rights reserved.
  *
  * $COPYRIGHT$
@@ -61,6 +61,7 @@
 #include "oshmem/mca/atomic/base/base.h"
 #include "oshmem/mca/memheap/base/base.h"
 #include "oshmem/mca/sshmem/base/base.h"
+#include "oshmem/info/info.h"
 #include "oshmem/proc/proc.h"
 #include "oshmem/proc/proc_group_cache.h"
 #include "oshmem/op/op.h"
@@ -196,11 +197,12 @@ static void* shmem_opal_thread(void* argc)
 }
 #endif
 
-int inGlobalExit;
+int oshmem_shmem_inglobalexit;
+int oshmem_shmem_globalexit_status;
 
 static void sighandler__SIGUSR1(int signum)
 {
-    if (0 != inGlobalExit)
+    if (0 != oshmem_shmem_inglobalexit)
     {
 	return;
     }
@@ -227,6 +229,11 @@ int oshmem_shmem_init(int argc, char **argv, int requested, int *provided)
 
         if (OSHMEM_SUCCESS == ret) {
             oshmem_shmem_initialized = true;
+
+            if (OSHMEM_SUCCESS != shmem_lock_init()) {
+                SHMEM_API_ERROR( "shmem_lock_init() failed");
+                return OSHMEM_ERROR;
+            }
 
             /* this is a collective op, implies barrier */
             MCA_MEMHEAP_CALL(get_all_mkeys());
@@ -258,7 +265,8 @@ int oshmem_shmem_preconnect_all(void)
     /* force qp creation and rkey exchange for memheap. Does not force exchange of static vars */
     if (oshmem_preconnect_all) {
         long val;
-        int nproc = 0;
+        int nproc;
+        int my_pe;
         int i;
 
         val = 0xdeadbeaf;
@@ -271,11 +279,12 @@ int oshmem_shmem_preconnect_all(void)
             SHMEM_API_ERROR("shmem_preconnect_all failed");
             return OSHMEM_ERR_OUT_OF_RESOURCE;
         }
-        nproc = _num_pes();
+
+        nproc = oshmem_num_procs();
+        my_pe = oshmem_my_proc_id();
         for (i = 0; i < nproc; i++) {
-            shmem_long_p(preconnect_value, val, i);
+            shmem_long_p(preconnect_value, val, (my_pe + i) % nproc);
         }
-        shmem_fence();
         shmem_barrier_all();
         SHMEM_API_VERBOSE(5, "Preconnected all PEs");
     }
@@ -298,16 +307,6 @@ static int _shmem_init(int argc, char **argv, int requested, int *provided)
     int ret = OSHMEM_SUCCESS;
     char *error = NULL;
 
-    if (OSHMEM_SUCCESS != (ret = oshmem_proc_init())) {
-        error = "oshmem_proc_init() failed";
-        goto error;
-    }
-
-    /* We need to do this anyway.
-     * This place requires to be reviewed and more elegant way is expected
-     */
-    ompi_proc_local_proc = (ompi_proc_t*) oshmem_proc_local_proc;
-
     /* Register the OSHMEM layer's MCA parameters */
     if (OSHMEM_SUCCESS != (ret = oshmem_shmem_register_params())) {
         error = "oshmem_info_register: oshmem_register_params failed";
@@ -319,6 +318,18 @@ static int _shmem_init(int argc, char **argv, int requested, int *provided)
     shmem_api_logger_output = opal_output_open(NULL);
     opal_output_set_verbosity(shmem_api_logger_output,
                               oshmem_shmem_api_verbose);
+
+    /* initialize info */
+    if (OSHMEM_SUCCESS != (ret = oshmem_info_init())) {
+        error = "oshmem_info_init() failed";
+        goto error;
+    }
+
+    /* initialize proc */
+    if (OSHMEM_SUCCESS != (ret = oshmem_proc_init())) {
+        error = "oshmem_proc_init() failed";
+        goto error;
+    }
 
     if (OSHMEM_SUCCESS != (ret = oshmem_group_cache_list_init())) {
         error = "oshmem_group_cache_list_init() failed";
@@ -362,11 +373,8 @@ static int _shmem_init(int argc, char **argv, int requested, int *provided)
         goto error;
     }
 
-    /* identify the architectures of remote procs and setup
-     * their datatype convertors, if required
-     */
-    if (OSHMEM_SUCCESS != (ret = oshmem_proc_set_arch())) {
-        error = "oshmem_proc_set_arch failed";
+    if (OSHMEM_SUCCESS != (ret = oshmem_proc_group_init())) {
+	error = "oshmem_proc_group_init() failed";
         goto error;
     }
 
@@ -375,20 +383,6 @@ static int _shmem_init(int argc, char **argv, int requested, int *provided)
     if (OSHMEM_SUCCESS != ret) {
         error = "SPML control failed";
         goto error;
-    }
-
-    /* There is issue with call add_proc twice so
-     * we need to use btl info got from PML add_procs() before call of SPML add_procs()
-     */
-    {
-        ompi_proc_t** procs = NULL;
-        size_t nprocs = 0;
-        procs = ompi_proc_world(&nprocs);
-        while (nprocs--) {
-            oshmem_group_all->proc_array[nprocs]->proc_endpoints[OMPI_PROC_ENDPOINT_TAG_BML] =
-                    procs[nprocs]->proc_endpoints[OMPI_PROC_ENDPOINT_TAG_BML];
-        }
-        free(procs);
     }
 
     ret =
@@ -434,11 +428,6 @@ static int _shmem_init(int argc, char **argv, int requested, int *provided)
     /* This call should be done after memheap initialization */
     if (OSHMEM_SUCCESS != (ret = mca_scoll_enable())) {
         error = "mca_scoll_enable() failed";
-        goto error;
-    }
-
-    if (OSHMEM_SUCCESS != shmem_lock_init()) {
-        error = "shmem_lock_init() failed";
         goto error;
     }
 

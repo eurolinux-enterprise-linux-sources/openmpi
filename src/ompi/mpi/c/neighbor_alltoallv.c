@@ -13,6 +13,8 @@
  * Copyright (c) 2007      Cisco Systems, Inc.  All rights reserved.
  * Copyright (c) 2012-2013 Los Alamos National Security, LLC.  All rights
  *                         reserved.
+ * Copyright (c) 2014      Research Organization for Information Science
+ *                         and Technology (RIST). All rights reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -29,6 +31,7 @@
 #include "ompi/errhandler/errhandler.h"
 #include "ompi/datatype/ompi_datatype.h"
 #include "ompi/memchecker.h"
+#include "ompi/communicator/comm_helpers.h"
 
 #if OPAL_HAVE_WEAK_SYMBOLS && OMPI_PROFILING_DEFINES
 #pragma weak MPI_Neighbor_alltoallv = PMPI_Neighbor_alltoallv
@@ -46,29 +49,39 @@ int MPI_Neighbor_alltoallv(const void *sendbuf, const int sendcounts[], const in
                            const int recvcounts[], const int rdispls[],
                            MPI_Datatype recvtype, MPI_Comm comm)
 {
-    int i, size, err;
+    int i, err;
+    int indegree, outdegree, weighted;
 
     MEMCHECKER(
         ptrdiff_t recv_ext;
         ptrdiff_t send_ext;
 
-        size = ompi_comm_remote_size(comm);
-        ompi_datatype_type_extent(recvtype, &recv_ext);
-        ompi_datatype_type_extent(sendtype, &send_ext);
-
-        memchecker_datatype(sendtype);
-        memchecker_datatype(recvtype);
         memchecker_comm(comm);
 
-        for ( i = 0; i < size; i++ ) {
-            /* check if send chunks are defined. */
-            memchecker_call(&opal_memchecker_base_isdefined,
-                            (char *)(sendbuf)+sdispls[i]*send_ext,
-                            sendcounts[i], sendtype);
-            /* check if receive chunks are addressable. */
-            memchecker_call(&opal_memchecker_base_isaddressable,
-                            (char *)(recvbuf)+rdispls[i]*recv_ext,
-                            recvcounts[i], recvtype);
+        if (MPI_IN_PLACE != sendbuf) {
+            memchecker_datatype(sendtype);
+            ompi_datatype_type_extent(recvtype, &recv_ext);
+        }
+
+        memchecker_datatype(recvtype);
+        ompi_datatype_type_extent(sendtype, &send_ext);
+
+        err = ompi_comm_neighbors_count(comm, &indegree, &outdegree, &weighted);
+        if (MPI_SUCCESS == err) {
+            if (MPI_IN_PLACE != sendbuf) {
+                for ( i = 0; i < outdegree; i++ ) {
+                    /* check if send chunks are defined. */
+                    memchecker_call(&opal_memchecker_base_isdefined,
+                                    (char *)(sendbuf)+sdispls[i]*send_ext,
+                                    sendcounts[i], sendtype);
+                }
+            }
+            for ( i = 0; i < indegree; i++ ) {
+                /* check if receive chunks are addressable. */
+                memchecker_call(&opal_memchecker_base_isaddressable,
+                                (char *)(recvbuf)+rdispls[i]*recv_ext,
+                                recvcounts[i], recvtype);
+            }
         }
     );
 
@@ -96,20 +109,14 @@ int MPI_Neighbor_alltoallv(const void *sendbuf, const int sendcounts[], const in
             return OMPI_ERRHANDLER_INVOKE(comm, MPI_ERR_ARG, FUNC_NAME);
         }
 
-        /* We always define the remote group to be the same as the local
-           group in the case of an intracommunicator, so it's safe to
-           get the size of the remote group here for both intra- and
-           intercommunicators */
-
-        size = ompi_comm_remote_size(comm);
-        for (i = 0; i < size; ++i) {
-            if (recvcounts[i] < 0) {
-                err = MPI_ERR_COUNT;
-            } else if (MPI_DATATYPE_NULL == recvtype || NULL == recvtype) {
-                err = MPI_ERR_TYPE;
-            } else {
-                OMPI_CHECK_DATATYPE_FOR_SEND(err, sendtype, sendcounts[i]);
-            }
+        err = ompi_comm_neighbors_count(comm, &indegree, &outdegree, &weighted);
+        OMPI_ERRHANDLER_CHECK(err, comm, err, FUNC_NAME);
+        for (i = 0; i < outdegree; ++i) {
+            OMPI_CHECK_DATATYPE_FOR_SEND(err, sendtype, sendcounts[i]);
+            OMPI_ERRHANDLER_CHECK(err, comm, err, FUNC_NAME);
+        }
+        for (i = 0; i < indegree; ++i) {
+            OMPI_CHECK_DATATYPE_FOR_RECV(err, recvtype, recvcounts[i]);
             OMPI_ERRHANDLER_CHECK(err, comm, err, FUNC_NAME);
         }
     }

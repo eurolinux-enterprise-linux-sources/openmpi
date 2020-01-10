@@ -172,6 +172,8 @@ typedef int32_t orte_job_state_t;
 
 #define ORTE_JOB_STATE_REPORT_PROGRESS         (ORTE_JOB_STATE_ERROR + 17)  /* report launch progress - not an error */
 #define ORTE_JOB_STATE_ALLOC_FAILED            (ORTE_JOB_STATE_ERROR + 18)  /* job failed to obtain an allocation */
+#define ORTE_JOB_STATE_MAP_FAILED              (ORTE_JOB_STATE_ERROR + 19)  /* job failed to map */
+#define ORTE_JOB_STATE_CANNOT_LAUNCH           (ORTE_JOB_STATE_ERROR + 20)  /* resources were busy and so the job cannot be launched */
 
 /* Define a boundary so that external developers
  * have a starting point for defining their own
@@ -204,6 +206,7 @@ orte_node_state_t) */
 #define ORTE_NODE_STATE_DO_NOT_USE     4
 /** Node is up, but not part of the node pool for jobs */
 #define ORTE_NODE_STATE_NOT_INCLUDED   5
+#define ORTE_NODE_STATE_ADDED         7  // Node was dynamically added to pool
 
 /* Define a boundary so that external developers
  * have a starting point for defining their own

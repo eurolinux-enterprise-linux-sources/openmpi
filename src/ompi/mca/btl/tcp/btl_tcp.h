@@ -10,6 +10,8 @@
  * Copyright (c) 2004-2005 The Regents of the University of California.
  *                         All rights reserved.
  * Copyright (c) 2010-2011 Cisco Systems, Inc.  All rights reserved.
+ * Copyright (c) 2015      Research Organization for Information Science
+ *                         and Technology (RIST). All rights reserved.
  * $COPYRIGHT$
  * 
  * Additional copyrights may follow
@@ -31,6 +33,9 @@
 #endif
 #ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h>
+#endif
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
 #endif
 
 /* Open MPI includes */
@@ -62,7 +67,6 @@ struct mca_btl_tcp_component_t {
     int tcp_free_list_inc;                  /**< number of elements to alloc when growing free lists */
     int tcp_endpoint_cache;                 /**< amount of cache on each endpoint */
     opal_hash_table_t tcp_procs;            /**< hash table of tcp proc structures */
-    opal_list_t tcp_events;                 /**< list of pending tcp events */
     opal_mutex_t tcp_lock;                  /**< lock for accessing module state */
 
     opal_event_t tcp_recv_event;            /**< recv event for IPv4 listen socket */
@@ -118,6 +122,7 @@ struct mca_btl_tcp_module_t {
     struct sockaddr_storage tcp_ifaddr; /**< BTL interface address */
     uint32_t           tcp_ifmask;  /**< BTL interface netmask */
     opal_list_t        tcp_endpoints;
+    mca_btl_base_module_error_cb_fn_t tcp_error_cb;  /**< Upper layer error callback */
 #if MCA_BTL_TCP_STATISTICS
     size_t tcp_bytes_sent;
     size_t tcp_bytes_recv;
@@ -130,7 +135,7 @@ extern mca_btl_tcp_module_t mca_btl_tcp_module;
 #if defined(__WINDOWS__)
 #define CLOSE_THE_SOCKET(socket)   closesocket(socket)
 #else
-#define CLOSE_THE_SOCKET(socket)   close(socket)
+#define CLOSE_THE_SOCKET(socket)   {(void)shutdown(socket, SHUT_RDWR); (void)close(socket);}
 #endif  /* defined(__WINDOWS__) */
 
 /**

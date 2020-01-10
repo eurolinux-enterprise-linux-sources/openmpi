@@ -1,3 +1,21 @@
+/*
+ * Copyright (c) 2004-2007 The Trustees of Indiana University and Indiana
+ *                         University Research and Technology
+ *                         Corporation.  All rights reserved.
+ * Copyright (c) 2004-2005 The University of Tennessee and The University
+ *                         of Tennessee Research Foundation.  All rights
+ *                         reserved.
+ * Copyright (c) 2004-2005 High Performance Computing Center Stuttgart, 
+ *                         University of Stuttgart.  All rights reserved.
+ * Copyright (c) 2004-2005 The Regents of the University of California.
+ *                         All rights reserved.
+ * $COPYRIGHT$
+ * 
+ * Additional copyrights may follow
+ * 
+ * $HEADER$
+ */
+
 #include "ompi_config.h"
 
 #ifdef HAVE_TARGETCONDITIONALS_H
@@ -28,7 +46,7 @@ JNIEXPORT jlong JNICALL Java_mpi_Message_mProbe(
     return (jlong)message;
 }
 
-JNIEXPORT jlongArray JNICALL Java_mpi_Message_imProbe(
+JNIEXPORT jobject JNICALL Java_mpi_Message_imProbe(
         JNIEnv *env, jobject jthis, jint source, jint tag, jlong jComm)
 {
     MPI_Comm comm = (MPI_Comm)jComm;
@@ -46,20 +64,21 @@ JNIEXPORT jlongArray JNICALL Java_mpi_Message_imProbe(
 
 JNIEXPORT jlong JNICALL Java_mpi_Message_mRecv(
         JNIEnv *env, jobject jthis, jlong jMessage, jobject buf, jboolean db,
-        jint offset, jint count, jlong jType, jint bType, jlongArray jStatus)
+        jint off, jint count, jlong jType, jint bType, jlongArray jStatus)
 {
     MPI_Message  message = (MPI_Message)jMessage;
     MPI_Datatype type    = (MPI_Datatype)jType;
 
-    void *bufPtr, *bufBase;
-    bufPtr = ompi_java_getBufPtr(&bufBase, env, buf, db, bType, offset);
+    void *ptr;
+    ompi_java_buffer_t *item;
+    ompi_java_getWritePtr(&ptr, &item, env, buf, db, count, type);
 
     MPI_Status status;
-    int rc = MPI_Mrecv(bufPtr, count, type, &message, &status);
+    int rc = MPI_Mrecv(ptr, count, type, &message, &status);
     ompi_java_exceptionCheck(env, rc);
 
     ompi_java_status_set(env, jStatus, &status);
-    ompi_java_releaseBufPtr(env, buf, db, bufBase, bType);
+    ompi_java_releaseWritePtr(ptr, item, env, buf, db, off, count, type, bType);
     return (jlong)message;
 }
 

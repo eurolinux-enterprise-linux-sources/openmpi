@@ -10,7 +10,7 @@ dnl Copyright (c) 2004-2005 High Performance Computing Center Stuttgart,
 dnl                         University of Stuttgart.  All rights reserved.
 dnl Copyright (c) 2004-2005 The Regents of the University of California.
 dnl                         All rights reserved.
-dnl Copyright (c) 2006-2010 Cisco Systems, Inc.  All rights reserved.
+dnl Copyright (c) 2006-2015 Cisco Systems, Inc.  All rights reserved.
 dnl Copyright (c) 2007      Sun Microsystems, Inc.  All rights reserved.
 dnl Copyright (c) 2009      IBM Corporation.  All rights reserved.
 dnl Copyright (c) 2009      Los Alamos National Security, LLC.  All rights
@@ -69,6 +69,13 @@ AS_IF([test "$with_cuda" = "no" -o "x$with_cuda" = "x"],
                             opal_cuda_incdir="$with_cuda/include"
                             AC_MSG_RESULT([found ($opal_cuda_incdir/cuda.h)])])])])])
 
+dnl We cannot have CUDA support without dlopen support.  HOWEVER, at
+dnl this point in configure, we can't know whether the DL framework
+dnl has been configured or not yet (it likely hasn't, since CUDA is a
+dnl common framework, and likely configured first).  So we have to
+dnl defer this check until later (see the OPAL_CHECK_CUDA_AFTER_OPAL_DL m4
+dnl macro, below).  :-(
+
 # If we have CUDA support, check to see if we have CUDA 4.1 support
 AS_IF([test "$opal_check_cuda_happy"="yes"],
     AC_CHECK_MEMBER([struct CUipcMemHandle_st.reserved], [CUDA_SUPPORT_41=1], [CUDA_SUPPORT_41=0],
@@ -93,6 +100,13 @@ AC_COMPILE_IFELSE(
         [CUDA_VERSION_60_OR_GREATER=1],
         [CUDA_VERSION_60_OR_GREATER=0])
 
+# If we have CUDA support, check to see if we have support for cuPointerGetAttributes
+# which was first introduced in CUDA 7.0.
+AS_IF([test "$opal_check_cuda_happy"="yes"],
+    AC_CHECK_DECL([cuPointerGetAttributes], [CUDA_GET_ATTRIBUTES=1], [CUDA_GET_ATTRIBUTES=0],
+        [#include <$opal_cuda_incdir/cuda.h>]),
+    [])
+
 AC_MSG_CHECKING([if have cuda support])
 if test "$opal_check_cuda_happy" = "yes"; then
     AC_MSG_RESULT([yes (-I$with_cuda)])
@@ -116,10 +130,32 @@ AM_CONDITIONAL([OPAL_cuda_sync_memops], [test "x$CUDA_SYNC_MEMOPS" = "x1"])
 AC_DEFINE_UNQUOTED([OPAL_CUDA_SYNC_MEMOPS],$CUDA_SYNC_MEMOPS,
                    [Whether we have CUDA CU_POINTER_ATTRIBUTE_SYNC_MEMOPS support available])
 
+AM_CONDITIONAL([OPAL_cuda_get_attributes], [test "x$CUDA_GET_ATTRIBUTES" = "x1"])
+AC_DEFINE_UNQUOTED([OPAL_CUDA_GET_ATTRIBUTES],$CUDA_GET_ATTRIBUTES,
+                   [Whether we have CUDA cuPointerGetAttributes function available])
+
 # There is nothing specific we can check for to see if GPU Direct RDMA is available.
 # Therefore, we check to see whether we have CUDA 6.0 or later.
 AM_CONDITIONAL([OPAL_cuda_gdr_support], [test "x$CUDA_VERSION_60_OR_GREATER" = "x1"])
 AC_DEFINE_UNQUOTED([OPAL_CUDA_GDR_SUPPORT],$CUDA_VERSION_60_OR_GREATER,
                    [Whether we have CUDA GDR support available])
 
+])
+
+dnl
+dnl CUDA support requires DL support (it dynamically opens the CUDA
+dnl library at run time).  But we do not check for OPAL DL support
+dnl until lafter the initial OPAL_CHECK_CUDA is called.  So put the
+dnl CUDA+DL check in a separate macro that can be called after the DL MCA
+dnl framework checks in the top-level configure.ac.
+dnl
+AC_DEFUN([OPAL_CHECK_CUDA_AFTER_OPAL_DL],[
+
+    # We cannot have CUDA support without OPAL DL support.  Error out
+    # if the user wants CUDA but we do not have OPAL DL support.
+    AS_IF([test $OPAL_HAVE_DL_SUPPORT -eq 0 && \
+           test "$opal_check_cuda_happy" = "yes"],
+          [AC_MSG_WARN([--with-cuda was specified, but dlopen support is disabled.])
+           AC_MSG_WARN([You must reconfigure Open MPI with dlopen ("dl") support.])
+           AC_MSG_ERROR([Cannot continue.])])
 ])

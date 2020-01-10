@@ -13,8 +13,10 @@
  * Copyright (c) 2009-2010 Cisco Systems, Inc.  All rights reserved.
  * Copyright (c) 2010-2013 Los Alamos National Security, LLC.
  *                         All rights reserved.
- * Copyright (c) 2011      NVIDIA Corporation.  All rights reserved.
+ * Copyright (c) 2011-2014 NVIDIA Corporation.  All rights reserved.
  * Copyright (c) 2010-2012 IBM Corporation.  All rights reserved.
+ * Copyright (c) 2014      Research Organization for Information Science
+ *                         and Technology (RIST). All rights reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -62,6 +64,9 @@
 #include "btl_sm.h"
 #include "btl_sm_frag.h"
 #include "btl_sm_fifo.h"
+#if OPAL_CUDA_SUPPORT
+#include "ompi/mca/common/cuda/common_cuda.h"
+#endif /* OPAL_CUDA_SUPPORT */
 
 static int mca_btl_sm_component_open(void);
 static int mca_btl_sm_component_close(void);
@@ -139,10 +144,23 @@ static inline unsigned int mca_btl_sm_param_register_uint(
     return *storage;
 }
 
+#if OMPI_BTL_SM_HAVE_KNEM || OMPI_BTL_SM_HAVE_CMA
+static void mca_btl_sm_dummy_get (void)
+{
+    /* If a backtrace ends at this function something has gone wrong with
+     * the btl bootstrapping. Check that the btl_get function was set to
+     * something reasonable. */
+    abort ();
+}
+#endif
+
 static int mca_btl_sm_component_verify(void) {
 #if OMPI_BTL_SM_HAVE_KNEM || OMPI_BTL_SM_HAVE_CMA
     if (mca_btl_sm_component.use_knem || mca_btl_sm_component.use_cma) {
         mca_btl_sm.super.btl_flags |= MCA_BTL_FLAGS_GET;
+        /* set a dummy value for btl_get to prevent mca_btl_base_param_verify from
+         * unsetting the MCA_BTL_FLAGS_GET flags. */
+        mca_btl_sm.super.btl_get = (mca_btl_base_module_get_fn_t) mca_btl_sm_dummy_get;
     }
 
     if (mca_btl_sm_component.use_knem && mca_btl_sm_component.use_cma) {
@@ -365,6 +383,10 @@ static int mca_btl_sm_component_close(void)
 
 CLEANUP:
 
+#if OPAL_CUDA_SUPPORT
+    mca_common_cuda_fini();
+#endif /* OPAL_CUDA_SUPPORT */
+
     /* return */
     return return_value;
 }
@@ -411,7 +433,7 @@ create_and_attach(mca_btl_sm_component_t *comp_ptr,
                                                size_ctl_structure,
                                                data_seg_alignment))) {
         opal_output(0, "create_and_attach: unable to create shared memory "
-                    "BTL coordinating strucure :: size %lu \n",
+                    "BTL coordinating structure :: size %lu \n",
                     (unsigned long)size);
         return OMPI_ERROR;
     }
@@ -569,6 +591,7 @@ create_rndv_file(mca_btl_sm_component_t *comp_ptr,
     int rc = OMPI_SUCCESS;
     int fd = -1;
     char *fname = NULL;
+    char *tmpfname = NULL;
     /* used as a temporary store so we can extract shmem_ds info */
     mca_common_sm_module_t *tmp_modp = NULL;
 
@@ -626,7 +649,12 @@ create_rndv_file(mca_btl_sm_component_t *comp_ptr,
 
     /* now just write the contents of tmp_modp->shmem_ds to the full
      * sizeof(opal_shmem_ds_t), so we know where the mpool_res_size starts. */
-    if (-1 == (fd = open(fname, O_CREAT | O_RDWR, 0600))) {
+    asprintf(&tmpfname, "%s.tmp", fname);
+    if (NULL == tmpfname) {
+        rc = OMPI_ERR_OUT_OF_RESOURCE;
+        goto out;
+    }
+    if (-1 == (fd = open(tmpfname, O_CREAT | O_RDWR, 0600))) {
         int err = errno;
         opal_show_help("help-mpi-btl-sm.txt", "sys call fail", true,
                        "open(2)", strerror(err), err);
@@ -652,10 +680,19 @@ create_rndv_file(mca_btl_sm_component_t *comp_ptr,
         /* only do this for the mpool case */
         OBJ_RELEASE(tmp_modp);
     }
+    (void)close(fd);
+    fd = -1;
+    if (0 != rename(tmpfname, fname)) {
+        rc = OMPI_ERR_IN_ERRNO;
+        goto out;
+    }
 
 out:
     if (-1 != fd) {
         (void)close(fd);
+    }
+    if (NULL != tmpfname) {
+        free(tmpfname);
     }
     return rc;
 }
@@ -709,6 +746,10 @@ mca_btl_sm_component_init(int *num_btls,
     /* lookup/create shared memory pool only when used */
     mca_btl_sm_component.sm_mpool = NULL;
     mca_btl_sm_component.sm_mpool_base = NULL;
+
+#if OPAL_CUDA_SUPPORT
+    mca_common_cuda_stage_one_init();
+#endif /* OPAL_CUDA_SUPPORT */
 
     /* if no session directory was created, then we cannot be used */
     if (NULL == ompi_process_info.job_session_dir) {
@@ -885,6 +926,16 @@ mca_btl_sm_component_init(int *num_btls,
            so no problems with accidentally overwriting this set earlier */
         mca_btl_sm.super.btl_get = mca_btl_sm_get_sync;
     }
+#else
+    /* If the user explicitly asked for CMA and we can't provide it
+     *   error */
+    if (mca_btl_sm_component.use_cma > 0) {
+        mca_btl_sm.super.btl_flags &= ~MCA_BTL_FLAGS_GET;
+        opal_show_help("help-mpi-btl-sm.txt",
+                       "CMA requested but not available",
+                       true, ompi_process_info.nodename);
+        return NULL;
+    }
 #endif /* OMPI_BTL_SM_HAVE_CMA */
 
     return btls;
@@ -910,7 +961,14 @@ mca_btl_sm_component_init(int *num_btls,
     /* If "use_knem" is positive, then it's an error if knem support
        is not available -- deactivate the sm btl. */
     if (mca_btl_sm_component.use_knem > 0) {
+        opal_show_help("help-mpi-btl-sm.txt",
+                       "knem requested but not available",
+                       true, ompi_process_info.nodename);
         return NULL;
+    } else if (0 == mca_btl_sm_component.use_cma) {
+        /* disable get when not using knem or cma */
+        mca_btl_sm.super.btl_get = NULL;
+        mca_btl_sm.super.btl_flags &= ~MCA_BTL_FLAGS_GET;
     }
 
     /* Otherwise, use_knem was 0 (and we didn't get here) or use_knem

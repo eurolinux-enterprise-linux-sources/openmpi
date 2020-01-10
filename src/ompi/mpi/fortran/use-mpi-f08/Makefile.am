@@ -1,12 +1,14 @@
 # -*- makefile -*-
 #
-# Copyright (c) 2006-2014 Cisco Systems, Inc.  All rights reserved.
-# Copyright (c) 2012      The University of Tennessee and The University
+# Copyright (c) 2006-2015 Cisco Systems, Inc.  All rights reserved.
+# Copyright (c) 2012-2013 The University of Tennessee and The University
 #                         of Tennessee Research Foundation.  All rights
 #                         reserved.
-# Copyright (c) 2012      Inria.  All rights reserved.
+# Copyright (c) 2012-2013 Inria.  All rights reserved.
 # Copyright (c) 2013      Los Alamos National Security, LLC. All rights
 #                         reserved.
+# Copyright (c) 2015      Research Organization for Information Science
+#                         and Technology (RIST). All rights reserved.
 #
 # $COPYRIGHT$
 # 
@@ -15,17 +17,72 @@
 # $HEADER$
 #
 
+include $(top_srcdir)/Makefile.man-page-rules
+
 # This Makefile is only relevant if we're building the "use mpi_f08"
 # MPI bindings.
 if OMPI_BUILD_FORTRAN_USEMPIF08_BINDINGS
 
-AM_FCFLAGS = -I$(top_builddir)/ompi/include -I$(top_srcdir)/ompi/include \
-             $(OMPI_FC_MODULE_FLAG)$(top_builddir)/ompi/mpi/fortran/base \
+AM_FCFLAGS = -I$(top_builddir)/ompi/include \
+             -I$(top_srcdir)/ompi/include \
              $(OMPI_FC_MODULE_FLAG)$(top_builddir)/ompi/$(OMPI_FORTRAN_USEMPI_DIR) \
              $(OMPI_FC_MODULE_FLAG). \
              -I$(top_srcdir) $(FCFLAGS_f90)
 
+MOSTLYCLEANFILES = *.mod
+
 lib_LTLIBRARIES = libmpi_usempif08.la
+
+module_sentinel_file = \
+        libforce_usempif08_internal_modules_to_be_built.la
+
+noinst_LTLIBRARIES = $(module_sentinel_file)
+
+mpi-f08.lo: $(module_sentinel_file)
+mpi-f08.lo: mpi-f08.F90
+mpi-f08.lo: mpi-f-interfaces-bind.h pmpi-f-interfaces-bind.h
+mpi-f08.lo: attr-fn-f08-callback-interfaces.h
+mpi-f08.lo: conversion-fn-null-f08-interface.h
+mpi-f08.lo: sizeof_f08.h
+
+#
+# *sizeof_f08.* are generated based on some results from
+# configure tests.
+#
+
+sizeof_pl=$(top_srcdir)/ompi/mpi/fortran/base/gen-mpi-sizeof.pl
+
+sizeof_f08.h: $(top_builddir)/config.status
+sizeof_f08.h: $(sizeof_pl)
+sizeof_f08.h:
+	$(OMPI_V_GEN) $(sizeof_pl) \
+	    --header=$@ --ierror=optional \
+	    --maxrank=$(OMPI_FORTRAN_MAX_ARRAY_RANK) \
+	    --generate=$(OMPI_FORTRAN_BUILD_SIZEOF) \
+	    --real16=$(OMPI_HAVE_FORTRAN_REAL16) \
+	    --complex32=$(OMPI_HAVE_FORTRAN_COMPLEX32)
+
+sizeof_f08.f90: $(top_builddir)/config.status
+sizeof_f08.f90: $(sizeof_pl)
+sizeof_f08.f90:
+	$(OMPI_V_GEN) $(sizeof_pl) \
+	    --impl=$@ --ierror=optional --mpi \
+	    --maxrank=$(OMPI_FORTRAN_MAX_ARRAY_RANK) \
+	    --generate=$(OMPI_FORTRAN_BUILD_SIZEOF) \
+	    --real16=$(OMPI_HAVE_FORTRAN_REAL16) \
+	    --complex32=$(OMPI_HAVE_FORTRAN_COMPLEX32)
+
+profile/psizeof_f08.f90: $(top_builddir)/config.status
+profile/psizeof_f08.f90: $(sizeof_pl)
+profile/psizeof_f08.f90:
+	$(OMPI_V_GEN) $(sizeof_pl) \
+	    --impl=$@ --ierror=optional --pmpi \
+	    --maxrank=$(OMPI_FORTRAN_MAX_ARRAY_RANK) \
+	    --generate=$(OMPI_FORTRAN_BUILD_SIZEOF) \
+	    --real16=$(OMPI_HAVE_FORTRAN_REAL16) \
+	    --complex32=$(OMPI_HAVE_FORTRAN_COMPLEX32)
+
+CLEANFILES += sizeof_f08.h sizeof_f08.f90 profile/psizeof_f08.f90
 
 mpi_api_files = \
         abort_f08.F90 \
@@ -33,6 +90,8 @@ mpi_api_files = \
         add_error_class_f08.F90 \
         add_error_code_f08.F90 \
         add_error_string_f08.F90 \
+        aint_add_f08.F90 \
+        aint_diff_f08.F90 \
         allgather_f08.F90 \
         allgatherv_f08.F90 \
         alloc_mem_f08.F90 \
@@ -44,6 +103,7 @@ mpi_api_files = \
         bcast_f08.F90 \
         bsend_f08.F90 \
         bsend_init_f08.F90 \
+        buffer_detach.c \
         buffer_attach_f08.F90 \
         buffer_detach_f08.F90 \
         cancel_f08.F90 \
@@ -89,6 +149,7 @@ mpi_api_files = \
         comm_spawn_f08.F90 \
         comm_spawn_multiple_f08.F90 \
         comm_split_f08.F90 \
+        comm_split_type_f08.F90 \
         comm_test_inter_f08.F90 \
         compare_and_swap_f08.F90 \
         dist_graph_create_adjacent_f08.F90 \
@@ -275,12 +336,17 @@ mpi_api_files = \
         waitany_f08.F90 \
         wait_f08.F90 \
         waitsome_f08.F90 \
+        win_allocate_f08.F90 \
+        win_allocate_shared_f08.F90 \
+        win_attach_f08.F90 \
         win_call_errhandler_f08.F90 \
         win_complete_f08.F90 \
+        win_create_dynamic_f08.F90 \
         win_create_errhandler_f08.F90 \
         win_create_f08.F90 \
         win_create_keyval_f08.F90 \
         win_delete_attr_f08.F90 \
+        win_detach_f08.F90 \
         win_fence_f08.F90 \
         win_flush_f08.F90 \
         win_flush_all_f08.F90 \
@@ -293,13 +359,17 @@ mpi_api_files = \
         win_get_group_f08.F90 \
         win_get_name_f08.F90 \
         win_lock_f08.F90 \
+        win_lock_all_f08.F90 \
         win_post_f08.F90 \
         win_set_attr_f08.F90 \
         win_set_errhandler_f08.F90 \
         win_set_name_f08.F90 \
+        win_shared_query_f08.F90 \
         win_start_f08.F90 \
+        win_sync_f08.F90 \
         win_test_f08.F90 \
         win_unlock_f08.F90 \
+        win_unlock_all_f08.F90 \
         win_wait_f08.F90
 
 if OMPI_PROVIDE_MPI_FILE_INTERFACE
@@ -373,6 +443,8 @@ pmpi_api_files = \
         profile/padd_error_class_f08.F90 \
         profile/padd_error_code_f08.F90 \
         profile/padd_error_string_f08.F90 \
+        profile/paint_add_f08.F90 \
+        profile/paint_diff_f08.F90 \
         profile/pallgather_f08.F90 \
         profile/pallgatherv_f08.F90 \
         profile/palloc_mem_f08.F90 \
@@ -429,6 +501,7 @@ pmpi_api_files = \
         profile/pcomm_spawn_f08.F90 \
         profile/pcomm_spawn_multiple_f08.F90 \
         profile/pcomm_split_f08.F90 \
+        profile/pcomm_split_type_f08.F90 \
         profile/pcomm_test_inter_f08.F90 \
         profile/pcompare_and_swap_f08.F90 \
         profile/pdims_create_f08.F90 \
@@ -615,6 +688,8 @@ pmpi_api_files = \
         profile/pwaitany_f08.F90 \
         profile/pwait_f08.F90 \
         profile/pwaitsome_f08.F90 \
+        profile/pwin_allocate_f08.F90 \
+        profile/pwin_allocate_shared_f08.F90 \
         profile/pwin_call_errhandler_f08.F90 \
         profile/pwin_complete_f08.F90 \
         profile/pwin_create_errhandler_f08.F90 \
@@ -633,13 +708,17 @@ pmpi_api_files = \
         profile/pwin_get_group_f08.F90 \
         profile/pwin_get_name_f08.F90 \
         profile/pwin_lock_f08.F90 \
+        profile/pwin_lock_all_f08.F90 \
         profile/pwin_post_f08.F90 \
         profile/pwin_set_attr_f08.F90 \
         profile/pwin_set_errhandler_f08.F90 \
         profile/pwin_set_name_f08.F90 \
+        profile/pwin_shared_query_f08.F90 \
         profile/pwin_start_f08.F90 \
+        profile/pwin_sync_f08.F90 \
         profile/pwin_test_f08.F90 \
         profile/pwin_unlock_f08.F90 \
+        profile/pwin_unlock_all_f08.F90 \
         profile/pwin_wait_f08.F90
 
 if OMPI_PROVIDE_MPI_FILE_INTERFACE
@@ -705,31 +784,39 @@ endif
 libmpi_usempif08_la_SOURCES = \
         $(mpi_api_files) \
         $(pmpi_api_files) \
-        mpi-f08-sizeof.F90 \
         mpi-f-interfaces-bind.h \
         pmpi-f-interfaces-bind.h \
+        attr-fn-f08-callback-interfaces.h \
+        conversion-fn-null-f08-interface.h \
         mpi-f08.F90 \
+        mpi-f-interfaces-bind.h pmpi-f-interfaces-bind.h \
+        attr-fn-f08-callback-interfaces.h \
+        conversion-fn-null-f08-interface.h \
         constants.h \
         constants.c
+
+# These are generated; do not ship them
+nodist_libmpi_usempif08_la_SOURCES =
+
+if BUILD_FORTRAN_SIZEOF
+SIZEOF_H = sizeof_f08.h
+nodist_libmpi_usempif08_la_SOURCES += \
+        sizeof_f08.h \
+        sizeof_f08.f90 \
+        profile/psizeof_f08.f90
+endif
 
 #
 # Include the mpi_f08-based MPI extensions in libmpi_usempif08, too.
 #
 
-module_sentinel_file = \
-        $(top_builddir)/ompi/mpi/fortran/base/libforce_usempif08_internal_modules_to_be_built.la
-
 libmpi_usempif08_la_LIBADD = \
         $(module_sentinel_file) \
         $(OMPI_MPIEXT_USEMPIF08_LIBS) \
+        $(top_builddir)/ompi/mpi/fortran/mpif-h/libmpi_mpifh.la \
         $(top_builddir)/ompi/libmpi.la
+libmpi_usempif08_la_DEPENDENCIES = $(module_sentinel_file)
 libmpi_usempif08_la_LDFLAGS = -version-info $(libmpi_usempif08_so_version)
-
-#
-# Clean up all module files
-#
-
-MOSTLYCLEANFILES = *.mod
 
 #
 # Automake doesn't do Fortran dependency analysis, so must list them
@@ -742,13 +829,43 @@ pmpi_api_lo_files = $(pmpi_api_files:.F90=.lo)
 $(mpi_api_lo_files): mpi-f08.lo
 $(pmpi_api_lo_files): mpi-f08.lo
 
-mpi-f08-sizeof.lo: mpi-f08-sizeof.F90
-
-mpi-f08.lo: $(module_sentinel_file)
-mpi-f08.lo: mpi-f08-sizeof.lo
-mpi-f08.lo: mpi-f08.F90 
+mpi-f08.lo: $(module_sentinel_file) $(SIZEOF_H)
 mpi-f08.lo: mpi-f-interfaces-bind.h pmpi-f-interfaces-bind.h
+mpi-f08.lo: attr-fn-f08-callback-interfaces.h
+mpi-f08.lo: conversion-fn-null-f08-interface.h
 
+###########################################################################
+
+# f08 support modules
+
+libforce_usempif08_internal_modules_to_be_built_la_SOURCES = \
+        mpi-f08-types.F90 \
+        mpi-f08-interfaces.F90 \
+        mpi-f08-interfaces-callbacks.F90 \
+        pmpi-f08-interfaces.F90
+
+config_h = \
+    $(top_builddir)/ompi/mpi/fortran/configure-fortran-output.h \
+    $(top_srcdir)/ompi/mpi/fortran/configure-fortran-output-bottom.h
+
+#
+# Automake doesn't do Fortran dependency analysis, so must list them
+# manually here.  Bummer!
+#
+
+mpi-f08-types.lo: $(config_h)
+mpi-f08-types.lo: mpi-f08-types.F90
+mpi-f08-interfaces.lo: $(config_h)
+mpi-f08-interfaces.lo: mpi-f08-interfaces.F90
+mpi-f08-interfaces.lo: mpi-f08-interfaces-callbacks.lo
+mpi-f08-interfaces-callbacks.lo: $(config_h)
+mpi-f08-interfaces-callbacks.lo: mpi-f08-interfaces-callbacks.F90
+mpi-f08-interfaces-callbacks.lo: mpi-f08-types.lo
+pmpi-f08-interfaces.lo: $(config_h)
+pmpi-f08-interfaces.lo: pmpi-f08-interfaces.F90
+pmpi-f08-interfaces.lo: mpi-f08-interfaces-callbacks.lo
+
+###########################################################################
 
 # Install the generated .mod files.  Unfortunately, each F90 compiler
 # may generate different filenames, so we have to use a glob.  :-(

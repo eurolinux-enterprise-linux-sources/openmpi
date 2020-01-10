@@ -213,11 +213,14 @@ static int store(const opal_identifier_t *uid,
      * a pre-existing value
      */
     kv = lookup_keyval(proc_data, key);
+#if OPAL_ENABLE_DEBUG
+    char *_data_type = opal_dss.lookup_data_type(type);
     OPAL_OUTPUT_VERBOSE((5, opal_db_base_framework.framework_output,
                          "db:hash:store: %s key %s[%s] for proc %" PRIu64 "",
                          (NULL == kv ? "storing" : "updating"),
-                         key, opal_dss.lookup_data_type(type), id));
-
+                         key, _data_type, id));
+    free (_data_type);
+#endif
     if (NULL != kv) {
         opal_list_remove_item(&proc_data->data, &kv->super);
         OBJ_RELEASE(kv);
@@ -246,7 +249,8 @@ static int store(const opal_identifier_t *uid,
             return OPAL_ERR_BAD_PARAM;
         }
         kv->type = OPAL_UINT64;
-        kv->data.uint64 = *(uint64_t*)(data);
+        /* to avoid alignment issues */
+        memcpy(&kv->data.uint64, data, 8);
         break;
     case OPAL_UINT32:
         if (NULL == data) {
@@ -254,7 +258,8 @@ static int store(const opal_identifier_t *uid,
             return OPAL_ERR_BAD_PARAM;
         }
         kv->type = OPAL_UINT32;
-        kv->data.uint32 = *(uint32_t*)data;
+        /* to avoid alignment issues */
+        memcpy(&kv->data.uint32, data, 4);
         break;
     case OPAL_UINT16:
         if (NULL == data) {
@@ -262,7 +267,8 @@ static int store(const opal_identifier_t *uid,
             return OPAL_ERR_BAD_PARAM;
         }
         kv->type = OPAL_UINT16;
-        kv->data.uint16 = *(uint16_t*)(data);
+        /* to avoid alignment issues */
+        memcpy(&kv->data.uint16, data, 2);
         break;
     case OPAL_INT:
         if (NULL == data) {
@@ -270,7 +276,8 @@ static int store(const opal_identifier_t *uid,
             return OPAL_ERR_BAD_PARAM;
         }
         kv->type = OPAL_INT;
-        kv->data.integer = *(int*)(data);
+        /* to avoid alignment issues */
+        memcpy(&kv->data.integer, data, sizeof(int));
         break;
     case OPAL_UINT:
         if (NULL == data) {
@@ -278,7 +285,8 @@ static int store(const opal_identifier_t *uid,
             return OPAL_ERR_BAD_PARAM;
         }
         kv->type = OPAL_UINT;
-        kv->data.uint = *(unsigned int*)(data);
+        /* to avoid alignment issues */
+        memcpy(&kv->data.uint, data, sizeof(unsigned int));
         break;
     case OPAL_FLOAT:
         if (NULL == data) {
@@ -286,7 +294,7 @@ static int store(const opal_identifier_t *uid,
             return OPAL_ERR_BAD_PARAM;
         }
         kv->type = OPAL_FLOAT;
-        kv->data.fval = *(float*)(data);
+        memcpy(&kv->data.fval, data, sizeof(float));
         break;
     case OPAL_BYTE_OBJECT:
         kv->type = OPAL_BYTE_OBJECT;
@@ -619,6 +627,7 @@ static int fetch_multiple(const opal_identifier_t *uid,
             (0 == len && 0 == strcmp(key, kv->key))) {
             if (OPAL_SUCCESS != (rc = opal_dss.copy((void**)&kvnew, kv, OPAL_VALUE))) {
                 OPAL_ERROR_LOG(rc);
+                free(srchkey);
                 return rc;
             }
             opal_list_append(kvs, &kvnew->super);

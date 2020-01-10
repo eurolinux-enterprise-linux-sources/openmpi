@@ -1,9 +1,24 @@
 /*
- * Copyright (c) 2013 Cisco Systems, Inc.  All rights reserved.
- *
+ * Copyright (c) 2004-2007 The Trustees of Indiana University and Indiana
+ *                         University Research and Technology
+ *                         Corporation.  All rights reserved.
+ * Copyright (c) 2004-2005 The University of Tennessee and The University
+ *                         of Tennessee Research Foundation.  All rights
+ *                         reserved.
+ * Copyright (c) 2004-2005 High Performance Computing Center Stuttgart, 
+ *                         University of Stuttgart.  All rights reserved.
+ * Copyright (c) 2004-2005 The Regents of the University of California.
+ *                         All rights reserved.
  * $COPYRIGHT$
- *
- * Additional copyrights may follow.
+ * 
+ * Additional copyrights may follow
+ * 
+ * $HEADER$
+ */
+/*
+ * This file is almost a complete re-write for Open MPI compared to the
+ * original mpiJava package. Its license and copyright are listed below.
+ * See <path to ompi/mpi/java/README> for more information.
  */
 /*
     Licensed under the Apache License, Version 2.0 (the "License");
@@ -42,6 +57,7 @@ public final class MPI
 private static boolean initialized, finalized;
 private static byte[] buffer = null; // Buffer allocation
 private static final int MAX_PROCESSOR_NAME = 256;
+private static final ByteOrder nativeOrder = ByteOrder.nativeOrder();
 
 public static final Intracomm COMM_WORLD, COMM_SELF;
 
@@ -186,15 +202,6 @@ public static final int ERR_SYSRESOURCE;
 static
 {
     System.loadLibrary("mpi_java");
-
-    if(!loadGlobalLibraries())
-    {
-        System.out.println("JAVA BINDINGS FAILED TO LOAD REQUIRED LIBRARIES");
-        System.exit(1);
-    }
-
-    //restoreSignalHandlers();
-    // On SP2, JVM signal handlers overridden during loadLibrary().
 
     DATATYPE_NULL = new Datatype();
 
@@ -384,8 +391,6 @@ static
     ERR_LASTCODE     = c.ERR_LASTCODE;
     ERR_SYSRESOURCE  = c.ERR_SYSRESOURCE;
 }
-
-private static native boolean loadGlobalLibraries();
 
 private static native Int2      newInt2();
 private static native ShortInt  newShortInt();
@@ -669,7 +674,7 @@ protected static Object attrGet(byte[] value) throws MPIException
 public static ByteBuffer newByteBuffer(int capacity)
 {
     ByteBuffer buf = ByteBuffer.allocateDirect(capacity);
-    buf.order(ByteOrder.nativeOrder());
+    buf.order(nativeOrder);
     return buf;
 }
 
@@ -682,7 +687,7 @@ public static CharBuffer newCharBuffer(int capacity)
 {
     assert capacity <= Integer.MAX_VALUE / 2;
     ByteBuffer buf = ByteBuffer.allocateDirect(capacity * 2);
-    buf.order(ByteOrder.nativeOrder());
+    buf.order(nativeOrder);
     return buf.asCharBuffer();
 }
 
@@ -695,7 +700,7 @@ public static ShortBuffer newShortBuffer(int capacity)
 {
     assert capacity <= Integer.MAX_VALUE / 2;
     ByteBuffer buf = ByteBuffer.allocateDirect(capacity * 2);
-    buf.order(ByteOrder.nativeOrder());
+    buf.order(nativeOrder);
     return buf.asShortBuffer();
 }
 
@@ -708,7 +713,7 @@ public static IntBuffer newIntBuffer(int capacity)
 {
     assert capacity <= Integer.MAX_VALUE / 4;
     ByteBuffer buf = ByteBuffer.allocateDirect(capacity * 4);
-    buf.order(ByteOrder.nativeOrder());
+    buf.order(nativeOrder);
     return buf.asIntBuffer();
 }
 
@@ -721,7 +726,7 @@ public static LongBuffer newLongBuffer(int capacity)
 {
     assert capacity <= Integer.MAX_VALUE / 8;
     ByteBuffer buf = ByteBuffer.allocateDirect(capacity * 8);
-    buf.order(ByteOrder.nativeOrder());
+    buf.order(nativeOrder);
     return buf.asLongBuffer();
 }
 
@@ -734,7 +739,7 @@ public static FloatBuffer newFloatBuffer(int capacity)
 {
     assert capacity <= Integer.MAX_VALUE / 4;
     ByteBuffer buf = ByteBuffer.allocateDirect(capacity * 4);
-    buf.order(ByteOrder.nativeOrder());
+    buf.order(nativeOrder);
     return buf.asFloatBuffer();
 }
 
@@ -747,7 +752,7 @@ public static DoubleBuffer newDoubleBuffer(int capacity)
 {
     assert capacity <= Integer.MAX_VALUE / 8;
     ByteBuffer buf = ByteBuffer.allocateDirect(capacity * 8);
-    buf.order(ByteOrder.nativeOrder());
+    buf.order(nativeOrder);
     return buf.asDoubleBuffer();
 }
 
@@ -804,9 +809,8 @@ protected static boolean isHeapBuffer(Object obj)
  */
 public static ByteBuffer slice(ByteBuffer buf, int offset)
 {
-    buf.position(offset);
-    ByteOrder order = buf.order();
-    return buf.slice().order(order);
+    return ((ByteBuffer)buf.clear().position(offset))
+            .slice().order(nativeOrder);
 }
 
 /**
@@ -818,8 +822,7 @@ public static ByteBuffer slice(ByteBuffer buf, int offset)
  */
 public static CharBuffer slice(CharBuffer buf, int offset)
 {
-    buf.position(offset);
-    return buf.slice();
+    return ((CharBuffer)buf.clear().position(offset)).slice();
 }
 
 /**
@@ -831,8 +834,7 @@ public static CharBuffer slice(CharBuffer buf, int offset)
  */
 public static ShortBuffer slice(ShortBuffer buf, int offset)
 {
-    buf.position(offset);
-    return buf.slice();
+    return ((ShortBuffer)buf.clear().position(offset)).slice();
 }
 
 /**
@@ -844,8 +846,7 @@ public static ShortBuffer slice(ShortBuffer buf, int offset)
  */
 public static IntBuffer slice(IntBuffer buf, int offset)
 {
-    buf.position(offset);
-    return buf.slice();
+    return ((IntBuffer)buf.clear().position(offset)).slice();
 }
 
 /**
@@ -857,8 +858,7 @@ public static IntBuffer slice(IntBuffer buf, int offset)
  */
 public static LongBuffer slice(LongBuffer buf, int offset)
 {
-    buf.position(offset);
-    return buf.slice();
+    return ((LongBuffer)buf.clear().position(offset)).slice();
 }
 
 /**
@@ -870,8 +870,7 @@ public static LongBuffer slice(LongBuffer buf, int offset)
  */
 public static FloatBuffer slice(FloatBuffer buf, int offset)
 {
-    buf.position(offset);
-    return buf.slice();
+    return ((FloatBuffer)buf.clear().position(offset)).slice();
 }
 
 /**
@@ -883,8 +882,7 @@ public static FloatBuffer slice(FloatBuffer buf, int offset)
  */
 public static DoubleBuffer slice(DoubleBuffer buf, int offset)
 {
-    buf.position(offset);
-    return buf.slice();
+    return ((DoubleBuffer)buf.clear().position(offset)).slice();
 }
 
 /**
@@ -897,7 +895,7 @@ public static DoubleBuffer slice(DoubleBuffer buf, int offset)
 public static ByteBuffer slice(byte[] buf, int offset)
 {
     return ByteBuffer.wrap(buf, offset, buf.length - offset)
-                     .slice().order(ByteOrder.nativeOrder());
+                     .slice().order(nativeOrder);
 }
 
 /**

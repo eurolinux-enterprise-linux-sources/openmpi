@@ -1,4 +1,21 @@
 /*
+ * Copyright (c) 2004-2007 The Trustees of Indiana University and Indiana
+ *                         University Research and Technology
+ *                         Corporation.  All rights reserved.
+ * Copyright (c) 2004-2005 The University of Tennessee and The University
+ *                         of Tennessee Research Foundation.  All rights
+ *                         reserved.
+ * Copyright (c) 2004-2005 High Performance Computing Center Stuttgart, 
+ *                         University of Stuttgart.  All rights reserved.
+ * Copyright (c) 2004-2005 The Regents of the University of California.
+ *                         All rights reserved.
+ * $COPYRIGHT$
+ * 
+ * Additional copyrights may follow
+ * 
+ * $HEADER$
+ */
+/*
  * IMPLEMENTATION DETAILS
  * 
  * All methods with buffers that can be direct or non direct have
@@ -6,6 +23,7 @@
  * 
  * Checking if a buffer is direct is faster in Java than C.
  */
+
 package mpi;
 
 import java.nio.*;
@@ -82,11 +100,10 @@ private native long mProbe(int source, int tag, long comm, long[] status)
 public Status imProbe(int source, int tag, Comm comm) throws MPIException
 {
     MPI.check();
-    long[] status = imProbe(source, tag, comm.handle);
-    return status == null ? null : new Status(status);
+    return imProbe(source, tag, comm.handle);
 }
 
-private native long[] imProbe(int source, int tag, long comm)
+private native Status imProbe(int source, int tag, long comm)
         throws MPIException;
 
 /**
@@ -105,7 +122,7 @@ public Status mRecv(Object buf, int count, Datatype type) throws MPIException
 
     if(buf instanceof Buffer && !(db = ((Buffer)buf).isDirect()))
     {
-        off = ((Buffer)buf).arrayOffset();
+        off = type.getOffset(buf);
         buf = ((Buffer)buf).array();
     }
 
@@ -132,7 +149,9 @@ public Request imRecv(Buffer buf, int count, Datatype type)
 {
     MPI.check();
     assertDirectBuffer(buf);
-    return new Request(imRecv(handle, buf, count, type.handle));
+    Request req = new Request(imRecv(handle, buf, count, type.handle));
+    req.addRecvBufRef(buf);
+    return req; 
 }
 
 private native long imRecv(long message, Object buf, int count, long type)

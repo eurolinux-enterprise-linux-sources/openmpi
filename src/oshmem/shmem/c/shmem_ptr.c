@@ -20,6 +20,12 @@
 
 #include "oshmem/runtime/runtime.h"
 
+#if OSHMEM_PROFILING
+#include "oshmem/include/pshmem.h"
+#pragma weak shmem_ptr = pshmem_ptr
+#include "oshmem/shmem/c/profile/defines.h"
+#endif
+
 void *shmem_ptr(void *ptr, int pe)
 {
     SHMEM_API_VERBOSE(10,

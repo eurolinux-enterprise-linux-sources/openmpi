@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2013      Mellanox Technologies, Inc.
+# Copyright (c) 2013-2015 Mellanox Technologies, Inc.
 #                         All rights reserved
 # Copyright (c) 2014 Cisco Systems, Inc.  All rights reserved.
 # $COPYRIGHT$
@@ -14,13 +14,16 @@ if OSHMEM_PROFILING
     SUBDIRS = profile
 endif
 
+OSHMEM_AUX_SOURCES = \
+	shmem_lock.c
+
 OSHMEM_API_SOURCES = \
 	shmem_init.c \
+	shmem_finalize.c \
 	shmem_free.c \
 	shmem_alloc.c \
 	shmem_realloc.c \
 	shmem_align.c \
-	shmem_finalize.c \
 	shmem_query.c \
 	shmem_p.c \
 	shmem_put.c \
@@ -53,8 +56,8 @@ OSHMEM_API_SOURCES = \
 	shmem_clear_lock.c \
 	shmem_set_lock.c \
 	shmem_test_lock.c \
-	shmem_lock.c \
-	globalexit.c
+	shmem_global_exit.c \
+	shmem_info.c
 
 AM_CPPFLAGS     = -DOSHMEM_PROFILING=0
 
@@ -66,7 +69,12 @@ endif
 
 headers = 
 
-liboshmem_c_la_SOURCES = $(OSHMEM_API_SOURCES)
+# In case when OSHMEM_PROFILING enabled
+# We build api from c/profile folder
+liboshmem_c_la_SOURCES = $(OSHMEM_AUX_SOURCES)
+if ! OSHMEM_PROFILING
+liboshmem_c_la_SOURCES += $(OSHMEM_API_SOURCES)
+endif
 
 if PROJECT_OSHMEM
 if WANT_INSTALL_HEADERS

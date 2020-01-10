@@ -5,6 +5,8 @@
  * Copyright (c) 2013-2014 Los Alamos National Security, LLC.
  *                         All rights reserved.
  * Copyright (c) 2014 Cisco Systems, Inc.  All rights reserved.
+ * Copyright (c) 2014      Research Organization for Information Science
+ *                         and Technology (RIST). All rights reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -83,13 +85,16 @@ int bcol_basesmuma_free_buff( sm_buffer_mgmt * buff_block,
     /* local variables */
     int ret=OMPI_SUCCESS;
     int memory_bank;
+#if OPAL_ENABLE_DEBUG
     uint64_t generation;
+#endif
     mca_bcol_basesmuma_component_t *cs = &mca_bcol_basesmuma_component;
 
     /* get the bank index that will be used */
     memory_bank=buff_id& buff_block->mask;
     memory_bank = memory_bank SHIFT_DOWN buff_block->log2_num_buffs_per_mem_bank;
 
+#if OPAL_ENABLE_DEBUG
     /* get the generation of the bank this maps to */
     generation = buff_id SHIFT_DOWN (buff_block->log2_number_of_buffs);
 
@@ -97,6 +102,7 @@ int bcol_basesmuma_free_buff( sm_buffer_mgmt * buff_block,
      *   associated with this bank have been freed.
      */
     assert(generation == buff_block->ctl_buffs_mgmt[memory_bank].bank_gen_counter);
+#endif
 
     /*
      * increment counter of completed buffers
@@ -210,6 +216,25 @@ static int init_nb_coll_buff_desc(mca_bcol_basesmuma_nb_coll_buff_desc_t **desc,
 }
 
 
+/*
+ * Free buffers for storing non-blocking collective descriptions.
+ *
+ */
+void cleanup_nb_coll_buff_desc(mca_bcol_basesmuma_nb_coll_buff_desc_t **desc,
+                                  uint32_t num_banks,
+                                  uint32_t num_buffers_per_bank)
+{
+    uint32_t ci;
+    if (NULL != *desc) {
+        for (ci=0; ci<num_banks*num_buffers_per_bank; ci++) {
+            free(((*desc)[ci]).requests);
+            ((*desc))[ci].requests = NULL;
+        }
+        free(*desc);
+        *desc = NULL;
+    }
+}
+
 
 #if 1
 /* New init function used for new control scheme where we put the control
@@ -282,7 +307,7 @@ int bcol_basesmuma_bank_init_opti(struct mca_bcol_base_memory_block_desc_t *payl
         &(cs->sm_connections_list),
         &(sm_bcol->payload_backing_files_info),
         sm_bcol->super.sbgp_partner_module->group_comm,
-        input_file,cs->payload_base_fname,
+        input_file, cs->payload_base_fname,
         false);
     if( OMPI_SUCCESS != ret ) {
         goto exit_ERROR;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013      Mellanox Technologies, Inc.
+ * Copyright (c) 2013-2015 Mellanox Technologies, Inc.
  *                         All rights reserved.
  * $COPYRIGHT$
  * 
@@ -15,12 +15,13 @@
 #include "opal/mca/mca.h"
 #include "opal/mca/base/base.h"
 #include "opal/mca/base/mca_base_component_repository.h"
+#include "oshmem/info/info.h"
 #include "oshmem/util/oshmem_util.h"
 #include "oshmem/mca/memheap/memheap.h"
 #include "oshmem/mca/memheap/base/base.h"
 #include "orte/mca/errmgr/errmgr.h"
 
-mca_memheap_base_module_t mca_memheap;
+mca_memheap_base_module_t mca_memheap = {0};
 
 /**
  * Function for weeding out memheap components that shouldn't be executed.
@@ -55,6 +56,8 @@ int mca_memheap_base_select()
 
     context = _memheap_create();
     if (!context) {
+        opal_argv_free(include);
+        opal_argv_free(exclude);
         return OSHMEM_ERROR;
     }
 
@@ -119,9 +122,10 @@ int mca_memheap_base_select()
                 opal_list_remove_item(&oshmem_memheap_base_framework.framework_components, &cli->super);
                 mca_base_component_close((mca_base_component_t *) component,
                                          oshmem_memheap_base_framework.framework_output);
+            } else {
+                /* Calculate memheap size in case it was not set during component initialization */
+                module->memheap_size = context->user_size;
             }
-            /* Calculate memheap size in case it was not set during component initialization */
-            module->memheap_size = context->user_size;
         }
 
         /* Init max priority component */
@@ -150,7 +154,7 @@ int mca_memheap_base_select()
 
     /* Verify that some module was initialized */
     if (NULL == mca_memheap_base_module_initialized) {
-        opal_show_help("help-shmem-mca.txt",
+        opal_show_help("help-oshmem-memheap.txt",
                        "find-available:none-found",
                        true,
                        "memheap");
@@ -172,41 +176,7 @@ int mca_memheap_base_select()
 
 static size_t _memheap_size(void)
 {
-    char *p;
-    long long factor = 1;
-    int idx;
-    long long size = 0;
-
-    p = getenv(SHMEM_HEAP_SIZE);
-    if (!p)
-        return SIZE_IN_MEGA_BYTES(DEFAULT_SYMMETRIC_HEAP_SIZE);
-
-    if (1 == sscanf(p, "%lld%n", &size, &idx)) {
-        if (p[idx] != '\0') {
-            if (p[idx + 1] == '\0') {
-                if (p[idx] == 'k' || p[idx] == 'K') {
-                    factor = 1024;
-                } else if (p[idx] == 'm' || p[idx] == 'M') {
-                    factor = 1024 * 1024;
-                } else if (p[idx] == 'g' || p[idx] == 'G') {
-                    factor = 1024 * 1024 * 1024;
-                } else if (p[idx] == 't' || p[idx] == 'T') {
-                    factor = 1024UL * 1024UL * 1024UL * 1024UL;
-                } else {
-                    size = 0;
-                }
-            } else {
-                size = 0;
-            }
-        }
-    }
-
-    if (size <= 0) {
-        MEMHEAP_ERROR("Set incorrect symmetric heap size %s.\n",
-                      p, DEFAULT_SYMMETRIC_HEAP_SIZE);
-        return 0;
-    }
-    return (size_t) memheap_align(size * factor);
+    return (size_t) memheap_align(oshmem_shmem_info_env.symmetric_heap_size);
 }
 
 static memheap_context_t* _memheap_create(void)

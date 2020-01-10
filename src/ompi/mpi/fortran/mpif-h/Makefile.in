@@ -18,18 +18,30 @@
 # Copyright (c) 2004-2007 The Trustees of Indiana University and Indiana
 #                         University Research and Technology
 #                         Corporation.  All rights reserved.
-# Copyright (c) 2004-2012 The University of Tennessee and The University
+# Copyright (c) 2004-2013 The University of Tennessee and The University
 #                         of Tennessee Research Foundation.  All rights
 #                         reserved.
 # Copyright (c) 2004-2009 High Performance Computing Center Stuttgart, 
 #                         University of Stuttgart.  All rights reserved.
 # Copyright (c) 2004-2005 The Regents of the University of California.
 #                         All rights reserved.
-# Copyright (c) 2006-2014 Cisco Systems, Inc.  All rights reserved.
-# Copyright (c) 2011-2012 Inria.  All rights reserved.
-# Copyright (c) 2011-2012 Universite Bordeaux 1
+# Copyright (c) 2006-2015 Cisco Systems, Inc.  All rights reserved.
+# Copyright (c) 2011-2013 Inria.  All rights reserved.
+# Copyright (c) 2011-2013 Universite Bordeaux 1
 # Copyright (c) 2013-2014 Los Alamos National Security, LLC. All rights
 #                         reserved.
+# Copyright (c) 2015      Research Organization for Information Science
+#                         and Technology (RIST). All rights reserved.
+# $COPYRIGHT$
+# 
+# Additional copyrights may follow
+# 
+# $HEADER$
+#
+
+# -*- makefile -*-
+# Copyright (c) 2008-2014 Cisco Systems, Inc.  All rights reserved.
+# Copyright (c) 2008      Sun Microsystems, Inc.  All rights reserved.
 # $COPYRIGHT$
 # 
 # Additional copyrights may follow
@@ -75,6 +87,9 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
+DIST_COMMON = $(am__ompi_HEADERS_DIST) $(srcdir)/Makefile.am \
+	$(srcdir)/Makefile.in $(top_srcdir)/Makefile.man-page-rules \
+	$(top_srcdir)/config/depcomp
 
 # Are we building the mpif.h bindings at all?
 # If yes, then we need to build the installable library and the glue
@@ -83,12 +98,37 @@ target_triplet = @target@
 # Do we need to suck in the convenience library from the lower
 # directory?
 @BUILD_PMPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@@OMPI_BUILD_FORTRAN_MPIFH_BINDINGS_TRUE@am__append_2 = profile/libmpi_mpifh_pmpi.la
-@BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@am__append_3 = \
+
+# If we're building the MPI_SIZEOF interfaces, generate the source
+# code in sizeof_f.f90 (via a perl script).  Normally, we'd just add
+# sizeof_f.f90 to the libmpi_mpif_la_SOURCES and be done with it.
+# However, since this is the first *actual Fortran* source that we've
+# added to libmpi_mpif_la_SOURCEs, this causes Libtool to use the
+# *Fortran* linker to create the final libmpi_mpif.la library
+# (vs. using the C linker, as it has done for years).  This exposes an
+# unfortunate bug in the Absoft linker: it does not honor the order of
+# -Wl arguments, which basically causes the resulting libmpi_mpif.so
+# to be borked.
+#
+# To get around this, we compile sizeof_f.f90 into its own LT
+# convenience library, and then we LIBADD that convenience library
+# into the main libmpi_mpifh.la.  In this way, we basically trick
+# Libtool into still using the C linker to create libmpi_mpif.la, and
+# our -Wl flags therefore don't get re-ordered.
+#
+# All this being said, we can't rely on Automake/Libtool not figuring
+# out this workaround indefinitely.  So Jeff advised Absoft to fix
+# this bug in Sep 2014.
+@BUILD_FORTRAN_SIZEOF_TRUE@@OMPI_BUILD_FORTRAN_MPIFH_BINDINGS_TRUE@am__append_3 = libmpi_mpifh_sizeof.la
+@BUILD_FORTRAN_SIZEOF_TRUE@@OMPI_BUILD_FORTRAN_MPIFH_BINDINGS_TRUE@am__append_4 = libmpi_mpifh_sizeof.la
+@BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@am__append_5 = \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@        abort_f.c \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@        add_error_class_f.c \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@        add_error_code_f.c \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@        add_error_string_f.c \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@        address_f.c \
+@BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@        aint_add_f.c \
+@BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@        aint_diff_f.c \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@        allgather_f.c \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@        allgatherv_f.c \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@        alloc_mem_f.c \
@@ -350,12 +390,17 @@ target_triplet = @target@
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@        rput_f.c \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@        compare_and_swap_f.c \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@        fetch_and_op_f.c \
+@BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@        win_allocate_f.c \
+@BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@        win_allocate_shared_f.c \
+@BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@        win_attach_f.c \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@        win_call_errhandler_f.c \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@        win_complete_f.c \
+@BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@        win_create_dynamic_f.c \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@        win_create_errhandler_f.c \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@        win_create_f.c \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@        win_create_keyval_f.c \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@        win_delete_attr_f.c \
+@BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@        win_detach_f.c \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@        win_fence_f.c \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@        win_free_f.c \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@        win_free_keyval_f.c \
@@ -364,20 +409,24 @@ target_triplet = @target@
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@        win_get_group_f.c \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@        win_get_name_f.c \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@        win_lock_f.c \
+@BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@        win_lock_all_f.c \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@        win_post_f.c \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@        win_set_attr_f.c \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@        win_set_errhandler_f.c \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@        win_set_name_f.c \
+@BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@        win_shared_query_f.c \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@        win_start_f.c \
+@BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@        win_sync_f.c \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@        win_test_f.c \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@        win_unlock_f.c \
+@BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@        win_unlock_all_f.c \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@        win_wait_f.c \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@        win_flush_f.c \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@        win_flush_all_f.c \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@        win_flush_local_f.c \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@        win_flush_local_all_f.c
 
-@BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@@OMPI_PROVIDE_MPI_FILE_INTERFACE_TRUE@am__append_4 = \
+@BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@@OMPI_PROVIDE_MPI_FILE_INTERFACE_TRUE@am__append_6 = \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@@OMPI_PROVIDE_MPI_FILE_INTERFACE_TRUE@        file_call_errhandler_f.c \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@@OMPI_PROVIDE_MPI_FILE_INTERFACE_TRUE@        file_close_f.c \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@@OMPI_PROVIDE_MPI_FILE_INTERFACE_TRUE@        file_create_errhandler_f.c \
@@ -436,8 +485,6 @@ target_triplet = @target@
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@@OMPI_PROVIDE_MPI_FILE_INTERFACE_TRUE@        register_datarep_f.c
 
 subdir = ompi/mpi/fortran/mpif-h
-DIST_COMMON = $(am__ompi_HEADERS_DIST) $(srcdir)/Makefile.am \
-	$(srcdir)/Makefile.in $(top_srcdir)/config/depcomp
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/config/c_get_alignment.m4 \
 	$(top_srcdir)/config/c_weak_symbols.m4 \
@@ -445,26 +492,7 @@ am__aclocal_m4_deps = $(top_srcdir)/config/c_get_alignment.m4 \
 	$(top_srcdir)/config/cxx_find_template_parameters.m4 \
 	$(top_srcdir)/config/cxx_find_template_repository.m4 \
 	$(top_srcdir)/config/cxx_have_exceptions.m4 \
-	$(top_srcdir)/config/fortran_check.m4 \
-	$(top_srcdir)/config/fortran_check_abstract.m4 \
-	$(top_srcdir)/config/fortran_check_asynchronous.m4 \
-	$(top_srcdir)/config/fortran_check_bind_c.m4 \
-	$(top_srcdir)/config/fortran_check_f08_assumed_rank.m4 \
-	$(top_srcdir)/config/fortran_check_ignore_tkr.m4 \
-	$(top_srcdir)/config/fortran_check_logical_array.m4 \
-	$(top_srcdir)/config/fortran_check_optional_args.m4 \
-	$(top_srcdir)/config/fortran_check_private.m4 \
-	$(top_srcdir)/config/fortran_check_procedure.m4 \
-	$(top_srcdir)/config/fortran_check_real16_c_equiv.m4 \
-	$(top_srcdir)/config/fortran_check_type.m4 \
-	$(top_srcdir)/config/fortran_find_ext_symbol_convention.m4 \
-	$(top_srcdir)/config/fortran_find_module_include_flag.m4 \
-	$(top_srcdir)/config/fortran_get_alignment.m4 \
-	$(top_srcdir)/config/fortran_get_handle_max.m4 \
-	$(top_srcdir)/config/fortran_get_kind_value.m4 \
-	$(top_srcdir)/config/fortran_get_sizeof.m4 \
-	$(top_srcdir)/config/fortran_get_value_true.m4 \
-	$(top_srcdir)/config/libtool.m4 $(top_srcdir)/config/ltdl.m4 \
+	$(top_srcdir)/config/libtool.m4 \
 	$(top_srcdir)/config/ltoptions.m4 \
 	$(top_srcdir)/config/ltsugar.m4 \
 	$(top_srcdir)/config/ltversion.m4 \
@@ -472,18 +500,19 @@ am__aclocal_m4_deps = $(top_srcdir)/config/c_get_alignment.m4 \
 	$(top_srcdir)/config/ompi_check_broken_qsort.m4 \
 	$(top_srcdir)/config/ompi_check_cma.m4 \
 	$(top_srcdir)/config/ompi_check_compiler_works.m4 \
-	$(top_srcdir)/config/ompi_check_func_lib.m4 \
 	$(top_srcdir)/config/ompi_check_icc.m4 \
+	$(top_srcdir)/config/ompi_check_knem.m4 \
 	$(top_srcdir)/config/ompi_check_libfca.m4 \
 	$(top_srcdir)/config/ompi_check_libhcoll.m4 \
-	$(top_srcdir)/config/ompi_check_mx.m4 \
 	$(top_srcdir)/config/ompi_check_mxm.m4 \
 	$(top_srcdir)/config/ompi_check_openfabrics.m4 \
 	$(top_srcdir)/config/ompi_check_package.m4 \
 	$(top_srcdir)/config/ompi_check_portals4.m4 \
 	$(top_srcdir)/config/ompi_check_ps.m4 \
 	$(top_srcdir)/config/ompi_check_psm.m4 \
+	$(top_srcdir)/config/ompi_check_psm2.m4 \
 	$(top_srcdir)/config/ompi_check_pvfs2.m4 \
+	$(top_srcdir)/config/ompi_check_ucx.m4 \
 	$(top_srcdir)/config/ompi_check_ugni.m4 \
 	$(top_srcdir)/config/ompi_check_vendor.m4 \
 	$(top_srcdir)/config/ompi_check_withdir.m4 \
@@ -497,9 +526,34 @@ am__aclocal_m4_deps = $(top_srcdir)/config/c_get_alignment.m4 \
 	$(top_srcdir)/config/ompi_endpoint_tag.m4 \
 	$(top_srcdir)/config/ompi_ensure_contains_optflags.m4 \
 	$(top_srcdir)/config/ompi_ext.m4 \
+	$(top_srcdir)/config/ompi_find_mpi_aint_count_offset.m4 \
 	$(top_srcdir)/config/ompi_find_type.m4 \
+	$(top_srcdir)/config/ompi_fortran_check.m4 \
+	$(top_srcdir)/config/ompi_fortran_check_abstract.m4 \
+	$(top_srcdir)/config/ompi_fortran_check_asynchronous.m4 \
+	$(top_srcdir)/config/ompi_fortran_check_bind_c.m4 \
+	$(top_srcdir)/config/ompi_fortran_check_c_funloc.m4 \
+	$(top_srcdir)/config/ompi_fortran_check_f08_assumed_rank.m4 \
+	$(top_srcdir)/config/ompi_fortran_check_ignore_tkr.m4 \
+	$(top_srcdir)/config/ompi_fortran_check_interface.m4 \
+	$(top_srcdir)/config/ompi_fortran_check_iso_fortran_env.m4 \
+	$(top_srcdir)/config/ompi_fortran_check_logical_array.m4 \
+	$(top_srcdir)/config/ompi_fortran_check_max_array_rank.m4 \
+	$(top_srcdir)/config/ompi_fortran_check_optional_args.m4 \
+	$(top_srcdir)/config/ompi_fortran_check_private.m4 \
+	$(top_srcdir)/config/ompi_fortran_check_procedure.m4 \
 	$(top_srcdir)/config/ompi_fortran_check_protected.m4 \
-	$(top_srcdir)/config/ompi_fortran_check_ticket_4157.m4 \
+	$(top_srcdir)/config/ompi_fortran_check_real16_c_equiv.m4 \
+	$(top_srcdir)/config/ompi_fortran_check_storage_size.m4 \
+	$(top_srcdir)/config/ompi_fortran_check_type.m4 \
+	$(top_srcdir)/config/ompi_fortran_check_use_only.m4 \
+	$(top_srcdir)/config/ompi_fortran_find_ext_symbol_convention.m4 \
+	$(top_srcdir)/config/ompi_fortran_find_module_include_flag.m4 \
+	$(top_srcdir)/config/ompi_fortran_get_alignment.m4 \
+	$(top_srcdir)/config/ompi_fortran_get_handle_max.m4 \
+	$(top_srcdir)/config/ompi_fortran_get_kind_value.m4 \
+	$(top_srcdir)/config/ompi_fortran_get_sizeof.m4 \
+	$(top_srcdir)/config/ompi_fortran_get_value_true.m4 \
 	$(top_srcdir)/config/ompi_interix.m4 \
 	$(top_srcdir)/config/ompi_lang_link_with_c.m4 \
 	$(top_srcdir)/config/ompi_load_platform.m4 \
@@ -519,6 +573,7 @@ am__aclocal_m4_deps = $(top_srcdir)/config/c_get_alignment.m4 \
 	$(top_srcdir)/config/opal_check_compiler_version.m4 \
 	$(top_srcdir)/config/opal_check_cuda.m4 \
 	$(top_srcdir)/config/opal_check_ident.m4 \
+	$(top_srcdir)/config/opal_check_libfabric.m4 \
 	$(top_srcdir)/config/opal_check_offsetof.m4 \
 	$(top_srcdir)/config/opal_check_os_flavors.m4 \
 	$(top_srcdir)/config/opal_check_pmi.m4 \
@@ -530,10 +585,10 @@ am__aclocal_m4_deps = $(top_srcdir)/config/c_get_alignment.m4 \
 	$(top_srcdir)/config/opal_config_threads.m4 \
 	$(top_srcdir)/config/opal_configure_options.m4 \
 	$(top_srcdir)/config/opal_functions.m4 \
+	$(top_srcdir)/config/opal_search_libs.m4 \
 	$(top_srcdir)/config/opal_setup_cc.m4 \
 	$(top_srcdir)/config/opal_setup_cxx.m4 \
 	$(top_srcdir)/config/opal_setup_java.m4 \
-	$(top_srcdir)/config/opal_setup_libltdl.m4 \
 	$(top_srcdir)/config/opal_setup_wrappers.m4 \
 	$(top_srcdir)/config/orte_check_alps.m4 \
 	$(top_srcdir)/config/orte_check_loadleveler.m4 \
@@ -546,8 +601,10 @@ am__aclocal_m4_deps = $(top_srcdir)/config/c_get_alignment.m4 \
 	$(top_srcdir)/config/orte_setup_debugger_flags.m4 \
 	$(top_srcdir)/config/oshmem_config_files.m4 \
 	$(top_srcdir)/config/oshmem_configure_options.m4 \
+	$(top_srcdir)/config/oshmem_setup_profiling.m4 \
 	$(top_srcdir)/config/autogen_found_items.m4 \
 	$(top_srcdir)/opal/mca/backtrace/configure.m4 \
+	$(top_srcdir)/opal/mca/dl/configure.m4 \
 	$(top_srcdir)/opal/mca/event/configure.m4 \
 	$(top_srcdir)/opal/mca/hwloc/configure.m4 \
 	$(top_srcdir)/opal/mca/installdirs/configure.m4 \
@@ -565,15 +622,17 @@ am__aclocal_m4_deps = $(top_srcdir)/config/c_get_alignment.m4 \
 	$(top_srcdir)/opal/mca/crs/blcr/configure.m4 \
 	$(top_srcdir)/opal/mca/db/pmi/configure.m4 \
 	$(top_srcdir)/opal/mca/db/sqlite/configure.m4 \
+	$(top_srcdir)/opal/mca/dl/libltdl/configure.m4 \
+	$(top_srcdir)/opal/mca/dl/dlopen/configure.m4 \
 	$(top_srcdir)/opal/mca/event/libevent2021/configure.m4 \
 	$(top_srcdir)/opal/mca/event/external/configure.m4 \
-	$(top_srcdir)/opal/mca/hwloc/hwloc172/configure.m4 \
-	$(top_srcdir)/opal/mca/hwloc/hwloc172/hwloc/config/hwloc.m4 \
-	$(top_srcdir)/opal/mca/hwloc/hwloc172/hwloc/config/hwloc_pkg.m4 \
-	$(top_srcdir)/opal/mca/hwloc/hwloc172/hwloc/config/hwloc_check_attributes.m4 \
-	$(top_srcdir)/opal/mca/hwloc/hwloc172/hwloc/config/hwloc_check_visibility.m4 \
-	$(top_srcdir)/opal/mca/hwloc/hwloc172/hwloc/config/hwloc_check_vendor.m4 \
-	$(top_srcdir)/opal/mca/hwloc/hwloc172/hwloc/config/hwloc_components.m4 \
+	$(top_srcdir)/opal/mca/hwloc/hwloc191/configure.m4 \
+	$(top_srcdir)/opal/mca/hwloc/hwloc191/hwloc/config/hwloc.m4 \
+	$(top_srcdir)/opal/mca/hwloc/hwloc191/hwloc/config/hwloc_pkg.m4 \
+	$(top_srcdir)/opal/mca/hwloc/hwloc191/hwloc/config/hwloc_check_attributes.m4 \
+	$(top_srcdir)/opal/mca/hwloc/hwloc191/hwloc/config/hwloc_check_visibility.m4 \
+	$(top_srcdir)/opal/mca/hwloc/hwloc191/hwloc/config/hwloc_check_vendor.m4 \
+	$(top_srcdir)/opal/mca/hwloc/hwloc191/hwloc/config/hwloc_components.m4 \
 	$(top_srcdir)/opal/mca/hwloc/external/configure.m4 \
 	$(top_srcdir)/opal/mca/if/solaris_ipv6/configure.m4 \
 	$(top_srcdir)/opal/mca/if/bsdx_ipv4/configure.m4 \
@@ -618,7 +677,6 @@ am__aclocal_m4_deps = $(top_srcdir)/config/c_get_alignment.m4 \
 	$(top_srcdir)/orte/mca/ras/lsf/configure.m4 \
 	$(top_srcdir)/orte/mca/ras/tm/configure.m4 \
 	$(top_srcdir)/orte/mca/rmaps/mindist/configure.m4 \
-	$(top_srcdir)/orte/mca/rmaps/lama/configure.m4 \
 	$(top_srcdir)/orte/mca/rmaps/rank_file/configure.m4 \
 	$(top_srcdir)/orte/mca/rml/ftrm/configure.m4 \
 	$(top_srcdir)/orte/mca/sensor/resusage/configure.m4 \
@@ -634,9 +692,9 @@ am__aclocal_m4_deps = $(top_srcdir)/config/c_get_alignment.m4 \
 	$(top_srcdir)/ompi/mca/io/configure.m4 \
 	$(top_srcdir)/ompi/mca/rte/configure.m4 \
 	$(top_srcdir)/ompi/mca/sharedfp/configure.m4 \
+	$(top_srcdir)/ompi/mca/common/verbs_usnic/configure.m4 \
 	$(top_srcdir)/ompi/mca/common/ugni/configure.m4 \
 	$(top_srcdir)/ompi/mca/common/sm/configure.m4 \
-	$(top_srcdir)/ompi/mca/common/mx/configure.m4 \
 	$(top_srcdir)/ompi/mca/common/verbs/configure.m4 \
 	$(top_srcdir)/ompi/mca/common/cuda/configure.m4 \
 	$(top_srcdir)/ompi/mca/bml/r2/configure.m4 \
@@ -651,8 +709,10 @@ am__aclocal_m4_deps = $(top_srcdir)/config/c_get_alignment.m4 \
 	$(top_srcdir)/ompi/mca/btl/usnic/configure.m4 \
 	$(top_srcdir)/ompi/mca/coll/hierarch/configure.m4 \
 	$(top_srcdir)/ompi/mca/coll/hcoll/configure.m4 \
+	$(top_srcdir)/ompi/mca/coll/ml/configure.m4 \
 	$(top_srcdir)/ompi/mca/coll/fca/configure.m4 \
 	$(top_srcdir)/ompi/mca/coll/portals4/configure.m4 \
+	$(top_srcdir)/ompi/mca/coll/cuda/configure.m4 \
 	$(top_srcdir)/ompi/mca/crcp/bkmrk/configure.m4 \
 	$(top_srcdir)/ompi/mca/dpm/orte/configure.m4 \
 	$(top_srcdir)/ompi/mca/fbtl/pvfs2/configure.m4 \
@@ -663,26 +723,30 @@ am__aclocal_m4_deps = $(top_srcdir)/config/c_get_alignment.m4 \
 	$(top_srcdir)/ompi/mca/mpool/rgpusm/configure.m4 \
 	$(top_srcdir)/ompi/mca/mpool/gpusm/configure.m4 \
 	$(top_srcdir)/ompi/mca/mtl/psm/configure.m4 \
+	$(top_srcdir)/ompi/mca/mtl/ofi/configure.m4 \
 	$(top_srcdir)/ompi/mca/mtl/mxm/configure.m4 \
 	$(top_srcdir)/ompi/mca/mtl/portals4/configure.m4 \
-	$(top_srcdir)/ompi/mca/mtl/mx/configure.m4 \
-	$(top_srcdir)/ompi/mca/osc/rdma/configure.m4 \
+	$(top_srcdir)/ompi/mca/mtl/psm2/configure.m4 \
+	$(top_srcdir)/ompi/mca/osc/pt2pt/configure.m4 \
 	$(top_srcdir)/ompi/mca/osc/portals4/configure.m4 \
 	$(top_srcdir)/ompi/mca/pml/bfo/configure.m4 \
 	$(top_srcdir)/ompi/mca/pml/crcpw/configure.m4 \
 	$(top_srcdir)/ompi/mca/pml/v/configure.m4 \
+	$(top_srcdir)/ompi/mca/pml/yalla/configure.m4 \
 	$(top_srcdir)/ompi/mca/pml/ob1/configure.m4 \
+	$(top_srcdir)/ompi/mca/pml/ucx/configure.m4 \
 	$(top_srcdir)/ompi/mca/pubsub/pmi/configure.m4 \
 	$(top_srcdir)/ompi/mca/pubsub/orte/configure.m4 \
-	$(top_srcdir)/ompi/mca/rte/pmi/configure.m4 \
 	$(top_srcdir)/ompi/mca/rte/orte/configure.m4 \
 	$(top_srcdir)/ompi/mca/sbgp/basesmsocket/configure.m4 \
 	$(top_srcdir)/ompi/mca/sbgp/p2p/configure.m4 \
 	$(top_srcdir)/oshmem/mca/memheap/configure.m4 \
 	$(top_srcdir)/oshmem/mca/spml/configure.m4 \
 	$(top_srcdir)/oshmem/mca/atomic/mxm/configure.m4 \
+	$(top_srcdir)/oshmem/mca/atomic/ucx/configure.m4 \
 	$(top_srcdir)/oshmem/mca/scoll/fca/configure.m4 \
 	$(top_srcdir)/oshmem/mca/spml/ikrit/configure.m4 \
+	$(top_srcdir)/oshmem/mca/spml/ucx/configure.m4 \
 	$(top_srcdir)/oshmem/mca/sshmem/mmap/configure.m4 \
 	$(top_srcdir)/oshmem/mca/sshmem/verbs/configure.m4 \
 	$(top_srcdir)/oshmem/mca/sshmem/sysv/configure.m4 \
@@ -697,12 +761,10 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/opal/include/opal_config.h \
 	$(top_builddir)/orte/include/orte_config.h \
-	$(top_builddir)/ompi/include/ompi_config.h \
 	$(top_builddir)/ompi/include/mpi.h \
-	$(top_builddir)/oshmem/include/oshmem_config.h \
 	$(top_builddir)/oshmem/include/shmem.h \
-	$(top_builddir)/opal/mca/hwloc/hwloc172/hwloc/include/private/autogen/config.h \
-	$(top_builddir)/opal/mca/hwloc/hwloc172/hwloc/include/hwloc/autogen/config.h
+	$(top_builddir)/opal/mca/hwloc/hwloc191/hwloc/include/private/autogen/config.h \
+	$(top_builddir)/opal/mca/hwloc/hwloc191/hwloc/include/hwloc/autogen/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
@@ -733,21 +795,23 @@ am__uninstall_files_from_dir = { \
          $(am__cd) "$$dir" && rm -f $$files; }; \
   }
 am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(ompidir)"
-LTLIBRARIES = $(lib_LTLIBRARIES)
+LTLIBRARIES = $(lib_LTLIBRARIES) $(noinst_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 libmpi_mpifh_la_DEPENDENCIES = $(top_builddir)/ompi/libmpi.la \
-	$(am__DEPENDENCIES_1) $(am__append_2)
+	$(am__DEPENDENCIES_1) $(OMPI_TOP_BUILDDIR)/opal/libopen-pal.la \
+	$(am__append_2) $(am__append_4)
 am__libmpi_mpifh_la_SOURCES_DIST = abort_f.c add_error_class_f.c \
 	add_error_code_f.c add_error_string_f.c address_f.c \
-	allgather_f.c allgatherv_f.c alloc_mem_f.c allreduce_f.c \
-	alltoall_f.c alltoallv_f.c alltoallw_f.c attr_delete_f.c \
-	attr_get_f.c attr_put_f.c barrier_f.c bcast_f.c bsend_f.c \
-	bsend_init_f.c buffer_attach_f.c buffer_detach_f.c cancel_f.c \
-	cart_coords_f.c cart_create_f.c cartdim_get_f.c cart_get_f.c \
-	cart_map_f.c cart_rank_f.c cart_shift_f.c cart_sub_f.c \
-	close_port_f.c comm_accept_f.c comm_call_errhandler_f.c \
-	comm_compare_f.c comm_connect_f.c comm_create_errhandler_f.c \
-	comm_create_f.c comm_create_group_f.c comm_create_keyval_f.c \
+	aint_add_f.c aint_diff_f.c allgather_f.c allgatherv_f.c \
+	alloc_mem_f.c allreduce_f.c alltoall_f.c alltoallv_f.c \
+	alltoallw_f.c attr_delete_f.c attr_get_f.c attr_put_f.c \
+	barrier_f.c bcast_f.c bsend_f.c bsend_init_f.c \
+	buffer_attach_f.c buffer_detach_f.c cancel_f.c cart_coords_f.c \
+	cart_create_f.c cartdim_get_f.c cart_get_f.c cart_map_f.c \
+	cart_rank_f.c cart_shift_f.c cart_sub_f.c close_port_f.c \
+	comm_accept_f.c comm_call_errhandler_f.c comm_compare_f.c \
+	comm_connect_f.c comm_create_errhandler_f.c comm_create_f.c \
+	comm_create_group_f.c comm_create_keyval_f.c \
 	comm_delete_attr_f.c comm_disconnect_f.c comm_dup_f.c \
 	comm_dup_with_info_f.c comm_idup_f.c comm_free_f.c \
 	comm_free_keyval_f.c comm_get_attr_f.c comm_get_errhandler_f.c \
@@ -820,14 +884,17 @@ am__libmpi_mpifh_la_SOURCES_DIST = abort_f.c add_error_class_f.c \
 	waitany_f.c wait_f.c waitsome_f.c wtick_f.c wtime_f.c \
 	accumulate_f.c raccumulate_f.c get_f.c rget_f.c \
 	get_accumulate_f.c rget_accumulate_f.c put_f.c rput_f.c \
-	compare_and_swap_f.c fetch_and_op_f.c win_call_errhandler_f.c \
-	win_complete_f.c win_create_errhandler_f.c win_create_f.c \
-	win_create_keyval_f.c win_delete_attr_f.c win_fence_f.c \
-	win_free_f.c win_free_keyval_f.c win_get_attr_f.c \
-	win_get_errhandler_f.c win_get_group_f.c win_get_name_f.c \
-	win_lock_f.c win_post_f.c win_set_attr_f.c \
-	win_set_errhandler_f.c win_set_name_f.c win_start_f.c \
-	win_test_f.c win_unlock_f.c win_wait_f.c win_flush_f.c \
+	compare_and_swap_f.c fetch_and_op_f.c win_allocate_f.c \
+	win_allocate_shared_f.c win_attach_f.c win_call_errhandler_f.c \
+	win_complete_f.c win_create_dynamic_f.c \
+	win_create_errhandler_f.c win_create_f.c win_create_keyval_f.c \
+	win_delete_attr_f.c win_detach_f.c win_fence_f.c win_free_f.c \
+	win_free_keyval_f.c win_get_attr_f.c win_get_errhandler_f.c \
+	win_get_group_f.c win_get_name_f.c win_lock_f.c \
+	win_lock_all_f.c win_post_f.c win_set_attr_f.c \
+	win_set_errhandler_f.c win_set_name_f.c win_shared_query_f.c \
+	win_start_f.c win_sync_f.c win_test_f.c win_unlock_f.c \
+	win_unlock_all_f.c win_wait_f.c win_flush_f.c \
 	win_flush_all_f.c win_flush_local_f.c win_flush_local_all_f.c \
 	file_call_errhandler_f.c file_close_f.c \
 	file_create_errhandler_f.c file_delete_f.c file_get_amode_f.c \
@@ -858,6 +925,8 @@ am__libmpi_mpifh_la_SOURCES_DIST = abort_f.c add_error_class_f.c \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@	add_error_code_f.lo \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@	add_error_string_f.lo \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@	address_f.lo \
+@BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@	aint_add_f.lo \
+@BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@	aint_diff_f.lo \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@	allgather_f.lo \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@	allgatherv_f.lo \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@	alloc_mem_f.lo \
@@ -1119,12 +1188,17 @@ am__libmpi_mpifh_la_SOURCES_DIST = abort_f.c add_error_class_f.c \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@	rput_f.lo \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@	compare_and_swap_f.lo \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@	fetch_and_op_f.lo \
+@BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@	win_allocate_f.lo \
+@BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@	win_allocate_shared_f.lo \
+@BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@	win_attach_f.lo \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@	win_call_errhandler_f.lo \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@	win_complete_f.lo \
+@BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@	win_create_dynamic_f.lo \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@	win_create_errhandler_f.lo \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@	win_create_f.lo \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@	win_create_keyval_f.lo \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@	win_delete_attr_f.lo \
+@BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@	win_detach_f.lo \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@	win_fence_f.lo \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@	win_free_f.lo \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@	win_free_keyval_f.lo \
@@ -1133,13 +1207,17 @@ am__libmpi_mpifh_la_SOURCES_DIST = abort_f.c add_error_class_f.c \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@	win_get_group_f.lo \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@	win_get_name_f.lo \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@	win_lock_f.lo \
+@BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@	win_lock_all_f.lo \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@	win_post_f.lo \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@	win_set_attr_f.lo \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@	win_set_errhandler_f.lo \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@	win_set_name_f.lo \
+@BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@	win_shared_query_f.lo \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@	win_start_f.lo \
+@BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@	win_sync_f.lo \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@	win_test_f.lo \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@	win_unlock_f.lo \
+@BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@	win_unlock_all_f.lo \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@	win_wait_f.lo \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@	win_flush_f.lo \
 @BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER_TRUE@	win_flush_all_f.lo \
@@ -1213,6 +1291,11 @@ libmpi_mpifh_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	-o $@
 @OMPI_BUILD_FORTRAN_MPIFH_BINDINGS_TRUE@am_libmpi_mpifh_la_rpath =  \
 @OMPI_BUILD_FORTRAN_MPIFH_BINDINGS_TRUE@	-rpath $(libdir)
+libmpi_mpifh_sizeof_la_LIBADD =
+@BUILD_FORTRAN_SIZEOF_TRUE@@OMPI_BUILD_FORTRAN_MPIFH_BINDINGS_TRUE@nodist_libmpi_mpifh_sizeof_la_OBJECTS = sizeof_f.lo
+libmpi_mpifh_sizeof_la_OBJECTS =  \
+	$(nodist_libmpi_mpifh_sizeof_la_OBJECTS)
+@BUILD_FORTRAN_SIZEOF_TRUE@@OMPI_BUILD_FORTRAN_MPIFH_BINDINGS_TRUE@am_libmpi_mpifh_sizeof_la_rpath =
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -1225,7 +1308,7 @@ AM_V_at = $(am__v_at_@AM_V@)
 am__v_at_ = $(am__v_at_@AM_DEFAULT_V@)
 am__v_at_0 = @
 am__v_at_1 = 
-DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)/opal/include -I$(top_builddir)/orte/include -I$(top_builddir)/ompi/include -I$(top_builddir)/oshmem/include -I$(top_builddir)/opal/mca/hwloc/hwloc172/hwloc/include/private/autogen -I$(top_builddir)/opal/mca/hwloc/hwloc172/hwloc/include/hwloc/autogen
+DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)/opal/include -I$(top_builddir)/orte/include -I$(top_builddir)/ompi/include -I$(top_builddir)/oshmem/include -I$(top_builddir)/opal/mca/hwloc/hwloc191/hwloc/include/private/autogen -I$(top_builddir)/opal/mca/hwloc/hwloc191/hwloc/include/hwloc/autogen
 depcomp = $(SHELL) $(top_srcdir)/config/depcomp
 am__depfiles_maybe = depfiles
 am__mv = mv -f
@@ -1247,7 +1330,23 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(libmpi_mpifh_la_SOURCES)
+FCCOMPILE = $(FC) $(AM_FCFLAGS) $(FCFLAGS)
+LTFCCOMPILE = $(LIBTOOL) $(AM_V_lt) --tag=FC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS)
+AM_V_FC = $(am__v_FC_@AM_V@)
+am__v_FC_ = $(am__v_FC_@AM_DEFAULT_V@)
+am__v_FC_0 = @echo "  FC      " $@;
+am__v_FC_1 = 
+FCLD = $(FC)
+FCLINK = $(LIBTOOL) $(AM_V_lt) --tag=FC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(FCLD) $(AM_FCFLAGS) $(FCFLAGS) \
+	$(AM_LDFLAGS) $(LDFLAGS) -o $@
+AM_V_FCLD = $(am__v_FCLD_@AM_V@)
+am__v_FCLD_ = $(am__v_FCLD_@AM_DEFAULT_V@)
+am__v_FCLD_0 = @echo "  FCLD    " $@;
+am__v_FCLD_1 = 
+SOURCES = $(libmpi_mpifh_la_SOURCES) \
+	$(nodist_libmpi_mpifh_sizeof_la_SOURCES)
 DIST_SOURCES = $(am__libmpi_mpifh_la_SOURCES_DIST)
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	html-recursive info-recursive install-data-recursive \
@@ -1316,7 +1415,9 @@ CCASFLAGS = @CCASFLAGS@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
 CFLAGS_WITHOUT_OPTFLAGS = @CFLAGS_WITHOUT_OPTFLAGS@
-CLEANFILES = @CLEANFILES@
+
+# sizeof_f.f90 is generated based on some results from configure tests.
+CLEANFILES = sizeof_f.f90
 CONFIGURE_DEPENDENCIES = @CONFIGURE_DEPENDENCIES@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
@@ -1371,10 +1472,12 @@ HWLOC_PCIACCESS_CFLAGS = @HWLOC_PCIACCESS_CFLAGS@
 HWLOC_PCIACCESS_LIBS = @HWLOC_PCIACCESS_LIBS@
 HWLOC_PCIUTILS_CFLAGS = @HWLOC_PCIUTILS_CFLAGS@
 HWLOC_PCIUTILS_LIBS = @HWLOC_PCIUTILS_LIBS@
+HWLOC_PLUGINS_DIR = @HWLOC_PLUGINS_DIR@
+HWLOC_PLUGINS_PATH = @HWLOC_PLUGINS_PATH@
 HWLOC_REQUIRES = @HWLOC_REQUIRES@
+HWLOC_X11_LIBS = @HWLOC_X11_LIBS@
 HWLOC_top_builddir = @HWLOC_top_builddir@
 HWLOC_top_srcdir = @HWLOC_top_srcdir@
-INCLTDL = @INCLTDL@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -1388,15 +1491,11 @@ LDFLAGS = @LDFLAGS@
 LEX = @LEX@
 LEXLIB = @LEXLIB@
 LEX_OUTPUT_ROOT = @LEX_OUTPUT_ROOT@
-LIBLTDL = @LIBLTDL@
-LIBLTDL_SUBDIR = @LIBLTDL_SUBDIR@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
 LN_S = @LN_S@
-LTDLDEPS = @LTDLDEPS@
-LTDLINCL = @LTDLINCL@
 LTLIBOBJS = @LTLIBOBJS@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
@@ -1618,6 +1717,13 @@ MCA_opal_db_DSO_SUBDIRS = @MCA_opal_db_DSO_SUBDIRS@
 MCA_opal_db_STATIC_COMPONENTS = @MCA_opal_db_STATIC_COMPONENTS@
 MCA_opal_db_STATIC_LTLIBS = @MCA_opal_db_STATIC_LTLIBS@
 MCA_opal_db_STATIC_SUBDIRS = @MCA_opal_db_STATIC_SUBDIRS@
+MCA_opal_dl_ALL_COMPONENTS = @MCA_opal_dl_ALL_COMPONENTS@
+MCA_opal_dl_ALL_SUBDIRS = @MCA_opal_dl_ALL_SUBDIRS@
+MCA_opal_dl_DSO_COMPONENTS = @MCA_opal_dl_DSO_COMPONENTS@
+MCA_opal_dl_DSO_SUBDIRS = @MCA_opal_dl_DSO_SUBDIRS@
+MCA_opal_dl_STATIC_COMPONENTS = @MCA_opal_dl_STATIC_COMPONENTS@
+MCA_opal_dl_STATIC_LTLIBS = @MCA_opal_dl_STATIC_LTLIBS@
+MCA_opal_dl_STATIC_SUBDIRS = @MCA_opal_dl_STATIC_SUBDIRS@
 MCA_opal_event_ALL_COMPONENTS = @MCA_opal_event_ALL_COMPONENTS@
 MCA_opal_event_ALL_SUBDIRS = @MCA_opal_event_ALL_SUBDIRS@
 MCA_opal_event_DSO_COMPONENTS = @MCA_opal_event_DSO_COMPONENTS@
@@ -1903,6 +2009,7 @@ OMPI_F08_SUFFIX = @OMPI_F08_SUFFIX@
 OMPI_FC = @OMPI_FC@
 OMPI_FC_ABSOLUTE = @OMPI_FC_ABSOLUTE@
 OMPI_FC_MODULE_FLAG = @OMPI_FC_MODULE_FLAG@
+OMPI_FORTRAN_BUILD_SIZEOF = @OMPI_FORTRAN_BUILD_SIZEOF@
 OMPI_FORTRAN_CKINDS = @OMPI_FORTRAN_CKINDS@
 OMPI_FORTRAN_EXTRA_SHARED_LIBRARY_FLAGS = @OMPI_FORTRAN_EXTRA_SHARED_LIBRARY_FLAGS@
 OMPI_FORTRAN_F08_PREDECL = @OMPI_FORTRAN_F08_PREDECL@
@@ -1910,12 +2017,19 @@ OMPI_FORTRAN_F08_TYPE = @OMPI_FORTRAN_F08_TYPE@
 OMPI_FORTRAN_HAVE_ABSTRACT = @OMPI_FORTRAN_HAVE_ABSTRACT@
 OMPI_FORTRAN_HAVE_ASYNCHRONOUS = @OMPI_FORTRAN_HAVE_ASYNCHRONOUS@
 OMPI_FORTRAN_HAVE_BIND_C = @OMPI_FORTRAN_HAVE_BIND_C@
+OMPI_FORTRAN_HAVE_C_FUNLOC = @OMPI_FORTRAN_HAVE_C_FUNLOC@
+OMPI_FORTRAN_HAVE_INTERFACE = @OMPI_FORTRAN_HAVE_INTERFACE@
+OMPI_FORTRAN_HAVE_ISO_C_BINDING = @OMPI_FORTRAN_HAVE_ISO_C_BINDING@
+OMPI_FORTRAN_HAVE_ISO_FORTRAN_ENV = @OMPI_FORTRAN_HAVE_ISO_FORTRAN_ENV@
 OMPI_FORTRAN_HAVE_PRIVATE = @OMPI_FORTRAN_HAVE_PRIVATE@
 OMPI_FORTRAN_HAVE_PROCEDURE = @OMPI_FORTRAN_HAVE_PROCEDURE@
 OMPI_FORTRAN_HAVE_PROTECTED = @OMPI_FORTRAN_HAVE_PROTECTED@
+OMPI_FORTRAN_HAVE_STORAGE_SIZE = @OMPI_FORTRAN_HAVE_STORAGE_SIZE@
+OMPI_FORTRAN_HAVE_USE_ONLY = @OMPI_FORTRAN_HAVE_USE_ONLY@
 OMPI_FORTRAN_IGNORE_TKR_PREDECL = @OMPI_FORTRAN_IGNORE_TKR_PREDECL@
 OMPI_FORTRAN_IGNORE_TKR_TYPE = @OMPI_FORTRAN_IGNORE_TKR_TYPE@
 OMPI_FORTRAN_IKINDS = @OMPI_FORTRAN_IKINDS@
+OMPI_FORTRAN_MAX_ARRAY_RANK = @OMPI_FORTRAN_MAX_ARRAY_RANK@
 OMPI_FORTRAN_NEED_WRAPPER_ROUTINES = @OMPI_FORTRAN_NEED_WRAPPER_ROUTINES@
 OMPI_FORTRAN_RKINDS = @OMPI_FORTRAN_RKINDS@
 OMPI_FORTRAN_STATUS_SIZE = @OMPI_FORTRAN_STATUS_SIZE@
@@ -1995,6 +2109,7 @@ OMPI_MPI_COUNT_KIND = @OMPI_MPI_COUNT_KIND@
 OMPI_MPI_INTEGER_KIND = @OMPI_MPI_INTEGER_KIND@
 OMPI_MPI_OFFSET_KIND = @OMPI_MPI_OFFSET_KIND@
 OMPI_MPI_PREFIX = @OMPI_MPI_PREFIX@
+OMPI_PKG_CONFIG_LDFLAGS = @OMPI_PKG_CONFIG_LDFLAGS@
 OMPI_PROVIDE_MPI_FILE_INTERFACE = @OMPI_PROVIDE_MPI_FILE_INTERFACE@
 OMPI_RELEASE_DATE = @OMPI_RELEASE_DATE@
 OMPI_RELEASE_VERSION = @OMPI_RELEASE_VERSION@
@@ -2023,10 +2138,10 @@ OMPI_SIZEOF_FORTRAN_REAL16 = @OMPI_SIZEOF_FORTRAN_REAL16@
 OMPI_SIZEOF_FORTRAN_REAL2 = @OMPI_SIZEOF_FORTRAN_REAL2@
 OMPI_SIZEOF_FORTRAN_REAL4 = @OMPI_SIZEOF_FORTRAN_REAL4@
 OMPI_SIZEOF_FORTRAN_REAL8 = @OMPI_SIZEOF_FORTRAN_REAL8@
+OMPI_TARBALL_VERSION = @OMPI_TARBALL_VERSION@
 OMPI_TOP_BUILDDIR = @OMPI_TOP_BUILDDIR@
 OMPI_TOP_SRCDIR = @OMPI_TOP_SRCDIR@
 OMPI_VERSION = @OMPI_VERSION@
-OMPI_WANT_REPO_REV = @OMPI_WANT_REPO_REV@
 OMPI_WRAPPER_CXX_LIB = @OMPI_WRAPPER_CXX_LIB@
 OMPI_WRAPPER_CXX_REQUIRED_FILE = @OMPI_WRAPPER_CXX_REQUIRED_FILE@
 OMPI_WRAPPER_EXTRA_CFLAGS = @OMPI_WRAPPER_EXTRA_CFLAGS@
@@ -2048,6 +2163,7 @@ OPAL_ASM_SUPPORT_64BIT = @OPAL_ASM_SUPPORT_64BIT@
 OPAL_ASM_TEXT = @OPAL_ASM_TEXT@
 OPAL_ASM_TYPE = @OPAL_ASM_TYPE@
 OPAL_ASSEMBLY_ARCH = @OPAL_ASSEMBLY_ARCH@
+OPAL_ASSEMBLY_BUILTIN = @OPAL_ASSEMBLY_BUILTIN@
 OPAL_ASSEMBLY_FORMAT = @OPAL_ASSEMBLY_FORMAT@
 OPAL_CC_ABSOLUTE = @OPAL_CC_ABSOLUTE@
 OPAL_CONFIGURE_DATE = @OPAL_CONFIGURE_DATE@
@@ -2069,11 +2185,12 @@ OPAL_MAX_PORT_NAME = @OPAL_MAX_PORT_NAME@
 OPAL_MAX_PROCESSOR_NAME = @OPAL_MAX_PROCESSOR_NAME@
 OPAL_MINOR_VERSION = @OPAL_MINOR_VERSION@
 OPAL_PARAM_FROM_PLATFORM = @OPAL_PARAM_FROM_PLATFORM@
+OPAL_PKG_CONFIG_LDFLAGS = @OPAL_PKG_CONFIG_LDFLAGS@
 OPAL_RELEASE_DATE = @OPAL_RELEASE_DATE@
 OPAL_RELEASE_VERSION = @OPAL_RELEASE_VERSION@
 OPAL_REPO_REV = @OPAL_REPO_REV@
+OPAL_TARBALL_VERSION = @OPAL_TARBALL_VERSION@
 OPAL_VERSION = @OPAL_VERSION@
-OPAL_WANT_REPO_REV = @OPAL_WANT_REPO_REV@
 OPAL_WRAPPER_EXTRA_CFLAGS = @OPAL_WRAPPER_EXTRA_CFLAGS@
 OPAL_WRAPPER_EXTRA_CFLAGS_PREFIX = @OPAL_WRAPPER_EXTRA_CFLAGS_PREFIX@
 OPAL_WRAPPER_EXTRA_CPPFLAGS = @OPAL_WRAPPER_EXTRA_CPPFLAGS@
@@ -2085,11 +2202,12 @@ OPAL_WRAPPER_EXTRA_LIBS = @OPAL_WRAPPER_EXTRA_LIBS@
 ORTE_GREEK_VERSION = @ORTE_GREEK_VERSION@
 ORTE_MAJOR_VERSION = @ORTE_MAJOR_VERSION@
 ORTE_MINOR_VERSION = @ORTE_MINOR_VERSION@
+ORTE_PKG_CONFIG_LDFLAGS = @ORTE_PKG_CONFIG_LDFLAGS@
 ORTE_RELEASE_DATE = @ORTE_RELEASE_DATE@
 ORTE_RELEASE_VERSION = @ORTE_RELEASE_VERSION@
 ORTE_REPO_REV = @ORTE_REPO_REV@
+ORTE_TARBALL_VERSION = @ORTE_TARBALL_VERSION@
 ORTE_VERSION = @ORTE_VERSION@
-ORTE_WANT_REPO_REV = @ORTE_WANT_REPO_REV@
 ORTE_WRAPPER_EXTRA_CFLAGS = @ORTE_WRAPPER_EXTRA_CFLAGS@
 ORTE_WRAPPER_EXTRA_CFLAGS_PREFIX = @ORTE_WRAPPER_EXTRA_CFLAGS_PREFIX@
 ORTE_WRAPPER_EXTRA_CPPFLAGS = @ORTE_WRAPPER_EXTRA_CPPFLAGS@
@@ -2106,8 +2224,8 @@ OSHMEM_MINOR_VERSION = @OSHMEM_MINOR_VERSION@
 OSHMEM_RELEASE_DATE = @OSHMEM_RELEASE_DATE@
 OSHMEM_RELEASE_VERSION = @OSHMEM_RELEASE_VERSION@
 OSHMEM_REPO_REV = @OSHMEM_REPO_REV@
+OSHMEM_TARBALL_VERSION = @OSHMEM_TARBALL_VERSION@
 OSHMEM_VERSION = @OSHMEM_VERSION@
-OSHMEM_WANT_REPO_REV = @OSHMEM_WANT_REPO_REV@
 OTOOL = @OTOOL@
 OTOOL64 = @OTOOL64@
 PACKAGE = @PACKAGE@
@@ -2128,6 +2246,11 @@ SHELL = @SHELL@
 STRIP = @STRIP@
 VERSION = @VERSION@
 WRAPPER_CC = @WRAPPER_CC@
+XMKMF = @XMKMF@
+X_CFLAGS = @X_CFLAGS@
+X_EXTRA_LIBS = @X_EXTRA_LIBS@
+X_LIBS = @X_LIBS@
+X_PRE_LIBS = @X_PRE_LIBS@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -2147,6 +2270,10 @@ atomic_mxm_CFLAGS = @atomic_mxm_CFLAGS@
 atomic_mxm_CPPFLAGS = @atomic_mxm_CPPFLAGS@
 atomic_mxm_LDFLAGS = @atomic_mxm_LDFLAGS@
 atomic_mxm_LIBS = @atomic_mxm_LIBS@
+atomic_ucx_CFLAGS = @atomic_ucx_CFLAGS@
+atomic_ucx_CPPFLAGS = @atomic_ucx_CPPFLAGS@
+atomic_ucx_LDFLAGS = @atomic_ucx_LDFLAGS@
+atomic_ucx_LIBS = @atomic_ucx_LIBS@
 bindir = @bindir@
 btl_openib_CFLAGS = @btl_openib_CFLAGS@
 btl_openib_CPPFLAGS = @btl_openib_CPPFLAGS@
@@ -2162,10 +2289,6 @@ btl_sm_CPPFLAGS = @btl_sm_CPPFLAGS@
 btl_ugni_CPPFLAGS = @btl_ugni_CPPFLAGS@
 btl_ugni_LDFLAGS = @btl_ugni_LDFLAGS@
 btl_ugni_LIBS = @btl_ugni_LIBS@
-btl_usnic_CFLAGS = @btl_usnic_CFLAGS@
-btl_usnic_CPPFLAGS = @btl_usnic_CPPFLAGS@
-btl_usnic_LDFLAGS = @btl_usnic_LDFLAGS@
-btl_usnic_LIBS = @btl_usnic_LIBS@
 btl_vader_CFLAGS = @btl_vader_CFLAGS@
 btl_vader_CPPFLAGS = @btl_vader_CPPFLAGS@
 btl_vader_LDFLAGS = @btl_vader_LDFLAGS@
@@ -2181,21 +2304,14 @@ coll_fca_CPPFLAGS = @coll_fca_CPPFLAGS@
 coll_fca_HOME = @coll_fca_HOME@
 coll_fca_LDFLAGS = @coll_fca_LDFLAGS@
 coll_fca_LIBS = @coll_fca_LIBS@
-coll_fca_extra_CPPFLAGS = @coll_fca_extra_CPPFLAGS@
 coll_hcoll_CFLAGS = @coll_hcoll_CFLAGS@
 coll_hcoll_CPPFLAGS = @coll_hcoll_CPPFLAGS@
-coll_hcoll_HOME = @coll_hcoll_HOME@
 coll_hcoll_LDFLAGS = @coll_hcoll_LDFLAGS@
 coll_hcoll_LIBS = @coll_hcoll_LIBS@
-coll_hcoll_extra_CPPFLAGS = @coll_hcoll_extra_CPPFLAGS@
 coll_portals4_CPPFLAGS = @coll_portals4_CPPFLAGS@
 coll_portals4_LDFLAGS = @coll_portals4_LDFLAGS@
 coll_portals4_LIBS = @coll_portals4_LIBS@
 common_cuda_CPPFLAGS = @common_cuda_CPPFLAGS@
-common_mx_CFLAGS = @common_mx_CFLAGS@
-common_mx_CPPFLAGS = @common_mx_CPPFLAGS@
-common_mx_LDFLAGS = @common_mx_LDFLAGS@
-common_mx_LIBS = @common_mx_LIBS@
 common_pmi_CPPFLAGS = @common_pmi_CPPFLAGS@
 common_pmi_LDFLAGS = @common_pmi_LDFLAGS@
 common_pmi_LIBS = @common_pmi_LIBS@
@@ -2206,6 +2322,9 @@ common_verbs_CFLAGS = @common_verbs_CFLAGS@
 common_verbs_CPPFLAGS = @common_verbs_CPPFLAGS@
 common_verbs_LDFLAGS = @common_verbs_LDFLAGS@
 common_verbs_LIBS = @common_verbs_LIBS@
+common_verbs_usnic_CPPFLAGS = @common_verbs_usnic_CPPFLAGS@
+common_verbs_usnic_LDFLAGS = @common_verbs_usnic_LDFLAGS@
+common_verbs_usnic_LIBS = @common_verbs_usnic_LIBS@
 datadir = @datadir@
 datarootdir = @datarootdir@
 db_pmi_CPPFLAGS = @db_pmi_CPPFLAGS@
@@ -2256,6 +2375,7 @@ libmca_common_sm_so_version = @libmca_common_sm_so_version@
 libmca_common_ugni_so_version = @libmca_common_ugni_so_version@
 libmca_common_verbs_so_version = @libmca_common_verbs_so_version@
 libmca_opal_common_hwloc_so_version = @libmca_opal_common_hwloc_so_version@
+libmca_opal_common_libfabric_so_version = @libmca_opal_common_libfabric_so_version@
 libmca_opal_common_pmi_so_version = @libmca_opal_common_pmi_so_version@
 libmpi_cxx_so_version = @libmpi_cxx_so_version@
 libmpi_java_so_version = @libmpi_java_so_version@
@@ -2276,10 +2396,6 @@ mkdir_p = @mkdir_p@
 mpool_udreg_CPPFLAGS = @mpool_udreg_CPPFLAGS@
 mpool_udreg_LDFLAGS = @mpool_udreg_LDFLAGS@
 mpool_udreg_LIBS = @mpool_udreg_LIBS@
-mtl_mx_CFLAGS = @mtl_mx_CFLAGS@
-mtl_mx_CPPFLAGS = @mtl_mx_CPPFLAGS@
-mtl_mx_LDFLAGS = @mtl_mx_LDFLAGS@
-mtl_mx_LIBS = @mtl_mx_LIBS@
 mtl_mxm_CFLAGS = @mtl_mxm_CFLAGS@
 mtl_mxm_CPPFLAGS = @mtl_mxm_CPPFLAGS@
 mtl_mxm_LDFLAGS = @mtl_mxm_LDFLAGS@
@@ -2287,24 +2403,38 @@ mtl_mxm_LIBS = @mtl_mxm_LIBS@
 mtl_portals4_CPPFLAGS = @mtl_portals4_CPPFLAGS@
 mtl_portals4_LDFLAGS = @mtl_portals4_LDFLAGS@
 mtl_portals4_LIBS = @mtl_portals4_LIBS@
+mtl_psm2_CFLAGS = @mtl_psm2_CFLAGS@
+mtl_psm2_CPPFLAGS = @mtl_psm2_CPPFLAGS@
+mtl_psm2_LDFLAGS = @mtl_psm2_LDFLAGS@
+mtl_psm2_LIBS = @mtl_psm2_LIBS@
 mtl_psm_CFLAGS = @mtl_psm_CFLAGS@
 mtl_psm_CPPFLAGS = @mtl_psm_CPPFLAGS@
 mtl_psm_LDFLAGS = @mtl_psm_LDFLAGS@
 mtl_psm_LIBS = @mtl_psm_LIBS@
 oldincludedir = @oldincludedir@
+ompi_btl_usnic_CPPFLAGS = @ompi_btl_usnic_CPPFLAGS@
+ompi_btl_usnic_LDFLAGS = @ompi_btl_usnic_LDFLAGS@
+ompi_btl_usnic_LIBS = @ompi_btl_usnic_LIBS@
+ompi_mtl_ofi_CPPFLAGS = @ompi_mtl_ofi_CPPFLAGS@
+ompi_mtl_ofi_LDFLAGS = @ompi_mtl_ofi_LDFLAGS@
+ompi_mtl_ofi_LIBS = @ompi_mtl_ofi_LIBS@
 ompidatadir = @ompidatadir@
 ompiincludedir = @ompiincludedir@
 ompilibdir = @ompilibdir@
 opal_datatype_cuda_CPPFLAGS = @opal_datatype_cuda_CPPFLAGS@
+opal_dl_dlopen_LIBS = @opal_dl_dlopen_LIBS@
+opal_dl_libltdl_CPPFLAGS = @opal_dl_libltdl_CPPFLAGS@
+opal_dl_libltdl_LDFLAGS = @opal_dl_libltdl_LDFLAGS@
+opal_dl_libltdl_LIBS = @opal_dl_libltdl_LIBS@
 opal_event_external_CPPFLAGS = @opal_event_external_CPPFLAGS@
 opal_event_external_LDFLAGS = @opal_event_external_LDFLAGS@
 opal_event_external_LIBS = @opal_event_external_LIBS@
 opal_hwloc_external_LDFLAGS = @opal_hwloc_external_LDFLAGS@
 opal_hwloc_external_LIBS = @opal_hwloc_external_LIBS@
-opal_hwloc_hwloc172_CFLAGS = @opal_hwloc_hwloc172_CFLAGS@
-opal_hwloc_hwloc172_CPPFLAGS = @opal_hwloc_hwloc172_CPPFLAGS@
-opal_hwloc_hwloc172_LDFLAGS = @opal_hwloc_hwloc172_LDFLAGS@
-opal_hwloc_hwloc172_LIBS = @opal_hwloc_hwloc172_LIBS@
+opal_hwloc_hwloc191_CFLAGS = @opal_hwloc_hwloc191_CFLAGS@
+opal_hwloc_hwloc191_CPPFLAGS = @opal_hwloc_hwloc191_CPPFLAGS@
+opal_hwloc_hwloc191_LDFLAGS = @opal_hwloc_hwloc191_LDFLAGS@
+opal_hwloc_hwloc191_LIBS = @opal_hwloc_hwloc191_LIBS@
 opal_memchecker_valgrind_CPPFLAGS = @opal_memchecker_valgrind_CPPFLAGS@
 osc_portals4_CPPFLAGS = @osc_portals4_CPPFLAGS@
 osc_portals4_LDFLAGS = @osc_portals4_LDFLAGS@
@@ -2323,6 +2453,12 @@ plm_slurm_LIBS = @plm_slurm_LIBS@
 plm_tm_CPPFLAGS = @plm_tm_CPPFLAGS@
 plm_tm_LDFLAGS = @plm_tm_LDFLAGS@
 plm_tm_LIBS = @plm_tm_LIBS@
+pml_ucx_CPPFLAGS = @pml_ucx_CPPFLAGS@
+pml_ucx_LDFLAGS = @pml_ucx_LDFLAGS@
+pml_ucx_LIBS = @pml_ucx_LIBS@
+pml_yalla_CPPFLAGS = @pml_yalla_CPPFLAGS@
+pml_yalla_LDFLAGS = @pml_yalla_LDFLAGS@
+pml_yalla_LIBS = @pml_yalla_LIBS@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
@@ -2342,9 +2478,6 @@ ras_slurm_LIBS = @ras_slurm_LIBS@
 ras_tm_CPPFLAGS = @ras_tm_CPPFLAGS@
 ras_tm_LDFLAGS = @ras_tm_LDFLAGS@
 ras_tm_LIBS = @ras_tm_LIBS@
-rte_pmi_CPPFLAGS = @rte_pmi_CPPFLAGS@
-rte_pmi_LDFLAGS = @rte_pmi_LDFLAGS@
-rte_pmi_LIBS = @rte_pmi_LIBS@
 sbindir = @sbindir@
 scoll_fca_CFLAGS = @scoll_fca_CFLAGS@
 scoll_fca_CPPFLAGS = @scoll_fca_CPPFLAGS@
@@ -2359,6 +2492,10 @@ spml_ikrit_CFLAGS = @spml_ikrit_CFLAGS@
 spml_ikrit_CPPFLAGS = @spml_ikrit_CPPFLAGS@
 spml_ikrit_LDFLAGS = @spml_ikrit_LDFLAGS@
 spml_ikrit_LIBS = @spml_ikrit_LIBS@
+spml_ucx_CFLAGS = @spml_ucx_CFLAGS@
+spml_ucx_CPPFLAGS = @spml_ucx_CPPFLAGS@
+spml_ucx_LDFLAGS = @spml_ucx_LDFLAGS@
+spml_ucx_LIBS = @spml_ucx_LIBS@
 srcdir = @srcdir@
 sysconfdir = @sysconfdir@
 target = @target@
@@ -2372,6 +2509,14 @@ top_builddir = @top_builddir@
 top_ompi_builddir = @top_ompi_builddir@
 top_ompi_srcdir = @top_ompi_srcdir@
 top_srcdir = @top_srcdir@
+
+# A little verbosity magic; "make" will show the terse output.  "make
+# V=1" will show the actual commands used (just like the other
+# Automake-generated compilation/linker rules).
+V = 0
+OMPI_V_GEN = $(ompi__v_GEN_$V)
+ompi__v_GEN_ = $(ompi__v_GEN_$AM_DEFAULT_VERBOSITY)
+ompi__v_GEN_0 = @echo "  GENERATE" $@;
 SUBDIRS = profile
 
 #
@@ -2399,8 +2544,14 @@ AM_CPPFLAGS = -DOMPI_PROFILE_LAYER=0 -DOMPI_COMPILING_FORTRAN_WRAPPERS=1
 # 2. When profiling is enabled but weak symbol support is absent
 #
 lib_LTLIBRARIES = $(am__append_1)
+noinst_LTLIBRARIES = $(am__append_3)
+# Note that we invoke some OPAL functions directly in libmpi_mpifh.la,
+# so we need to link in the OPAL library directly (pulling it in
+# indirectly via libmpi.la does not work on all platforms).
 libmpi_mpifh_la_LIBADD = $(top_builddir)/ompi/libmpi.la \
-	$(OMPI_MPIEXT_MPIFH_LIBS) $(am__append_2)
+	$(OMPI_MPIEXT_MPIFH_LIBS) \
+	$(OMPI_TOP_BUILDDIR)/opal/libopen-pal.la $(am__append_2) \
+	$(am__append_4)
 libmpi_mpifh_la_LDFLAGS = -version-info $(libmpi_mpifh_so_version)
 headers = \
     bindings.h \
@@ -2411,7 +2562,14 @@ headers = \
 #
 # These files are only built and added to libmpi_mpifh.la in certain cases.
 #
-libmpi_mpifh_la_SOURCES = $(am__append_3) $(am__append_4)
+libmpi_mpifh_la_SOURCES = $(am__append_5) $(am__append_6)
+
+# The sizeof-mpif08*f90 file will generate a module which needs to be
+# cleaned
+MOSTLYCLEANFILES = *.mod
+# Do not dist this file; it is generated
+@BUILD_FORTRAN_SIZEOF_TRUE@@OMPI_BUILD_FORTRAN_MPIFH_BINDINGS_TRUE@nodist_libmpi_mpifh_sizeof_la_SOURCES = sizeof_f.f90
+@OMPI_BUILD_FORTRAN_MPIFH_BINDINGS_TRUE@sizeof_pl = $(top_srcdir)/ompi/mpi/fortran/base/gen-mpi-sizeof.pl
 
 #
 # Conditionally install the header files
@@ -2421,8 +2579,8 @@ libmpi_mpifh_la_SOURCES = $(am__append_3) $(am__append_4)
 all: all-recursive
 
 .SUFFIXES:
-.SUFFIXES: .c .lo .o .obj
-$(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
+.SUFFIXES: .1 .1in .3 .3in .7 .7in .c .f90 .lo .o .obj
+$(srcdir)/Makefile.in:  $(srcdir)/Makefile.am $(top_srcdir)/Makefile.man-page-rules $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
 	    *$$dep*) \
@@ -2443,6 +2601,7 @@ Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	    echo ' cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__depfiles_maybe)'; \
 	    cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__depfiles_maybe);; \
 	esac;
+$(top_srcdir)/Makefile.man-page-rules:
 
 $(top_builddir)/config.status: $(top_srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
@@ -2486,8 +2645,21 @@ clean-libLTLIBRARIES:
 	  echo rm -f $${locs}; \
 	  rm -f $${locs}; \
 	}
+
+clean-noinstLTLIBRARIES:
+	-test -z "$(noinst_LTLIBRARIES)" || rm -f $(noinst_LTLIBRARIES)
+	@list='$(noinst_LTLIBRARIES)'; \
+	locs=`for p in $$list; do echo $$p; done | \
+	      sed 's|^[^/]*$$|.|; s|/[^/]*$$||; s|$$|/so_locations|' | \
+	      sort -u`; \
+	test -z "$$locs" || { \
+	  echo rm -f $${locs}; \
+	  rm -f $${locs}; \
+	}
 libmpi_mpifh.la: $(libmpi_mpifh_la_OBJECTS) $(libmpi_mpifh_la_DEPENDENCIES) $(EXTRA_libmpi_mpifh_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(libmpi_mpifh_la_LINK) $(am_libmpi_mpifh_la_rpath) $(libmpi_mpifh_la_OBJECTS) $(libmpi_mpifh_la_LIBADD) $(LIBS)
+libmpi_mpifh_sizeof.la: $(libmpi_mpifh_sizeof_la_OBJECTS) $(libmpi_mpifh_sizeof_la_DEPENDENCIES) $(EXTRA_libmpi_mpifh_sizeof_la_DEPENDENCIES) 
+	$(AM_V_FCLD)$(FCLINK) $(am_libmpi_mpifh_sizeof_la_rpath) $(libmpi_mpifh_sizeof_la_OBJECTS) $(libmpi_mpifh_sizeof_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -2501,6 +2673,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/add_error_code_f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/add_error_string_f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/address_f.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/aint_add_f.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/aint_diff_f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/allgather_f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/allgatherv_f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/alloc_mem_f.Plo@am__quote@
@@ -2815,12 +2989,17 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/waitall_f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/waitany_f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/waitsome_f.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/win_allocate_f.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/win_allocate_shared_f.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/win_attach_f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/win_call_errhandler_f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/win_complete_f.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/win_create_dynamic_f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/win_create_errhandler_f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/win_create_f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/win_create_keyval_f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/win_delete_attr_f.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/win_detach_f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/win_fence_f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/win_flush_all_f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/win_flush_f.Plo@am__quote@
@@ -2832,13 +3011,17 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/win_get_errhandler_f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/win_get_group_f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/win_get_name_f.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/win_lock_all_f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/win_lock_f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/win_post_f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/win_set_attr_f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/win_set_errhandler_f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/win_set_name_f.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/win_shared_query_f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/win_start_f.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/win_sync_f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/win_test_f.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/win_unlock_all_f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/win_unlock_f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/win_wait_f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wtick_f.Plo@am__quote@
@@ -2867,6 +3050,15 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
+
+.f90.o:
+	$(AM_V_FC)$(FCCOMPILE) -c -o $@ $(FCFLAGS_f90) $<
+
+.f90.obj:
+	$(AM_V_FC)$(FCCOMPILE) -c -o $@ $(FCFLAGS_f90) `$(CYGPATH_W) '$<'`
+
+.f90.lo:
+	$(AM_V_FC)$(LTFCCOMPILE) -c -o $@ $(FCFLAGS_f90) $<
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -3104,6 +3296,7 @@ install-strip:
 	    "INSTALL_PROGRAM_ENV=STRIPPROG='$(STRIP)'" install; \
 	fi
 mostlyclean-generic:
+	-test -z "$(MOSTLYCLEANFILES)" || rm -f $(MOSTLYCLEANFILES)
 
 clean-generic:
 	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
@@ -3118,7 +3311,7 @@ maintainer-clean-generic:
 clean: clean-recursive
 
 clean-am: clean-generic clean-libLTLIBRARIES clean-libtool \
-	mostlyclean-am
+	clean-noinstLTLIBRARIES mostlyclean-am
 
 distclean: distclean-recursive
 	-rm -rf ./$(DEPDIR)
@@ -3192,22 +3385,53 @@ uninstall-am: uninstall-libLTLIBRARIES uninstall-ompiHEADERS
 
 .PHONY: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) CTAGS GTAGS \
 	all all-am check check-am clean clean-generic \
-	clean-libLTLIBRARIES clean-libtool cscopelist \
-	cscopelist-recursive ctags ctags-recursive distclean \
-	distclean-compile distclean-generic distclean-libtool \
-	distclean-tags distdir dvi dvi-am html html-am info info-am \
-	install install-am install-data install-data-am install-dvi \
-	install-dvi-am install-exec install-exec-am install-html \
-	install-html-am install-info install-info-am \
-	install-libLTLIBRARIES install-man install-ompiHEADERS \
-	install-pdf install-pdf-am install-ps install-ps-am \
-	install-strip installcheck installcheck-am installdirs \
-	installdirs-am maintainer-clean maintainer-clean-generic \
-	mostlyclean mostlyclean-compile mostlyclean-generic \
-	mostlyclean-libtool pdf pdf-am ps ps-am tags tags-recursive \
-	uninstall uninstall-am uninstall-libLTLIBRARIES \
-	uninstall-ompiHEADERS
+	clean-libLTLIBRARIES clean-libtool clean-noinstLTLIBRARIES \
+	cscopelist cscopelist-recursive ctags ctags-recursive \
+	distclean distclean-compile distclean-generic \
+	distclean-libtool distclean-tags distdir dvi dvi-am html \
+	html-am info info-am install install-am install-data \
+	install-data-am install-dvi install-dvi-am install-exec \
+	install-exec-am install-html install-html-am install-info \
+	install-info-am install-libLTLIBRARIES install-man \
+	install-ompiHEADERS install-pdf install-pdf-am install-ps \
+	install-ps-am install-strip installcheck installcheck-am \
+	installdirs installdirs-am maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
+	tags tags-recursive uninstall uninstall-am \
+	uninstall-libLTLIBRARIES uninstall-ompiHEADERS
 
+
+.1in.1:
+	@ echo Creating $@ man page...
+	@ sed -e 's/#PACKAGE_NAME#/@PACKAGE_NAME@/g' \
+	  -e 's/#PACKAGE_VERSION#/@PACKAGE_VERSION@/g' \
+	  -e 's/#OMPI_DATE#/@OMPI_RELEASE_DATE@/g' \
+	  > $@ < $<
+
+.3in.3:
+	@ echo Creating $@ man page...
+	@ sed -e 's/#PACKAGE_NAME#/@PACKAGE_NAME@/g' \
+	  -e 's/#PACKAGE_VERSION#/@PACKAGE_VERSION@/g' \
+	  -e 's/#OMPI_DATE#/@OMPI_RELEASE_DATE@/g' \
+	  > $@ < $<
+
+.7in.7:
+	@ echo Creating $@ man page...
+	@ sed -e 's/#PACKAGE_NAME#/@PACKAGE_NAME@/g' \
+	  -e 's/#PACKAGE_VERSION#/@PACKAGE_VERSION@/g' \
+	  -e 's/#OMPI_DATE#/@OMPI_RELEASE_DATE@/g' \
+	  > $@ < $<
+
+@OMPI_BUILD_FORTRAN_MPIFH_BINDINGS_TRUE@sizeof_f.f90: $(top_builddir)/config.status
+@OMPI_BUILD_FORTRAN_MPIFH_BINDINGS_TRUE@sizeof_f.f90: $(sizeof_pl)
+@OMPI_BUILD_FORTRAN_MPIFH_BINDINGS_TRUE@sizeof_f.f90:
+@OMPI_BUILD_FORTRAN_MPIFH_BINDINGS_TRUE@	$(OMPI_V_GEN) $(sizeof_pl) \
+@OMPI_BUILD_FORTRAN_MPIFH_BINDINGS_TRUE@	    --impl=$@ --ierror=mandatory --mpi \
+@OMPI_BUILD_FORTRAN_MPIFH_BINDINGS_TRUE@	    --maxrank=$(OMPI_FORTRAN_MAX_ARRAY_RANK) \
+@OMPI_BUILD_FORTRAN_MPIFH_BINDINGS_TRUE@	    --generate=$(OMPI_FORTRAN_BUILD_SIZEOF) \
+@OMPI_BUILD_FORTRAN_MPIFH_BINDINGS_TRUE@	    --real16=$(OMPI_HAVE_FORTRAN_REAL16) \
+@OMPI_BUILD_FORTRAN_MPIFH_BINDINGS_TRUE@	    --complex32=$(OMPI_HAVE_FORTRAN_COMPLEX32)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

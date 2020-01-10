@@ -10,7 +10,7 @@
  *                         University of Stuttgart.  All rights reserved.
  * Copyright (c) 2004-2005 The Regents of the University of California.
  *                         All rights reserved.
- * Copyright (c) 2006-2014 Cisco Systems, Inc.  All rights reserved.
+ * Copyright (c) 2006-2015 Cisco Systems, Inc.  All rights reserved.
  * Copyright (c) 2007-2009 Sun Microsystems, Inc. All rights reserved.
  * Copyright (c) 2007-2013 Los Alamos National Security, LLC.  All rights
  *                         reserved. 
@@ -69,6 +69,7 @@
 #include "opal/util/opal_environ.h"
 #include "opal/util/opal_getcwd.h"
 #include "opal/util/show_help.h"
+#include "opal/util/fd.h"
 #include "opal/sys/atomic.h"
 #if OPAL_ENABLE_FT_CR == 1
 #include "opal/runtime/opal_cr.h"
@@ -76,6 +77,7 @@
 
 #include "opal/version.h"
 #include "opal/runtime/opal.h"
+#include "opal/runtime/opal_info_support.h"
 #include "opal/util/os_path.h"
 #include "opal/util/path.h"
 #include "opal/class/opal_pointer_array.h"
@@ -331,7 +333,7 @@ static opal_cmd_line_init_t cmd_line_init[] = {
       "Nodes are not to be oversubscribed, even if the system supports such operation"},
     { "rmaps_base_oversubscribe", '\0', "oversubscribe", "oversubscribe", 0,
       NULL, OPAL_CMD_LINE_TYPE_BOOL,
-      "Nodes are allowed to be oversubscribed, even on a managed system"},
+      "Nodes are allowed to be oversubscribed, even on a managed system, and overloading of processing elements"},
     { "rmaps_base_cpus_per_rank", '\0', "cpus-per-proc", "cpus-per-proc", 1,
       NULL, OPAL_CMD_LINE_TYPE_INT,
       "Number of cpus to use for each process [default=1]" },
@@ -387,7 +389,7 @@ static opal_cmd_line_init_t cmd_line_init[] = {
       /* Binding options */
     { "hwloc_base_binding_policy", '\0', NULL, "bind-to", 1,
       NULL, OPAL_CMD_LINE_TYPE_STRING,
-      "Policy for binding processes [none | hwthread | core (default) | socket | numa | board] (supported qualifiers: overload-allowed,if-supported)" },
+      "Policy for binding processes. Allowed values: none, hwthread, core, l1cache, l2cache, l3cache, socket, numa, board (\"none\" is the default when oversubscribed, \"core\" is the default when np<=2, and \"socket\" is the default when np>2). Allowed qualifiers: overload-allowed, if-supported" },
 
     /* backward compatiblity */
     { "hwloc_base_bind_to_core", '\0', "bind-to-core", "bind-to-core", 0,
@@ -560,6 +562,7 @@ static int create_app(int argc, char* argv[],
 static int init_globals(void);
 static int parse_globals(int argc, char* argv[], opal_cmd_line_t *cmd_line);
 static int parse_locals(orte_job_t *jdata, int argc, char* argv[]);
+static void set_classpath_jar_file(orte_app_context_t *app, int index, char *jarfile);
 static int parse_appfile(orte_job_t *jdata, char *filename, char ***env);
 static void run_debugger(char *basename, opal_cmd_line_t *cmd_line,
                          int argc, char *argv[], int num_procs) __opal_attribute_noreturn__;
@@ -643,17 +646,43 @@ int orterun(int argc, char *argv[])
         return rc;
     }
 
+    /* print version if requested.  Do this before check for help so
+       that --version --help works as one might expect. */
+    if (orterun_globals.version) {
+        char *str, *project_name = NULL;
+        if (0 == strcmp(orte_basename, "mpirun")) {
+            project_name = "Open MPI";
+        } else {
+            project_name = "OpenRTE";
+        }
+        str = opal_info_make_version_str("all", 
+                                         OPAL_MAJOR_VERSION, OPAL_MINOR_VERSION, 
+                                         OPAL_RELEASE_VERSION, 
+                                         OPAL_GREEK_VERSION,
+                                         OPAL_REPO_REV);
+        if (NULL != str) {
+            fprintf(stdout, "%s (%s) %s\n\nReport bugs to %s\n",
+                    orte_basename, project_name, str, PACKAGE_BUGREPORT);
+            free(str);
+        }
+        exit(0);
+    }
+
     /* check if we are running as root - if we are, then only allow
      * us to proceed if the allow-run-as-root flag was given. Otherwise,
      * exit with a giant warning flag
      */
     if (0 == geteuid() && !orterun_globals.run_as_root) {
-        /* show_help is not yet available, so print an error manually */
         fprintf(stderr, "--------------------------------------------------------------------------\n");
-        fprintf(stderr, "%s has detected an attempt to run as root. This is *strongly*\n", orte_basename);
-        fprintf(stderr, "discouraged as any mistake (e.g., in defining TMPDIR) or bug can\n");
-        fprintf(stderr, "result in catastrophic damage to the OS file system, leaving\n");
-        fprintf(stderr, "your system in an unusable state.\n\n");
+        if (orterun_globals.help) {
+            fprintf(stderr, "%s cannot provide the help message when run as root.\n", orte_basename);
+        } else {
+            /* show_help is not yet available, so print an error manually */
+            fprintf(stderr, "%s has detected an attempt to run as root.\n", orte_basename);
+        }
+        fprintf(stderr, "Running at root is *strongly* discouraged as any mistake (e.g., in\n");
+        fprintf(stderr, "defining TMPDIR) or bug can result in catastrophic damage to the OS\n");
+        fprintf(stderr, "file system, leaving your system in an unusable state.\n\n");
         fprintf(stderr, "You can override this protection by adding the --allow-run-as-root\n");
         fprintf(stderr, "option to your cmd line. However, we reiterate our strong advice\n");
         fprintf(stderr, "against doing so - please do so at your own risk.\n");
@@ -663,9 +692,11 @@ int orterun(int argc, char *argv[])
 
     /*
      * Since this process can now handle MCA/GMCA parameters, make sure to
-     * process them.
+     * process them - we can do this step WITHOUT first calling opal_init
      */
-    mca_base_cmd_line_process_args(&cmd_line, &environ, &environ);
+    if (OPAL_SUCCESS != mca_base_cmd_line_process_args(&cmd_line, &environ, &environ)) {
+        exit(1);
+    }
     
     /* Ensure that enough of OPAL is setup for us to be able to run */
     /*
@@ -682,6 +713,31 @@ int orterun(int argc, char *argv[])
     /* Need to initialize OPAL so that install_dirs are filled in */
     if (OPAL_SUCCESS != opal_init(&argc, &argv)) {
         exit(1);
+    }
+    
+    /* Check for help request */
+    if (orterun_globals.help) {
+        char *str, *args = NULL;
+        char *project_name = NULL;
+        if (0 == strcmp(orte_basename, "mpirun")) {
+            project_name = "Open MPI";
+        } else {
+            project_name = "OpenRTE";
+        }
+        args = opal_cmd_line_get_usage_msg(&cmd_line);
+        str = opal_show_help_string("help-orterun.txt", "orterun:usage", false,
+                                    orte_basename, project_name, OPAL_VERSION,
+                                    orte_basename, args,
+                                    PACKAGE_BUGREPORT);
+        if (NULL != str) {
+            printf("%s", str);
+            free(str);
+        }
+        free(args);
+
+        /* If someone asks for help, that should be all we do */
+        opal_finalize();
+        exit(0);
     }
     
     /* may look strange, but the way we handle prefix is a little weird
@@ -1080,15 +1136,17 @@ int orterun(int argc, char *argv[])
     /* ensure all local procs are dead */
     orte_odls.kill_local_procs(NULL);
 
+ DONE:
     /* if it was created, remove the debugger attach fifo */
-    if (fifo_active) {
-        opal_event_del(attach);
-        free(attach);
+    if (0 <= attach_fd) {
+        if (fifo_active) {
+            opal_event_del(attach);
+            free(attach);
+        }
         close(attach_fd);
         unlink(MPIR_attach_fifo);
     }
 
- DONE:
     /* cleanup and leave */
     orte_finalize();
 
@@ -1153,50 +1211,6 @@ static int init_globals(void)
 
 static int parse_globals(int argc, char* argv[], opal_cmd_line_t *cmd_line)
 {
-    /* print version if requested.  Do this before check for help so
-       that --version --help works as one might expect. */
-    if (orterun_globals.version) {
-        char *str, *project_name = NULL;
-        if (0 == strcmp(orte_basename, "mpirun")) {
-            project_name = "Open MPI";
-        } else {
-            project_name = "OpenRTE";
-        }
-        str = opal_show_help_string("help-orterun.txt", "orterun:version", 
-                                    false,
-                                    orte_basename, project_name, OPAL_VERSION,
-                                    PACKAGE_BUGREPORT);
-        if (NULL != str) {
-            printf("%s", str);
-            free(str);
-        }
-        exit(0);
-    }
-
-    /* Check for help request */
-    if (orterun_globals.help) {
-        char *str, *args = NULL;
-        char *project_name = NULL;
-        if (0 == strcmp(orte_basename, "mpirun")) {
-            project_name = "Open MPI";
-        } else {
-            project_name = "OpenRTE";
-        }
-        args = opal_cmd_line_get_usage_msg(cmd_line);
-        str = opal_show_help_string("help-orterun.txt", "orterun:usage", false,
-                                    orte_basename, project_name, OPAL_VERSION,
-                                    orte_basename, args,
-                                    PACKAGE_BUGREPORT);
-        if (NULL != str) {
-            printf("%s", str);
-            free(str);
-        }
-        free(args);
-
-        /* If someone asks for help, that should be all we do */
-        exit(0);
-    }
-
     /* check for request to report pid */
     if (NULL != orterun_globals.report_pid) {
         FILE *fp;
@@ -1722,17 +1736,11 @@ static int create_app(int argc, char* argv[],
             } else {
                 value = getenv(param);
                 if (NULL != value) {
-                    if (NULL != strchr(value, '=')) {
-                        opal_argv_append_nosize(&app->env, value);
-                        /* save it for any comm_spawn'd apps */
-                        opal_argv_append_nosize(&orte_forwarded_envars, value);
-                    } else {
                         asprintf(&value2, "%s=%s", param, value);
                         opal_argv_append_nosize(&app->env, value2);
                         /* save it for any comm_spawn'd apps */
                         opal_argv_append_nosize(&orte_forwarded_envars, value2);
                         free(value2);
-                    }
                 } else {
                     opal_output(0, "Warning: could not find environment variable \"%s\"\n", param);
                 }
@@ -1935,10 +1943,13 @@ static int create_app(int argc, char* argv[],
      * can't easily find the class on the cmd line. Java apps have to
      * preload their binary via the preload_files option
      */
-    if (app->set_cwd_to_session_dir &&
-        !opal_path_is_absolute(app->argv[0]) &&
+    if (!opal_path_is_absolute(app->argv[0]) &&
         NULL == strstr(app->argv[0], "java")) {
-        app->preload_binary = true;
+        if (app->preload_binary) {
+            app->set_cwd_to_session_dir = true;
+        } else if (app->set_cwd_to_session_dir) {
+            app->preload_binary = true;
+        }
     }
     if (NULL != orterun_globals.preload_files) {
         app->preload_files  = strdup(orterun_globals.preload_files);
@@ -2007,57 +2018,80 @@ static int create_app(int argc, char* argv[],
                 NULL != strstr(app->argv[i], "classpath")) {
                 /* yep - but does it include the path to the mpi libs? */
                 found = true;
-                if (NULL == strstr(app->argv[i+1], "mpi.jar")) {
-                    /* nope - need to add it */
-                    if (':' == app->argv[i+1][strlen(app->argv[i+1]-1)]) {
-                        asprintf(&value, "%s%s/mpi.jar", app->argv[i+1], opal_install_dirs.libdir);
-                    } else {
-                        asprintf(&value, "%s:%s/mpi.jar", app->argv[i+1], opal_install_dirs.libdir);
-                    }
-                    free(app->argv[i+1]);
-                    app->argv[i+1] = value;
+                /* check if mpi.jar exists - if so, add it */
+                value = opal_os_path(false, opal_install_dirs.libdir, "mpi.jar", NULL);
+                if (access(value, F_OK ) != -1) {
+                    set_classpath_jar_file(app, i+1, "mpi.jar");
                 }
+                free(value);
+                /* check for oshmem support */
+                value = opal_os_path(false, opal_install_dirs.libdir, "shmem.jar", NULL);
+                if (access(value, F_OK ) != -1) {
+                    set_classpath_jar_file(app, i+1, "shmem.jar");
+                }
+                free(value);
+                /* always add the local directory */
+                asprintf(&value, "%s:%s", app->cwd, app->argv[i+1]);
+                free(app->argv[i+1]);
+                app->argv[i+1] = value;
                 break;
             }
         }
         if (!found) {
             /* check to see if CLASSPATH is in the environment */
+            found = false;  // just to be pedantic
             for (i=0; NULL != environ[i]; i++) {
                 if (0 == strncmp(environ[i], "CLASSPATH", strlen("CLASSPATH"))) {
-                    /* check if mpi.jar is present */
-                    if (NULL != strstr(environ[i], "mpi.jar")) {
-                        /* yes - just add the envar to the argv in the
-                         * right format
-                         */
-                        value = strchr(environ[i], '=');
-                        ++value; /* step over the = */
-                        opal_argv_insert_element(&app->argv, 1, value);
-                        opal_argv_insert_element(&app->argv, 1, "-cp");
-                    } else {
-                        /* need to add it */
-                        value = strchr(environ[i], '=');
-                        ++value; /* step over the = */
-                        if (':' == value[strlen(value-1)]) {
-                            asprintf(&param, "%s%s/mpi.jar", value, opal_install_dirs.libdir);
-                        } else {
-                            asprintf(&param, "%s:%s/mpi.jar", value, opal_install_dirs.libdir);
-                        }
-                        opal_argv_insert_element(&app->argv, 1, param);
-                        opal_argv_insert_element(&app->argv, 1, "-cp");
-                        free(param);
+                    value = strchr(environ[i], '=');
+                    ++value; /* step over the = */
+                    opal_argv_insert_element(&app->argv, 1, value);
+                    /* check for mpi.jar */
+                    value = opal_os_path(false, opal_install_dirs.libdir, "mpi.jar", NULL);
+                    if (access(value, F_OK ) != -1) {
+                        set_classpath_jar_file(app, 1, "mpi.jar");
                     }
+                    free(value);
+                    /* check for shmem.jar */
+                    value = opal_os_path(false, opal_install_dirs.libdir, "shmem.jar", NULL);
+                    if (access(value, F_OK ) != -1) {
+                        set_classpath_jar_file(app, 1, "shmem.jar");
+                    }
+                    free(value);
+                    /* always add the local directory */
+                    (void)asprintf(&value, "%s:%s", app->cwd, app->argv[1]);
+                    free(app->argv[1]);
+                    app->argv[1] = value;
+                    opal_argv_insert_element(&app->argv, 1, "-cp");
                     found = true;
                     break;
                 }
             }
             if (!found) {
                 /* need to add it right after the java command - have
-                 * to include the current directory and trust that
+                 * to include the working directory and trust that
                  * the user set cwd if necessary
                  */
-                asprintf(&value, ".:%s/mpi.jar", opal_install_dirs.libdir);
-                opal_argv_insert_element(&app->argv, 1, value);
+                char *str, *str2;
+                /* always start with the working directory */
+                str = strdup(app->cwd);
+                /* check for mpi.jar */
+                value = opal_os_path(false, opal_install_dirs.libdir, "mpi.jar", NULL);
+                if (access(value, F_OK ) != -1) {
+                    (void)asprintf(&str2, "%s:%s", str, value);
+                    free(str);
+                    str = str2;
+                }
                 free(value);
+                /* check for shmem.jar */
+                value = opal_os_path(false, opal_install_dirs.libdir, "shmem.jar", NULL);
+                if (access(value, F_OK ) != -1) {
+                    asprintf(&str2, "%s:%s", str, value);
+                    free(str);
+                    str = str2;
+                }
+                free(value);
+                opal_argv_insert_element(&app->argv, 1, str);
+                free(str);
                 opal_argv_insert_element(&app->argv, 1, "-cp");
             }
         }
@@ -2108,6 +2142,18 @@ static int create_app(int argc, char* argv[],
     return rc;
 }
 
+static void set_classpath_jar_file(orte_app_context_t *app, int index, char *jarfile)
+{
+    if (NULL == strstr(app->argv[index], jarfile)) {
+        /* nope - need to add it */
+        char *fmt = ':' == app->argv[index][strlen(app->argv[index]-1)]
+                    ? "%s%s/%s" : "%s:%s/%s";
+        char *str;
+        asprintf(&str, fmt, app->argv[index], opal_install_dirs.libdir, jarfile);
+        free(app->argv[index]);
+        app->argv[index] = str;
+    }
+}
 
 static int parse_appfile(orte_job_t *jdata, char *filename, char ***env)
 {
@@ -2403,7 +2449,6 @@ static int process(char *orig_line, char *basename, opal_cmd_line_t *cmd_line,
         else {
             goto out;
         }
-        free(tmp);
     }
 
     /* All done -- didn't find it */
@@ -2999,6 +3044,16 @@ static void open_fifo (void)
 		    ORTE_NAME_PRINT(ORTE_PROC_MY_NAME));
 	return;
     }
+
+    /* Set this fd to be close-on-exec so that children don't see it */
+    if (opal_fd_set_cloexec(attach_fd) != OPAL_SUCCESS) {
+        opal_output(0, "%s unable to set debugger attach fifo to CLOEXEC",
+                    ORTE_NAME_PRINT(ORTE_PROC_MY_NAME));
+        close(attach_fd);
+        attach_fd = -1;
+        return;
+    }
+
     opal_output_verbose(2, orte_debug_output,
 			"%s Monitoring debugger attach fifo %s",
 			ORTE_NAME_PRINT(ORTE_PROC_MY_NAME),

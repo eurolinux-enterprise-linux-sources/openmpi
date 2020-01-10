@@ -1,4 +1,26 @@
 /*
+ * Copyright (c) 2004-2007 The Trustees of Indiana University and Indiana
+ *                         University Research and Technology
+ *                         Corporation.  All rights reserved.
+ * Copyright (c) 2004-2005 The University of Tennessee and The University
+ *                         of Tennessee Research Foundation.  All rights
+ *                         reserved.
+ * Copyright (c) 2004-2005 High Performance Computing Center Stuttgart, 
+ *                         University of Stuttgart.  All rights reserved.
+ * Copyright (c) 2004-2005 The Regents of the University of California.
+ *                         All rights reserved.
+ * $COPYRIGHT$
+ * 
+ * Additional copyrights may follow
+ * 
+ * $HEADER$
+ */
+/*
+ * This file is almost a complete re-write for Open MPI compared to the
+ * original mpiJava package. Its license and copyright are listed below.
+ * See <path to ompi/mpi/java/README> for more information.
+ */
+/*
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
     You may obtain a copy of the License at
@@ -39,18 +61,16 @@
 
 package mpi;
 
+import java.nio.Buffer;
+
 /**
  * Request object.
  */
 public class Request implements Freeable
 {
-// Auxiliary status data.
-// It's used to avoid creating status objects in the C side.
-// It also avoids setting objects attributes in the C side.
-// Calling java methods and setting object attributes from C is very slow.
-private long[] status = Status.newData();
-
 protected long handle;
+protected Buffer sendBuf;
+protected Buffer recvBuf;
 
 static
 {
@@ -94,6 +114,32 @@ public final void cancel() throws MPIException
 private native void cancel(long request) throws MPIException;
 
 /**
+ * Adds a receive buffer to this Request object.  This method 
+ * should be called by the internal api whenever a persistent 
+ * request is created and any time a request object, that has 
+ * an associated buffer, is returned from an opperation to protect 
+ * the buffer from getting prematurely garbage collected.
+ * @param buf buffer to add to the array list
+ */
+protected final void addRecvBufRef(Buffer buf)
+{
+	this.recvBuf = buf;
+}
+
+/**
+ * Adds a send buffer to this Request object.  This method 
+ * should be called by the internal api whenever a persistent 
+ * request is created and any time a request object, that has 
+ * an associated buffer, is returned from an opperation to protect 
+ * the buffer from getting prematurely garbage collected.
+ * @param buf buffer to add to the array list
+ */
+protected final void addSendBufRef(Buffer buf)
+{
+	this.sendBuf = buf;
+}
+
+/**
  * Test if request object is null.
  * @return true if the request object is null, false otherwise
  */
@@ -112,8 +158,9 @@ public final boolean isNull()
 public final Status waitStatus() throws MPIException
 {
     MPI.check();
-    handle = waitStatus(handle, status);
-    return newStatus();
+    Status status = new Status();
+    handle = waitStatus(handle, status.data);
+    return status;
 }
 
 private native long waitStatus(long request, long[] stat) throws MPIException;
@@ -144,11 +191,10 @@ private native long waitFor(long request) throws MPIException;
 public final Status testStatus() throws MPIException
 {
     MPI.check();
-    return testStatus(handle, status) ? newStatus() : null;
+    return testStatus(handle);
 }
 
-private native boolean testStatus(long request, long[] status)
-        throws MPIException;
+private native Status testStatus(long request) throws MPIException;
 
 /**
  * Returns true if the operation identified by the request
@@ -183,10 +229,10 @@ public static Status waitAnyStatus(Request[] requests) throws MPIException
 {
     MPI.check();
     long[] r = getHandles(requests);
-    long[] status = Status.newData();
-    waitAnyStatus(r, status);
+    Status status = new Status();
+    waitAnyStatus(r, status.data);
     setHandles(requests, r);
-    return new Status(status);
+    return status;
 }
 
 private static native void waitAnyStatus(long[] requests, long[] status)
@@ -230,20 +276,12 @@ public static Status testAnyStatus(Request[] requests) throws MPIException
 {
     MPI.check();
     long[] r = getHandles(requests);
-    long[] status = requests.length==0 ? Status.newData() : requests[0].status;
-    boolean completed = testAnyStatus(r, status);
+    Status status = testAnyStatus(r);
     setHandles(requests, r);
-
-    if(!completed)
-        return null;
-    else if(requests.length == 0)
-        return new Status(status);
-    else
-        return requests[0].newStatus();
+    return status;
 }
 
-private static native boolean testAnyStatus(long[] requests, long[] status)
-        throws MPIException;
+private static native Status testAnyStatus(long[] requests) throws MPIException;
 
 /**
  * Tests for completion of either one or none of the operations
@@ -281,12 +319,12 @@ public static Status[] waitAllStatus(Request[] requests) throws MPIException
 {
     MPI.check();
     long[] r = getHandles(requests);
-    waitAllStatus(r, requests);
+    Status[] status = waitAllStatus(r);
     setHandles(requests, r);
-    return newStatuses(requests, requests.length);
+    return status;
 }
 
-private static native void waitAllStatus(long[] requests, Request[] objReqs)
+private static native Status[] waitAllStatus(long[] requests)
         throws MPIException;
 
 /**
@@ -321,12 +359,12 @@ public static Status[] testAllStatus(Request[] requests) throws MPIException
 {
     MPI.check();
     long[] r = getHandles(requests);
-    int count = testAllStatus(r, requests);
+    Status[] status = testAllStatus(r);
     setHandles(requests, r);
-    return newStatuses(requests, count);
+    return status;
 }
 
-private static native int testAllStatus(long[] requests, Request[] objReqs)
+private static native Status[] testAllStatus(long[] requests)
         throws MPIException;
 
 /**
@@ -367,12 +405,12 @@ public static Status[] waitSomeStatus(Request[] requests) throws MPIException
 {
     MPI.check();
     long[] r = getHandles(requests);
-    int count = waitSomeStatus(r, requests);
+    Status[] status = waitSomeStatus(r);
     setHandles(requests, r);
-    return newStatuses(requests, count);
+    return status;
 }
 
-private static native int waitSomeStatus(long[] requests, Request[] objReqs)
+private static native Status[] waitSomeStatus(long[] requests)
         throws MPIException;
 
 /**
@@ -411,12 +449,12 @@ public static Status[] testSomeStatus(Request[] requests) throws MPIException
 {
     MPI.check();
     long[] r = getHandles(requests);
-    int count = testSomeStatus(r, requests);
+    Status[] status = testSomeStatus(r);
     setHandles(requests, r);
-    return newStatuses(requests, count);
+    return status;
 }
 
-private static native int testSomeStatus(long[] requests, Request[] objReqs)
+private static native Status[] testSomeStatus(long[] requests)
         throws MPIException;
 
 /**
@@ -453,26 +491,6 @@ protected static void setHandles(Request[] r, long[] h)
 {
     for(int i = 0; i < r.length; i++)
         r[i].handle = h[i];
-}
-
-private static Status[] newStatuses(Request[] r, int count)
-{
-    if(count < 0)
-        return null;
-
-    Status[] s = new Status[count];
-
-    for(int i = 0; i < count; i++)
-        s[i] = r[i].newStatus();
-
-    return s;
-}
-
-private Status newStatus()
-{
-    Status s = new Status(status);
-    status = Status.newData();
-    return s;
 }
 
 } // Request

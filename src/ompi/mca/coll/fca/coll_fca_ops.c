@@ -1,11 +1,17 @@
-/**
-  Copyright (c) 2011 Mellanox Technologies. All rights reserved.
-  $COPYRIGHT$
-
-  Additional copyrights may follow
-
-  $HEADER$
+/*
+ * Copyright (c) 2011      Mellanox Technologies. All rights reserved.
+ * Copyright (c) 2015      Research Organization for Information Science
+ *                         and Technology (RIST). All rights reserved.
+ * $COPYRIGHT$
+ *
+ * Additional copyrights may follow
+ *
+ * $HEADER$
  */
+
+#ifdef HAVE_ALLOCA_H
+#include <alloca.h>
+#endif
 
 #include "ompi_config.h"
 #include "ompi/constants.h"
@@ -153,6 +159,10 @@ int mca_coll_fca_barrier(struct ompi_communicator_t *comm,
     int ret;
 
     FCA_VERBOSE(5,"Using FCA Barrier");
+    if (OPAL_UNLIKELY(ompi_mpi_finalize_started)) {
+        FCA_VERBOSE(5, "In finalize, reverting to previous barrier");
+        goto orig_barrier;
+    }
     ret = fca_do_barrier(fca_module->fca_comm);
     if (ret < 0) {
         if (ret == -EUSEMPI) {

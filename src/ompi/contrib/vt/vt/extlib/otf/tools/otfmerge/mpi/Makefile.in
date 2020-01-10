@@ -85,8 +85,8 @@ am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am__objects_1 = otfmerge_mpi-handler.$(OBJEXT) \
 	otfmerge_mpi-otfmerge.$(OBJEXT)
-am_otfmerge_mpi_OBJECTS = $(am__objects_1)
-otfmerge_mpi_OBJECTS = $(am_otfmerge_mpi_OBJECTS)
+nodist_otfmerge_mpi_OBJECTS = $(am__objects_1)
+otfmerge_mpi_OBJECTS = $(nodist_otfmerge_mpi_OBJECTS)
 am__DEPENDENCIES_1 =
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -129,8 +129,8 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(otfmerge_mpi_SOURCES)
-DIST_SOURCES = $(otfmerge_mpi_SOURCES)
+SOURCES = $(nodist_otfmerge_mpi_SOURCES)
+DIST_SOURCES =
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -306,9 +306,7 @@ target_vendor = @target_vendor@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-OTFMERGESRCDIR = $(srcdir)/..
 COMMONINCLUDES = \
-	-I$(OTFMERGESRCDIR) \
 	-I$(top_builddir)/otflib -I$(top_srcdir)/otflib \
 	-I$(top_builddir)/otfauxlib -I$(top_srcdir)/otfauxlib
 
@@ -322,15 +320,16 @@ COMMONDEPENDENCIES = \
         $(top_builddir)/otfauxlib/libotfaux.la
 
 COMMONSOURCES = \
-	$(OTFMERGESRCDIR)/handler.h \
-	$(OTFMERGESRCDIR)/handler.c \
-	$(OTFMERGESRCDIR)/otfmerge.c
+	handler.h \
+	handler.c \
+	otfmerge.c
 
-AM_CPPFLAGS = $(COMMONINCLUDES) $(MPI_INCLUDE_LINE)
+AM_CPPFLAGS = -I$(top_srcdir)/tools/otfmerge $(COMMONINCLUDES) $(MPI_INCLUDE_LINE)
 otfmerge_mpi_CFLAGS = -DOTFMERGE_MPI $(COMMONCFLAGS) $(MPICFLAGS)
 otfmerge_mpi_LDADD = $(COMMONLDADD) $(MPI_LIB_LINE)
 otfmerge_mpi_DEPENDENCIES = $(COMMONDEPENDENCIES)
-otfmerge_mpi_SOURCES = $(COMMONSOURCES)
+nodist_otfmerge_mpi_SOURCES = $(COMMONSOURCES)
+CLEANFILES = $(COMMONSOURCES)
 all: all-am
 
 .SUFFIXES:
@@ -446,33 +445,33 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
 
-otfmerge_mpi-handler.o: $(OTFMERGESRCDIR)/handler.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfmerge_mpi_CFLAGS) $(CFLAGS) -MT otfmerge_mpi-handler.o -MD -MP -MF $(DEPDIR)/otfmerge_mpi-handler.Tpo -c -o otfmerge_mpi-handler.o `test -f '$(OTFMERGESRCDIR)/handler.c' || echo '$(srcdir)/'`$(OTFMERGESRCDIR)/handler.c
+otfmerge_mpi-handler.o: handler.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfmerge_mpi_CFLAGS) $(CFLAGS) -MT otfmerge_mpi-handler.o -MD -MP -MF $(DEPDIR)/otfmerge_mpi-handler.Tpo -c -o otfmerge_mpi-handler.o `test -f 'handler.c' || echo '$(srcdir)/'`handler.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/otfmerge_mpi-handler.Tpo $(DEPDIR)/otfmerge_mpi-handler.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(OTFMERGESRCDIR)/handler.c' object='otfmerge_mpi-handler.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='handler.c' object='otfmerge_mpi-handler.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfmerge_mpi_CFLAGS) $(CFLAGS) -c -o otfmerge_mpi-handler.o `test -f '$(OTFMERGESRCDIR)/handler.c' || echo '$(srcdir)/'`$(OTFMERGESRCDIR)/handler.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfmerge_mpi_CFLAGS) $(CFLAGS) -c -o otfmerge_mpi-handler.o `test -f 'handler.c' || echo '$(srcdir)/'`handler.c
 
-otfmerge_mpi-handler.obj: $(OTFMERGESRCDIR)/handler.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfmerge_mpi_CFLAGS) $(CFLAGS) -MT otfmerge_mpi-handler.obj -MD -MP -MF $(DEPDIR)/otfmerge_mpi-handler.Tpo -c -o otfmerge_mpi-handler.obj `if test -f '$(OTFMERGESRCDIR)/handler.c'; then $(CYGPATH_W) '$(OTFMERGESRCDIR)/handler.c'; else $(CYGPATH_W) '$(srcdir)/$(OTFMERGESRCDIR)/handler.c'; fi`
+otfmerge_mpi-handler.obj: handler.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfmerge_mpi_CFLAGS) $(CFLAGS) -MT otfmerge_mpi-handler.obj -MD -MP -MF $(DEPDIR)/otfmerge_mpi-handler.Tpo -c -o otfmerge_mpi-handler.obj `if test -f 'handler.c'; then $(CYGPATH_W) 'handler.c'; else $(CYGPATH_W) '$(srcdir)/handler.c'; fi`
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/otfmerge_mpi-handler.Tpo $(DEPDIR)/otfmerge_mpi-handler.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(OTFMERGESRCDIR)/handler.c' object='otfmerge_mpi-handler.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='handler.c' object='otfmerge_mpi-handler.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfmerge_mpi_CFLAGS) $(CFLAGS) -c -o otfmerge_mpi-handler.obj `if test -f '$(OTFMERGESRCDIR)/handler.c'; then $(CYGPATH_W) '$(OTFMERGESRCDIR)/handler.c'; else $(CYGPATH_W) '$(srcdir)/$(OTFMERGESRCDIR)/handler.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfmerge_mpi_CFLAGS) $(CFLAGS) -c -o otfmerge_mpi-handler.obj `if test -f 'handler.c'; then $(CYGPATH_W) 'handler.c'; else $(CYGPATH_W) '$(srcdir)/handler.c'; fi`
 
-otfmerge_mpi-otfmerge.o: $(OTFMERGESRCDIR)/otfmerge.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfmerge_mpi_CFLAGS) $(CFLAGS) -MT otfmerge_mpi-otfmerge.o -MD -MP -MF $(DEPDIR)/otfmerge_mpi-otfmerge.Tpo -c -o otfmerge_mpi-otfmerge.o `test -f '$(OTFMERGESRCDIR)/otfmerge.c' || echo '$(srcdir)/'`$(OTFMERGESRCDIR)/otfmerge.c
+otfmerge_mpi-otfmerge.o: otfmerge.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfmerge_mpi_CFLAGS) $(CFLAGS) -MT otfmerge_mpi-otfmerge.o -MD -MP -MF $(DEPDIR)/otfmerge_mpi-otfmerge.Tpo -c -o otfmerge_mpi-otfmerge.o `test -f 'otfmerge.c' || echo '$(srcdir)/'`otfmerge.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/otfmerge_mpi-otfmerge.Tpo $(DEPDIR)/otfmerge_mpi-otfmerge.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(OTFMERGESRCDIR)/otfmerge.c' object='otfmerge_mpi-otfmerge.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='otfmerge.c' object='otfmerge_mpi-otfmerge.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfmerge_mpi_CFLAGS) $(CFLAGS) -c -o otfmerge_mpi-otfmerge.o `test -f '$(OTFMERGESRCDIR)/otfmerge.c' || echo '$(srcdir)/'`$(OTFMERGESRCDIR)/otfmerge.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfmerge_mpi_CFLAGS) $(CFLAGS) -c -o otfmerge_mpi-otfmerge.o `test -f 'otfmerge.c' || echo '$(srcdir)/'`otfmerge.c
 
-otfmerge_mpi-otfmerge.obj: $(OTFMERGESRCDIR)/otfmerge.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfmerge_mpi_CFLAGS) $(CFLAGS) -MT otfmerge_mpi-otfmerge.obj -MD -MP -MF $(DEPDIR)/otfmerge_mpi-otfmerge.Tpo -c -o otfmerge_mpi-otfmerge.obj `if test -f '$(OTFMERGESRCDIR)/otfmerge.c'; then $(CYGPATH_W) '$(OTFMERGESRCDIR)/otfmerge.c'; else $(CYGPATH_W) '$(srcdir)/$(OTFMERGESRCDIR)/otfmerge.c'; fi`
+otfmerge_mpi-otfmerge.obj: otfmerge.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfmerge_mpi_CFLAGS) $(CFLAGS) -MT otfmerge_mpi-otfmerge.obj -MD -MP -MF $(DEPDIR)/otfmerge_mpi-otfmerge.Tpo -c -o otfmerge_mpi-otfmerge.obj `if test -f 'otfmerge.c'; then $(CYGPATH_W) 'otfmerge.c'; else $(CYGPATH_W) '$(srcdir)/otfmerge.c'; fi`
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/otfmerge_mpi-otfmerge.Tpo $(DEPDIR)/otfmerge_mpi-otfmerge.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(OTFMERGESRCDIR)/otfmerge.c' object='otfmerge_mpi-otfmerge.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='otfmerge.c' object='otfmerge_mpi-otfmerge.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfmerge_mpi_CFLAGS) $(CFLAGS) -c -o otfmerge_mpi-otfmerge.obj `if test -f '$(OTFMERGESRCDIR)/otfmerge.c'; then $(CYGPATH_W) '$(OTFMERGESRCDIR)/otfmerge.c'; else $(CYGPATH_W) '$(srcdir)/$(OTFMERGESRCDIR)/otfmerge.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfmerge_mpi_CFLAGS) $(CFLAGS) -c -o otfmerge_mpi-otfmerge.obj `if test -f 'otfmerge.c'; then $(CYGPATH_W) 'otfmerge.c'; else $(CYGPATH_W) '$(srcdir)/otfmerge.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -605,6 +604,7 @@ install-strip:
 mostlyclean-generic:
 
 clean-generic:
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
@@ -699,6 +699,10 @@ uninstall-am: uninstall-binPROGRAMS
 	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
 	tags uninstall uninstall-am uninstall-binPROGRAMS
 
+
+$(COMMONSOURCES):
+	$(AM_V_at)$(MKDIR_P) `dirname $@`
+	$(LN_S) $(top_srcdir)/tools/otfmerge/$@ $@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

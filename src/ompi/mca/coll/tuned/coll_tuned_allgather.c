@@ -12,6 +12,9 @@
  * Copyright (c) 2009      University of Houston. All rights reserved.
  * Copyright (c) 2013      Los Alamos National Security, LLC. All Rights
  *                         reserved.
+ * Copyright (c) 2014      Research Organization for Information Science
+ *                         and Technology (RIST). All rights reserved.
+ * Copyright (c) 2015      Intel, Inc. All rights reserved
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -190,7 +193,7 @@ int ompi_coll_tuned_allgather_intra_bruck(void *sbuf, int scount,
         err = ompi_datatype_get_true_extent(rdtype, &true_lb, &true_extent);
         if (MPI_SUCCESS != err) { line = __LINE__; goto err_hndl; }
 
-        free_buf = (char*) calloc(((true_extent + true_lb + 
+        free_buf = (char*) calloc(((true_extent - true_lb + 
                                     ((ptrdiff_t)(size - rank) * (ptrdiff_t)rcount - 1) * rext)),
                                   sizeof(char));
         if (NULL == free_buf) { 
@@ -221,8 +224,9 @@ int ompi_coll_tuned_allgather_intra_bruck(void *sbuf, int scount,
     return OMPI_SUCCESS;
 
  err_hndl:
-    OPAL_OUTPUT((ompi_coll_tuned_stream,  "%s:%4d\tError occurred %d, rank %2d",
-                 __FILE__, line, err, rank));
+    opal_output_verbose(COLL_TUNED_VERBOSITY, ompi_coll_tuned_stream,
+                        "%s:%4d\tError occurred %d, rank %2d",
+                        __FILE__, line, err, rank);
     return err;
 }
 
@@ -357,8 +361,9 @@ ompi_coll_tuned_allgather_intra_recursivedoubling(void *sbuf, int scount,
     return OMPI_SUCCESS;
 
  err_hndl:
-    OPAL_OUTPUT((ompi_coll_tuned_stream,  "%s:%4d\tError occurred %d, rank %2d",
-                 __FILE__, line, err, rank));
+    opal_output_verbose(COLL_TUNED_VERBOSITY, ompi_coll_tuned_stream,
+                        "%s:%4d\tError occurred %d, rank %2d",
+                        __FILE__, line, err, rank);
     return err;
 }
 
@@ -444,8 +449,9 @@ int ompi_coll_tuned_allgather_intra_ring(void *sbuf, int scount,
     return OMPI_SUCCESS;
 
  err_hndl:
-    OPAL_OUTPUT((ompi_coll_tuned_stream,  "%s:%4d\tError occurred %d, rank %2d",
-                 __FILE__, line, err, rank));
+    opal_output_verbose(COLL_TUNED_VERBOSITY, ompi_coll_tuned_stream,
+                        "%s:%4d\tError occurred %d, rank %2d",
+                        __FILE__, line, err, rank);
     return err;
 }
 
@@ -617,8 +623,9 @@ ompi_coll_tuned_allgather_intra_neighborexchange(void *sbuf, int scount,
     return OMPI_SUCCESS;
 
  err_hndl:
-    OPAL_OUTPUT((ompi_coll_tuned_stream,  "%s:%4d\tError occurred %d, rank %2d",
-                 __FILE__, line, err, rank));
+    opal_output_verbose(COLL_TUNED_VERBOSITY, ompi_coll_tuned_stream,
+                        "%s:%4d\tError occurred %d, rank %2d",
+                        __FILE__, line, err, rank);
     return err;
 }
 
@@ -676,8 +683,9 @@ int ompi_coll_tuned_allgather_intra_two_procs(void *sbuf, int scount,
     return MPI_SUCCESS;
 
  err_hndl:
-    OPAL_OUTPUT((ompi_coll_tuned_stream, "%s:%4d\tError occurred %d, rank %2d",
-                 __FILE__, line, err, rank));
+    opal_output_verbose(COLL_TUNED_VERBOSITY, ompi_coll_tuned_stream,
+                        "%s:%4d\tError occurred %d, rank %2d",
+                        __FILE__, line, err, rank);
     return err;
 }
 

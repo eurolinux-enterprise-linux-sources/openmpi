@@ -2,6 +2,8 @@
 /*
  * Copyright (c) 2013      Los Alamos National Security, LLC. All rights
  *                         reserved.
+ * Copyright (c) 2014      Research Organization for Information Science
+ *                         and Technology (RIST). All rights reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -114,6 +116,8 @@ mca_btl_scif_module_finalize (struct mca_btl_base_module_t *btl)
     OBJ_DESTRUCT(&mca_btl_scif_module.dma_frags);
     OBJ_DESTRUCT(&mca_btl_scif_module.eager_frags);
 
+    mca_btl_scif_module.exiting = true;
+
     /* close all open connections and release endpoints */
     if (NULL != scif_module->endpoints) {
         for (i = 0 ; i < scif_module->endpoint_count ; ++i) {
@@ -128,6 +132,12 @@ mca_btl_scif_module_finalize (struct mca_btl_base_module_t *btl)
 
     /* close the listening endpoint */
     if (-1 != mca_btl_scif_module.scif_fd) {
+        /* wake up the scif thread */
+        scif_epd_t tmpfd;
+        tmpfd = scif_open();
+        scif_connect (tmpfd, &mca_btl_scif_module.port_id);
+        pthread_join(mca_btl_scif_module.listen_thread, NULL);
+        scif_close(tmpfd);
         scif_close (mca_btl_scif_module.scif_fd);
     }
 
@@ -298,7 +308,7 @@ mca_btl_scif_prepare_src_send (struct mca_btl_base_module_t *btl,
         frag->segments[1].base.seg_addr.pval = data_ptr;
         frag->segments[1].base.seg_len       = *size;
         frag->base.des_src_cnt = 2;
-    } else {        
+    } else {
         /* buffered send */
         (void) MCA_BTL_SCIF_FRAG_ALLOC_EAGER(endpoint, frag);
         if (OPAL_UNLIKELY(NULL == frag)) {
@@ -314,6 +324,7 @@ mca_btl_scif_prepare_src_send (struct mca_btl_base_module_t *btl,
                 mca_btl_scif_frag_return (frag);
                 return NULL;
             }
+            *size = max_size;
         }
 
         frag->segments[0].base.seg_len = reserve + *size;

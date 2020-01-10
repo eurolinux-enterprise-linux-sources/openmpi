@@ -220,6 +220,8 @@ typedef uint16_t orte_job_controls_t;
 #define ORTE_JOB_CONTROL_NO_VM              0x4000
 #define ORTE_JOB_CONTROL_INDEX_ARGV         0x8000
 
+#define ORTE_JOB_CONTROL_PHYS_CPUS          0x0001
+
 /* global type definitions used by RTE - instanced in orte_globals.c */
 
 /************
@@ -420,6 +422,9 @@ typedef struct {
      * indicates the node where we stopped
      */
     orte_node_t *bookmark;
+    /* if we are binding, bookmark the index of the
+     * last object we bound to */
+    unsigned int bkmark_obj;
     /* state of the overall job */
     orte_job_state_t state;
     /* some procs in this job are being restarted */
@@ -566,6 +571,16 @@ struct orte_proc_t {
 typedef struct orte_proc_t orte_proc_t;
 ORTE_DECLSPEC OBJ_CLASS_DECLARATION(orte_proc_t);
 
+#if OPAL_HAVE_HWLOC
+/* define an object for storing node topologies */
+typedef struct {
+    opal_object_t super;
+    hwloc_topology_t topo;
+    char *sig;
+} orte_topology_t;
+ORTE_DECLSPEC OBJ_CLASS_DECLARATION(orte_topology_t);
+#endif
+
 /**
  * Get a job data object
  * We cannot just reference a job data object with its jobid as
@@ -609,6 +624,7 @@ ORTE_DECLSPEC extern char *orte_local_cpu_model;
 ORTE_DECLSPEC extern char *orte_basename;
 ORTE_DECLSPEC extern bool orte_coprocessors_detected;
 ORTE_DECLSPEC extern opal_hash_table_t *orte_coprocessors;
+ORTE_DECLSPEC extern char *orte_topo_signature;
 
 /* ORTE OOB port flags */
 ORTE_DECLSPEC extern bool orte_static_ports;

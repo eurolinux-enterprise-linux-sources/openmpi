@@ -1,6 +1,6 @@
 /* -*- Mode: C; c-basic-offset:4 ; indent-tabs-mode:nil -*- */
 /*
- * Copyright (c) 2013      Los Alamos National Security, LLC. All rights
+ * Copyright (c) 2013-2015 Los Alamos National Security, LLC. All rights
  *                         reserved.
  * $COPYRIGHT$
  *
@@ -75,7 +75,7 @@ int mca_base_pvar_find (const char *project, const char *framework, const char *
         return OPAL_ERROR;
     }
 
-    ret = mca_base_pvar_find_by_name (full_name, &index);
+    ret = mca_base_pvar_find_by_name (full_name, MCA_BASE_PVAR_CLASS_ANY, &index);
     free (full_name);
 
     /* NTH: should we verify the name components match the returned variable? */
@@ -83,8 +83,9 @@ int mca_base_pvar_find (const char *project, const char *framework, const char *
     return (OPAL_SUCCESS != ret) ? ret : index;
 }
 
-int mca_base_pvar_find_by_name (const char *full_name, int *index)
+int mca_base_pvar_find_by_name (const char *full_name, int var_class, int *index)
 {
+    mca_base_pvar_t *pvar;
     void *tmp;
     int rc;
 
@@ -92,6 +93,15 @@ int mca_base_pvar_find_by_name (const char *full_name, int *index)
                                         &tmp);
     if (OPAL_SUCCESS != rc) {
         return rc;
+    }
+
+    rc = mca_base_pvar_get_internal ((int)(uintptr_t) tmp, &pvar, false);
+    if (OPAL_SUCCESS != rc) {
+        return rc;
+    }
+
+    if (MCA_BASE_PVAR_CLASS_ANY != var_class && pvar->var_class != var_class) {
+        return OPAL_ERR_NOT_FOUND;
     }
 
     *index = (int)(uintptr_t) tmp;
@@ -112,6 +122,8 @@ int mca_base_pvar_finalize (void)
                 OBJ_RELEASE(pvar);
             }
         }
+
+        pvar_count = 0;
 
         OBJ_DESTRUCT(&registered_pvars);
         OBJ_DESTRUCT(&mca_base_pvar_index_hash);
@@ -432,7 +444,7 @@ int mca_base_pvar_handle_alloc (mca_base_pvar_session_t *session, int index, voi
             obj_handle = NULL;
         } else if (0 != pvar->bind && NULL == obj_handle) {
             /* this is an application error. what is the correct error code? */
-            ret = OPAL_ERROR;
+            ret = OPAL_ERR_BAD_PARAM;
             break;
         }
 
@@ -829,17 +841,16 @@ int mca_base_pvar_dump(int index, char ***out, mca_base_var_dump_type_t output_t
         }
 
         /* build the message*/
-        asprintf(&tmp, "mca:%s:%s:pvar:%s:", framework, component,
-                 full_name);
+        (void)asprintf(&tmp, "mca:%s:%s:pvar:%s:", framework, component, full_name);
 
-        asprintf(out[0] + line++, "%sclass:%s", tmp, pvar_class_names[pvar->var_class]);
-        asprintf(out[0] + line++, "%sread-only:%s", tmp, mca_base_pvar_is_readonly(pvar) ? "true" : "false");
-        asprintf(out[0] + line++, "%scontinuous:%s", tmp, mca_base_pvar_is_continuous(pvar) ? "true" : "false");
-        asprintf(out[0] + line++, "%satomic:%s", tmp, mca_base_pvar_is_atomic(pvar) ? "true" : "false");
+        (void)asprintf(out[0] + line++, "%sclass:%s", tmp, pvar_class_names[pvar->var_class]);
+        (void)asprintf(out[0] + line++, "%sread-only:%s", tmp, mca_base_pvar_is_readonly(pvar) ? "true" : "false");
+        (void)asprintf(out[0] + line++, "%scontinuous:%s", tmp, mca_base_pvar_is_continuous(pvar) ? "true" : "false");
+        (void)asprintf(out[0] + line++, "%satomic:%s", tmp, mca_base_pvar_is_atomic(pvar) ? "true" : "false");
 
         /* if it has a help message, output the help message */
         if (pvar->description) {
-            asprintf(out[0] + line++, "%shelp:%s", tmp, pvar->description);
+            (void)asprintf(out[0] + line++, "%shelp:%s", tmp, pvar->description);
         }
 
         if (NULL != pvar->enumerator) {
@@ -853,11 +864,12 @@ int mca_base_pvar_dump(int index, char ***out, mca_base_var_dump_type_t output_t
                     continue;
                 }
 
-                asprintf(out[0] + line++, "%senumerator:value:%d:%s", tmp, enum_value, enum_string);
+                (void)asprintf(out[0] + line++, "%senumerator:value:%d:%s", tmp, enum_value, enum_string);
             }
         }
 
-        asprintf(out[0] + line++, "%stype:%s", tmp, var_type_names[pvar->type]);
+        (void)asprintf(out[0] + line++, "%stype:%s", tmp, var_type_names[pvar->type]);
+        free(tmp);  // release tmp storage
     } else {
         /* there will be at most three lines in the pretty print case */
         *out = (char **) calloc (3, sizeof (char *));
@@ -865,11 +877,11 @@ int mca_base_pvar_dump(int index, char ***out, mca_base_var_dump_type_t output_t
             return OPAL_ERR_OUT_OF_RESOURCE;
         }
 
-        asprintf (out[0] + line++, "performance \"%s\" (type: %s, class: %s)", full_name,
-                  var_type_names[pvar->type], pvar_class_names[pvar->var_class]);
+        (void)asprintf (out[0] + line++, "performance \"%s\" (type: %s, class: %s)", full_name,
+                        var_type_names[pvar->type], pvar_class_names[pvar->var_class]);
 
         if (pvar->description) {
-            asprintf(out[0] + line++, "%s", pvar->description);
+            (void)asprintf(out[0] + line++, "%s", pvar->description);
         }
 
         if (NULL != pvar->enumerator) {
@@ -877,7 +889,7 @@ int mca_base_pvar_dump(int index, char ***out, mca_base_var_dump_type_t output_t
 
             ret = pvar->enumerator->dump(pvar->enumerator, &values);
             if (OPAL_SUCCESS == ret) {
-                asprintf (out[0] + line++, "Values: %s", values);
+                (void)asprintf (out[0] + line++, "Values: %s", values);
                 free (values);
             }
         }

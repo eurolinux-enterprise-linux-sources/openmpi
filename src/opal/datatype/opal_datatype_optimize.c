@@ -11,6 +11,9 @@
  * Copyright (c) 2004-2006 The Regents of the University of California.
  *                         All rights reserved.
  * Copyright (c) 2009      Oak Ridge National Labs.  All rights reserved.
+ * Copyright (c) 2014      Cisco Systems, Inc.  All rights reserved.
+ * Copyright (c) 2015      Research Organization for Information Science
+ *                         and Technology (RIST). All rights reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -21,9 +24,6 @@
 #include "opal_config.h"
 
 #include <stddef.h>
-#ifdef HAVE_ALLOCA_H
-#include <alloca.h>
-#endif
 #include <stdlib.h>
 
 #include "opal/datatype/opal_datatype.h"
@@ -40,32 +40,6 @@
         _elem->extent       = 0;                  \
     } while (0)
 
-static inline int SAVE_OPTIMIZED_ELEMENT( dt_elem_desc_t* pElemDesc,
-                                          ddt_elem_desc_t* opt_elem )
-{
-    if( 0 != opt_elem->count ) {
-        pElemDesc->elem = *opt_elem;
-        SET_EMPTY_ELEMENT( opt_elem );
-    }
-    return 0;
-}
-
-static inline int ADD_ELEMENT( dt_elem_desc_t* pElemDesc __opal_attribute_unused__,
-                               ddt_elem_desc_t* opt_elem,
-                               uint16_t type, uint32_t count,
-                               OPAL_PTRDIFF_TYPE disp, int32_t extent )
-{
-    if( 0 == opt_elem->count ) {
-        opt_elem->common.flags = OPAL_DATATYPE_FLAG_BASIC;
-        opt_elem->common.type  = type;
-        opt_elem->count        = count;
-        opt_elem->disp         = disp;
-        opt_elem->extent       = extent;
-        return 0;
-    }
-    return 1;
-}
-
 static int32_t
 opal_datatype_optimize_short( opal_datatype_t* pData,
                          int32_t count,
@@ -73,6 +47,7 @@ opal_datatype_optimize_short( opal_datatype_t* pData,
 {
     dt_elem_desc_t* pElemDesc;
     ddt_elem_desc_t opt_elem;
+    dt_stack_t* pOrigStack;
     dt_stack_t* pStack;            /* pointer to the position on the stack */
     int32_t pos_desc = 0;          /* actual position in the description of the derived datatype */
     int32_t stack_pos = 0, last_type = OPAL_DATATYPE_UINT1, last_length = 0;
@@ -81,7 +56,7 @@ opal_datatype_optimize_short( opal_datatype_t* pData,
     uint16_t last_flags = 0xFFFF;  /* keep all for the first datatype */
     uint32_t i;
 
-    pStack = (dt_stack_t*)alloca( sizeof(dt_stack_t) * (pData->btypes[OPAL_DATATYPE_LOOP]+2) );
+    pOrigStack = pStack = (dt_stack_t*)malloc( sizeof(dt_stack_t) * (pData->btypes[OPAL_DATATYPE_LOOP]+2) );
     SAVE_STACK( pStack, -1, 0, count, 0 );
 
     pTypeDesc->length = 2 * pData->desc.used + 1 /* for the fake OPAL_DATATYPE_END_LOOP at the end */;
@@ -272,6 +247,7 @@ opal_datatype_optimize_short( opal_datatype_t* pData,
     }
     /* cleanup the stack */
     pTypeDesc->used = nbElems - 1;  /* except the last fake END_LOOP */
+    free(pOrigStack);
     return OPAL_SUCCESS;
 }
 
@@ -280,8 +256,8 @@ int32_t opal_datatype_commit( opal_datatype_t * pData )
     ddt_endloop_desc_t* pLast = &(pData->desc.desc[pData->desc.used].end_loop);
     OPAL_PTRDIFF_TYPE first_elem_disp = 0;
 
-    if( pData->flags & OPAL_DATATYPE_FLAG_COMMITED ) return OPAL_SUCCESS;
-    pData->flags |= OPAL_DATATYPE_FLAG_COMMITED;
+    if( pData->flags & OPAL_DATATYPE_FLAG_COMMITTED ) return OPAL_SUCCESS;
+    pData->flags |= OPAL_DATATYPE_FLAG_COMMITTED;
 
     /* We have to compute the displacement of the first non loop item in the
      * description.

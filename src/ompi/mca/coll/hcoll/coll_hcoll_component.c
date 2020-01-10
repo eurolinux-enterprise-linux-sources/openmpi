@@ -189,20 +189,20 @@ static int hcoll_register(void)
 
     CHECK(reg_int("enable",NULL,
                   "[1|0|] Enable/Disable HCOL",
-                  1 /*enable by default*/,
+                  1,
                   &mca_coll_hcoll_component.hcoll_enable,
                   0));
 
     CHECK(reg_int("np",NULL,
                   "Minimal number of processes in the communicator"
                   " for the corresponding hcoll context to be created (default: 32)",
-                  2 /*enable by default*/,
+                  2, 
                   &mca_coll_hcoll_component.hcoll_np,
                   0));
 
     CHECK(reg_int("datatype_fallback",NULL,
                   "[1|0|] Enable/Disable user defined dattypes fallback",
-                  1 /*enable by default*/,
+                  1, 
                   &mca_coll_hcoll_component.hcoll_datatype_fallback,
                   0));
 
@@ -212,7 +212,6 @@ static int hcoll_register(void)
 
 static int hcoll_open(void)
 {
-    int rc;
     mca_coll_hcoll_component_t *cm;
     cm  = &mca_coll_hcoll_component;
 
@@ -222,6 +221,20 @@ static int hcoll_open(void)
     hcoll_rte_fns_setup();
 
     cm->libhcoll_initialized = false;
+
+    /* Register memory hooks */
+    if ((OPAL_MEMORY_FREE_SUPPORT | OPAL_MEMORY_MUNMAP_SUPPORT) ==
+        ((OPAL_MEMORY_FREE_SUPPORT | OPAL_MEMORY_MUNMAP_SUPPORT) &
+         opal_mem_hooks_support_level()))
+    {
+        setenv("MXM_HCOLL_MEM_ON_DEMAND_MAP", "y", 0);
+        HCOL_VERBOSE(1, "Enabling on-demand memory mapping");
+        cm->using_mem_hooks = 1;
+    } else {
+        HCOL_VERBOSE(1, "Disabling on-demand memory mapping");
+        cm->using_mem_hooks = 0;
+    }
+
     return OMPI_SUCCESS;
 }
 
@@ -234,6 +247,14 @@ static int hcoll_close(void)
     if (false == cm->libhcoll_initialized) {
         return OMPI_SUCCESS;
     }
+
+    if (cm->using_mem_hooks) {
+        opal_mem_hooks_unregister_release(mca_coll_hcoll_mem_release_cb);
+    }
+
+#if HCOLL_API >= HCOLL_VERSION(3,2)
+    hcoll_free_init_opts(cm->init_opts);
+#endif
 
     HCOL_VERBOSE(5,"HCOLL FINALIZE");
     rc = hcoll_finalize();

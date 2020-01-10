@@ -9,7 +9,7 @@
  *                         University of Stuttgart.  All rights reserved.
  * Copyright (c) 2004-2005 The Regents of the University of California.
  *                         All rights reserved.
- * Copyright (c) 2008-2010 Cisco Systems, Inc.  All rights reserved.
+ * Copyright (c) 2008-2015 Cisco Systems, Inc.  All rights reserved.
  * $COPYRIGHT$
  * 
  * Additional copyrights may follow
@@ -25,26 +25,18 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-
-#if OPAL_WANT_LIBLTDL
-  #ifndef __WINDOWS__
-    #if OPAL_LIBLTDL_INTERNAL
-      #include "opal/libltdl/ltdl.h"
-    #else
-      #include "ltdl.h"
-    #endif
-  #else
-    #include "ltdl.h"
-  #endif
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
 #endif
 
 #include "opal/class/opal_list.h"
 #include "opal/mca/mca.h"
 #include "opal/mca/base/base.h"
 #include "opal/mca/base/mca_base_component_repository.h"
+#include "opal/mca/dl/base/base.h"
 #include "opal/constants.h"
 
-#if OPAL_WANT_LIBLTDL
+#if OPAL_HAVE_DL_SUPPORT
 
 /*
  * Private types
@@ -53,7 +45,7 @@ struct repository_item_t {
   opal_list_item_t super;
 
   char ri_type[MCA_BASE_MAX_TYPE_NAME_LEN + 1];
-  lt_dlhandle ri_dlhandle;
+  opal_dl_handle_t *ri_dlhandle;
   const mca_base_component_t *ri_component_struct;
   opal_list_t ri_dependencies;
 };
@@ -74,7 +66,7 @@ static void di_destructor(opal_object_t *obj);
 static OBJ_CLASS_INSTANCE(dependency_item_t, opal_list_item_t, 
                           di_constructor, di_destructor);
 
-#endif /* OPAL_WANT_LIBLTDL */
+#endif /* OPAL_HAVE_DL_SUPPORT */
 
 
 /*
@@ -83,7 +75,7 @@ static OBJ_CLASS_INSTANCE(dependency_item_t, opal_list_item_t,
 static bool initialized = false;
 
 
-#if OPAL_WANT_LIBLTDL
+#if OPAL_HAVE_DL_SUPPORT
 
 static opal_list_t repository;
 
@@ -94,11 +86,7 @@ static opal_list_t repository;
 static repository_item_t *find_component(const char *type, const char *name);
 static int link_items(repository_item_t *src, repository_item_t *depend);
 
-#if OPAL_HAVE_LTDL_ADVISE
-lt_dladvise opal_mca_dladvise;
-#endif
-
-#endif /* OPAL_WANT_LIBLTDL */
+#endif /* OPAL_HAVE_DL_SUPPORT */
 
 
 /*
@@ -109,29 +97,20 @@ int mca_base_component_repository_init(void)
   /* Setup internal structures */
 
   if (!initialized) {
-#if OPAL_WANT_LIBLTDL
-    /* Initialize libltdl */
+#if OPAL_HAVE_DL_SUPPORT
 
-    if (lt_dlinit() != 0) {
-      return OPAL_ERR_OUT_OF_RESOURCE;
+    /* Initialize the dl framework */
+    int ret = mca_base_framework_open(&opal_dl_base_framework, 0);
+    if (OPAL_SUCCESS != ret) {
+        opal_output(0, "%s %d:%s failed -- process will likely abort (open the dl framework returned %d instead of OPAL_SUCCESS)\n",
+                    __FILE__, __LINE__, __func__, ret);
+        return ret;
     }
-
-#if OPAL_HAVE_LTDL_ADVISE
-    if (lt_dladvise_init(&opal_mca_dladvise)) {
-        return OPAL_ERR_OUT_OF_RESOURCE;
-    }
-
-    if (lt_dladvise_ext(&opal_mca_dladvise)) {
-        return OPAL_ERROR;
-    }
-
-    if (lt_dladvise_global(&opal_mca_dladvise)) {
-        return OPAL_ERROR;
-    }
-#endif
+    opal_dl_base_select();
 
     OBJ_CONSTRUCT(&repository, opal_list_t);
 #endif
+
     initialized = true;
   }
 
@@ -147,10 +126,10 @@ int mca_base_component_repository_init(void)
  * saved.
  */
 int mca_base_component_repository_retain(char *type, 
-                                         lt_dlhandle component_handle, 
+                                         opal_dl_handle_t *component_handle,
                                          const mca_base_component_t *component_struct)
 {
-#if OPAL_WANT_LIBLTDL
+#if OPAL_HAVE_DL_SUPPORT
   repository_item_t *ri;
 
   /* Allocate a new repository item */
@@ -186,7 +165,7 @@ int mca_base_component_repository_retain(char *type,
 int mca_base_component_repository_retain_component(const char *type, 
                                                    const char *name)
 {
-#if OPAL_WANT_LIBLTDL
+#if OPAL_HAVE_DL_SUPPORT
     repository_item_t *ri = find_component(type, name);
     if (NULL != ri) {
         OBJ_RETAIN(ri);
@@ -207,7 +186,7 @@ int mca_base_component_repository_link(const char *src_type,
                                        const char *depend_type,
                                        const char *depend_name)
 {
-#if OPAL_WANT_LIBLTDL
+#if OPAL_HAVE_DL_SUPPORT
   repository_item_t *src, *depend;
 
   /* Look up the two components */
@@ -236,7 +215,7 @@ int mca_base_component_repository_link(const char *src_type,
  */
 void mca_base_component_repository_release(const mca_base_component_t *component)
 {
-#if OPAL_WANT_LIBLTDL
+#if OPAL_HAVE_DL_SUPPORT
   if (initialized) {
     repository_item_t *ri = find_component(component->mca_type_name, 
                                            component->mca_component_name);
@@ -253,13 +232,12 @@ void mca_base_component_repository_release(const mca_base_component_t *component
  */
 void mca_base_component_repository_finalize(void)
 {
-#if OPAL_WANT_LIBLTDL
-  opal_list_item_t *item;
-  repository_item_t *ri;
+#if OPAL_HAVE_DL_SUPPORT
+  repository_item_t *ri, *next;
 #endif
 
   if (initialized) {
-#if OPAL_WANT_LIBLTDL
+#if OPAL_HAVE_DL_SUPPORT
 
     /* Have to be slightly careful about this because of dependencies,
        particularly on OS's where it matters (i.e., closing a
@@ -275,30 +253,19 @@ void mca_base_component_repository_finalize(void)
        technically an error). */
 
     do {
-      for (item = opal_list_get_first(&repository);
-           opal_list_get_end(&repository) != item; ) {
-        ri = (repository_item_t *) item;
-        item = opal_list_get_next(item);
+      OPAL_LIST_FOREACH_SAFE(ri, next, &repository, repository_item_t) {
         OBJ_RELEASE(ri);
       }
     } while (opal_list_get_size(&repository) > 0);
 
-#if OPAL_HAVE_LTDL_ADVISE
-    if (lt_dladvise_destroy(&opal_mca_dladvise)) {
-        return;
-    }
-#endif
-
-    /* Close down libltdl */
-
-    lt_dlexit();
+    (void) mca_base_framework_close(&opal_dl_base_framework);
 #endif
 
     initialized = false;
   }
 }
 
-#if OPAL_WANT_LIBLTDL
+#if OPAL_HAVE_DL_SUPPORT
 
 static repository_item_t *find_component(const char *type, const char *name)
 {
@@ -377,7 +344,6 @@ static void ri_constructor(opal_object_t *obj)
 static void ri_destructor(opal_object_t *obj)
 {
   repository_item_t *ri = (repository_item_t *) obj;
-  dependency_item_t *di;
   opal_list_item_t *item;
   int group_id;
 
@@ -388,7 +354,7 @@ static void ri_destructor(opal_object_t *obj)
   }
 
   /* Close the component (and potentially unload it from memory */
-  lt_dlclose(ri->ri_dlhandle);
+  opal_dl_close(ri->ri_dlhandle);
 
   /* It should be obvious, but I'll state it anyway because it bit me
      during debugging: after the dlclose(), the mca_base_component_t
@@ -398,11 +364,8 @@ static void ri_destructor(opal_object_t *obj)
   /* Now go release/close (at a minimum: decrement the refcount) any
      dependencies of this component */
 
-  for (item = opal_list_remove_first(&ri->ri_dependencies);
-       NULL != item; 
-       item = opal_list_remove_first(&ri->ri_dependencies)) {
-    di = (dependency_item_t *) item;
-    OBJ_RELEASE(di);
+  while (NULL != (item = opal_list_remove_first(&ri->ri_dependencies))) {
+    OBJ_RELEASE(item);
   }
   OBJ_DESTRUCT(&ri->ri_dependencies);
   opal_list_remove_item(&repository, (opal_list_item_t *) ri);
@@ -431,4 +394,4 @@ static void di_destructor(opal_object_t *obj)
   OBJ_RELEASE(di->di_repository_entry);
 }
 
-#endif /* OPAL_WANT_LIBLTDL */
+#endif /* OPAL_HAVE_DL_SUPPORT */

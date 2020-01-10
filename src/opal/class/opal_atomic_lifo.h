@@ -1,3 +1,4 @@
+/* -*- Mode: C; c-basic-offset:4 ; indent-tabs-mode:nil -*- */
 /*
  * Copyright (c) 2004-2005 The Trustees of Indiana University and Indiana
  *                         University Research and Technology
@@ -11,6 +12,9 @@
  *                         All rights reserved.
  * Copyright (c) 2007      Voltaire All rights reserved.
  * Copyright (c) 2010      IBM Corporation.  All rights reserved.
+ * Copyright (c) 2014      Los Alamos National Security, LLC. All rights
+ *                         reserved.
+ * Copyright (c) 2014 Cisco Systems, Inc.  All rights reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -25,6 +29,7 @@
 #include "opal/class/opal_list.h"
 
 #include "opal/sys/atomic.h"
+#include "opal/threads/mutex.h"
 
 BEGIN_C_DECLS
 
@@ -66,17 +71,23 @@ static inline bool opal_atomic_lifo_is_empty( opal_atomic_lifo_t* lifo )
 static inline opal_list_item_t* opal_atomic_lifo_push( opal_atomic_lifo_t* lifo,
                                                        opal_list_item_t* item )
 {
-    do {
+    if (opal_using_threads ()) {
+        do {
+            item->opal_list_next = lifo->opal_lifo_head;
+            opal_atomic_wmb();
+            if( opal_atomic_cmpset_ptr( &(lifo->opal_lifo_head),
+                                        (void*)item->opal_list_next,
+                                        item ) ) {
+                opal_atomic_cmpset_32((volatile int32_t*)&item->item_free, 1, 0);
+                return (opal_list_item_t*)item->opal_list_next;
+            }
+            /* DO some kind of pause to release the bus */
+        } while( 1 );
+    } else {
         item->opal_list_next = lifo->opal_lifo_head;
-        opal_atomic_wmb();
-        if( opal_atomic_cmpset_ptr( &(lifo->opal_lifo_head),
-                                    (void*)item->opal_list_next,
-                                    item ) ) {
-            opal_atomic_cmpset_32((volatile int32_t*)&item->item_free, 1, 0);
-            return (opal_list_item_t*)item->opal_list_next;
-        }
-        /* DO some kind of pause to release the bus */
-    } while( 1 );
+        lifo->opal_lifo_head = item;
+        return (opal_list_item_t*)item->opal_list_next;
+    }
 }
 
 /* Retrieve one element from the LIFO. If we reach the ghost element then the LIFO
@@ -85,18 +96,25 @@ static inline opal_list_item_t* opal_atomic_lifo_push( opal_atomic_lifo_t* lifo,
 static inline opal_list_item_t* opal_atomic_lifo_pop( opal_atomic_lifo_t* lifo )
 {
     opal_list_item_t* item;
-    while((item = lifo->opal_lifo_head) != &(lifo->opal_lifo_ghost))
-    {
-        opal_atomic_rmb();
-        if(!opal_atomic_cmpset_32((volatile int32_t*)&item->item_free, 0, 1))
-            continue;
-        if( opal_atomic_cmpset_ptr( &(lifo->opal_lifo_head),
-                                    item,
-                                    (void*)item->opal_list_next ) )
-            break;
-        opal_atomic_cmpset_32((volatile int32_t*)&item->item_free, 1, 0);
-        /* Do some kind of pause to release the bus */
-    } 
+    if (opal_using_threads()) {
+        while((item = lifo->opal_lifo_head) != &(lifo->opal_lifo_ghost)) {
+            opal_atomic_rmb();
+            if (!opal_atomic_cmpset_32((volatile int32_t*)&item->item_free, 0, 1)) {
+                continue;
+            }
+            if( opal_atomic_cmpset_ptr( &(lifo->opal_lifo_head),
+                                        item,
+                                        (void*)item->opal_list_next ) ) {
+                break;
+            }
+            opal_atomic_cmpset_32((volatile int32_t*)&item->item_free, 1, 0);
+            /* Do some kind of pause to release the bus */
+        }
+    } else {
+        item = lifo->opal_lifo_head;
+        lifo->opal_lifo_head = (opal_list_item_t*)item->opal_list_next;
+    }
+
     if( item == &(lifo->opal_lifo_ghost) ) return NULL;
     item->opal_list_next = NULL;
     return item;

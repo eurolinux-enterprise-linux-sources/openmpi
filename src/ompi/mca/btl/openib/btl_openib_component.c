@@ -19,6 +19,9 @@
  * Copyright (c) 2011-2014 NVIDIA Corporation.  All rights reserved.
  * Copyright (c) 2012      Oak Ridge National Laboratory.  All rights reserved
  * Copyright (c) 2013      Intel, Inc. All rights reserved
+ * Copyright (c) 2014-2015 Research Organization for Information Science
+ *                         and Technology (RIST). All rights reserved.
+ * Copyright (c) 2014      Bull SAS.  All rights reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -36,6 +39,7 @@
 #endif
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <fcntl.h>
 #include <stdlib.h>
 #include <stddef.h>
 #if BTL_OPENIB_MALLOC_HOOKS_ENABLED
@@ -60,6 +64,7 @@
 #include "opal/util/argv.h"
 #include "opal/mca/timer/base/base.h"
 #include "opal/sys/atomic.h"
+#include "opal/util/sys_limits.h"
 #include "opal/util/argv.h"
 #include "opal/memoryhooks/memory.h"
 /* Define this before including hwloc.h so that we also get the hwloc
@@ -105,6 +110,7 @@
 #include "btl_openib_ip.h"
 #include "ompi/runtime/params.h"
 
+#define EPS 1.e-6
 /*
  * Local functions
  */
@@ -157,15 +163,19 @@ mca_btl_openib_component_t mca_btl_openib_component = {
 /* This is a memory allocator hook. The purpose of this is to make
  * every malloc aligned since this speeds up IB HCA work.
  * There two basic cases here:
- * 1. Memory manager for Open MPI is enabled. Then memalign below will be
- * overridden by __memalign_hook which is set to opal_memory_linux_memalign_hook.
- * Thus, _malloc_hook is going to use opal_memory_linux_memalign_hook.
+ *
+ * 1. Memory manager for Open MPI is enabled. Then memalign below will
+ * be overridden by __memalign_hook which is set to
+ * opal_memory_linux_memalign_hook.  Thus, _malloc_hook is going to
+ * use opal_memory_linux_memalign_hook.
+ *
  * 2. No memory manager support. The memalign below is just regular glibc
  * memalign which will be called through __malloc_hook instead of malloc.
  */
 static void *btl_openib_malloc_hook(size_t sz, const void* caller)
 {
-    if (sz < mca_btl_openib_component.memalign_threshold) {
+    if (sz < mca_btl_openib_component.memalign_threshold &&
+        malloc_hook_set) {
         return mca_btl_openib_component.previous_malloc_hook(sz, caller);
     } else {
         return memalign(mca_btl_openib_component.use_memalign, sz);
@@ -224,11 +234,14 @@ static int btl_openib_component_open(void)
     OBJ_CONSTRUCT(&mca_btl_openib_component.devices, opal_pointer_array_t);
     mca_btl_openib_component.devices_count = 0;
     mca_btl_openib_component.cpc_explicitly_defined = false;
-    mca_btl_openib_component.default_recv_qps = NULL;
 
     /* initialize objects */
     OBJ_CONSTRUCT(&mca_btl_openib_component.ib_procs, opal_list_t);
     mca_btl_openib_component.memory_registration_verbose = -1;
+
+#if OPAL_CUDA_SUPPORT
+    mca_common_cuda_stage_one_init();
+#endif /* OPAL_CUDA_SUPPORT */
 
     return OMPI_SUCCESS;
 }
@@ -281,11 +294,16 @@ static int btl_openib_component_close(void)
        then _close() (which won't set the hook) */
     if (malloc_hook_set) {
         __malloc_hook = mca_btl_openib_component.previous_malloc_hook;
+        malloc_hook_set = false;
     }
 #endif
 
     /* close memory registration debugging output */
     opal_output_close (mca_btl_openib_component.memory_registration_verbose);
+
+#if OPAL_CUDA_SUPPORT
+    mca_common_cuda_fini();
+#endif /* OPAL_CUDA_SUPPORT */
 
     return rc;
 }
@@ -976,6 +994,7 @@ static void device_destruct(mca_btl_openib_device_t *device)
     }
 
 #if HAVE_XRC
+
     if (MCA_BTL_XRC_ENABLED) {
         if (OMPI_SUCCESS != mca_btl_openib_close_xrc_domain(device)) {
             BTL_VERBOSE(("XRC Internal error. Failed to close xrc domain"));
@@ -1422,6 +1441,123 @@ error:
     return ret;
 }
 
+/* read a single integer from a linux module parameters file */
+static uint64_t read_module_param(char *file, uint64_t value)
+{
+    int fd = open(file, O_RDONLY);
+    char buffer[64];
+    uint64_t ret;
+
+    if (0 > fd) {
+        return value;
+    }
+
+    read (fd, buffer, 64);
+
+    close (fd);
+
+    errno = 0;
+    ret = strtoull(buffer, NULL, 10);
+
+    return (0 == errno) ? ret : value;
+}
+
+/* calculate memory registation limits */
+static uint64_t calculate_total_mem (void)
+{
+#if OPAL_HAVE_HWLOC
+    hwloc_obj_t machine;
+
+    machine = hwloc_get_next_obj_by_type (opal_hwloc_topology, HWLOC_OBJ_MACHINE, NULL);
+    if (NULL == machine) {
+        return 0;
+    }
+
+    return machine->memory.total_memory;
+#else
+    return 0;
+#endif
+}
+
+
+static uint64_t calculate_max_reg (const char *device_name)
+{
+    struct stat statinfo;
+    uint64_t mtts_per_seg = 1;
+    uint64_t num_mtt = 1 << 19;
+    uint64_t reserved_mtt = 0;
+    uint64_t max_reg, mem_total;
+
+    mem_total = calculate_total_mem ();
+
+    /* On older OFED(<2.0), may need to turn off this parameter*/
+    if (mca_btl_openib_component.allow_max_memory_registration) {
+        max_reg = 2 * mem_total;
+        /* Limit us to 87.5% of the registered memory (some fluff for QPs,
+        file systems, etc) */
+        return (max_reg * 7) >> 3;
+    }
+
+    /* Default to being able to register everything (to ensure that
+       max_reg is initialized in all cases) */
+    max_reg = mem_total;
+    if (!strncmp(device_name, "mlx5", 4)) {
+        max_reg = 2 * mem_total;
+
+    } else if (!strncmp(device_name, "mlx4", 4)) {
+        if (0 == stat("/sys/module/mlx4_core/parameters/log_num_mtt", &statinfo)) {
+            mtts_per_seg = 1 << read_module_param("/sys/module/mlx4_core/parameters/log_mtts_per_seg", 1);
+            num_mtt = 1 << read_module_param("/sys/module/mlx4_core/parameters/log_num_mtt", 20);
+            if (1 == num_mtt) {
+                /* NTH: is 19 a minimum? when log_num_mtt is set to 0 use 19 */
+                num_mtt = 1 << 19;
+                max_reg = (num_mtt - reserved_mtt) * opal_getpagesize () * mtts_per_seg;
+            } else  {
+                max_reg = (num_mtt - reserved_mtt) * opal_getpagesize () * mtts_per_seg;
+            }
+        }
+
+    } else if (!strncmp(device_name, "mthca", 5)) {
+        if (0 == stat("/sys/module/ib_mthca/parameters/num_mtt", &statinfo)) {
+            mtts_per_seg = 1 << read_module_param("/sys/module/ib_mthca/parameters/log_mtts_per_seg", 1);
+            num_mtt = read_module_param("/sys/module/ib_mthca/parameters/num_mtt", 1 << 20);
+            reserved_mtt = read_module_param("/sys/module/ib_mthca/parameters/fmr_reserved_mtts", 0);
+
+            max_reg = (num_mtt - reserved_mtt) * opal_getpagesize () * mtts_per_seg;
+        } else {
+            max_reg = mem_total;
+        }
+
+    } else {
+        /* Need to update to determine the registration limit for this
+           configuration */
+        max_reg = mem_total;
+    }
+
+    /* Print a warning if we can't register more than 75% of physical
+       memory.  Abort if the abort_not_enough_reg_mem MCA param was
+       set. */
+    if (max_reg < mem_total * 3 / 4) {
+        char *action;
+
+        if (mca_btl_openib_component.abort_not_enough_reg_mem) {
+            action = "Your MPI job will now abort.";
+        } else {
+            action = "Your MPI job will continue, but may be behave poorly and/or hang.";
+        }
+        opal_show_help("help-mpi-btl-openib.txt", "reg mem limit low", true,
+                       ompi_process_info.nodename, (unsigned long)(max_reg >> 20),
+                       (unsigned long)(mem_total >> 20), action);
+        if (mca_btl_openib_component.abort_not_enough_reg_mem) {
+            ompi_rte_abort(1, NULL);
+        }
+    }
+
+    /* Limit us to 87.5% of the registered memory (some fluff for QPs,
+       file systems, etc) */
+    return (max_reg * 7) >> 3;
+}
+
 static int init_one_device(opal_list_t *btl_list, struct ibv_device* ib_dev)
 {
     struct mca_mpool_base_resources_t mpool_resources;
@@ -1436,7 +1572,7 @@ static int init_one_device(opal_list_t *btl_list, struct ibv_device* ib_dev)
     /* Open up the device */
     dev_context = ibv_open_device(ib_dev);
     if (NULL == dev_context) {
-        return OMPI_ERR_OUT_OF_RESOURCE;
+        return OMPI_ERR_NOT_SUPPORTED;
     }
 
     /* Find out if this device supports RC QPs */
@@ -1457,8 +1593,7 @@ static int init_one_device(opal_list_t *btl_list, struct ibv_device* ib_dev)
     }
 
     device->mem_reg_active = 0;
-    /* NTH: set some high default until we know how many local peers we have */
-    device->mem_reg_max    = 1ull << 48;
+    device->mem_reg_max    = calculate_max_reg(ibv_get_device_name(ib_dev));
 
     device->ib_dev = ib_dev;
     device->ib_dev_context = dev_context;
@@ -2093,12 +2228,18 @@ static int finish_btl_init(mca_btl_openib_module_t *openib_btl)
             openib_btl->super.btl_eager_limit,
             mca_btl_openib_component.buffer_alignment, size_t);
 
+    opal_output_verbose(1, ompi_btl_base_framework.framework_output, 
+                        "[rank=%d] openib: using port %s:%d", 
+                        ORTE_PROC_MY_NAME->vpid,
+                        ibv_get_device_name(openib_btl->device->ib_dev),
+                        openib_btl->port_num);
+
     return OMPI_SUCCESS;
 }
 
 struct dev_distance {
     struct ibv_device *ib_dev;
-    int distance;
+    float distance;
 };
 
 static int compare_distance(const void *p1, const void *p2)
@@ -2106,14 +2247,20 @@ static int compare_distance(const void *p1, const void *p2)
     const struct dev_distance *d1 = (const struct dev_distance *) p1;
     const struct dev_distance *d2 = (const struct dev_distance *) p2;
 
-    return d1->distance - d2->distance;
+    if (d1->distance > (d2->distance+EPS)) {
+        return 1;
+    } else if ((d1->distance + EPS) < d2->distance) {
+        return -1;
+    } else {
+        return 0;
+    }
 }
 
-static int get_ib_dev_distance(struct ibv_device *dev)
+static float get_ib_dev_distance(struct ibv_device *dev)
 {
     /* If we don't have hwloc, we'll default to a distance of 0,
        because we have no way of measuring. */
-    int distance = 0;
+    float distance = 0;
 
     /* Override any distance logic so all devices are used */
     if (0 != mca_btl_openib_component.ignore_locality) {
@@ -2121,7 +2268,8 @@ static int get_ib_dev_distance(struct ibv_device *dev)
     }
 
 #if OPAL_HAVE_HWLOC
-    int a, b, i;
+    float a, b;
+    int i;
     hwloc_cpuset_t my_cpuset = NULL, ibv_cpuset = NULL;
     hwloc_obj_t my_obj, ibv_obj, node_obj;
 
@@ -2303,7 +2451,7 @@ btl_openib_component_init(int *num_btl_modules,
     unsigned short seedv[3];
     mca_btl_openib_frag_init_data_t *init_data;
     struct dev_distance *dev_sorted;
-    int distance;
+    float distance;
     int index, value;
     bool found;
     mca_base_var_source_t source;
@@ -2315,18 +2463,21 @@ btl_openib_component_init(int *num_btl_modules,
 
 #if BTL_OPENIB_MALLOC_HOOKS_ENABLED
     /* If we got this far, then setup the memory alloc hook (because
-       we're most likely going to be using this component). The hook is to be set up
-       as early as possible in this function since we want most of the allocated resources
-       be aligned.*/
-    if (mca_btl_openib_component.use_memalign > 0) {
+       we're most likely going to be using this component). The hook
+       is to be set up as early as possible in this function since we
+       want most of the allocated resources be aligned.*/
+    if (mca_btl_openib_component.use_memalign > 0 &&
+        (opal_mem_hooks_support_level() &
+            (OPAL_MEMORY_FREE_SUPPORT | OPAL_MEMORY_CHUNK_SUPPORT)) != 0) {
         mca_btl_openib_component.previous_malloc_hook = __malloc_hook;
-        __malloc_hook = btl_openib_malloc_hook; 
+        __malloc_hook = btl_openib_malloc_hook;
         malloc_hook_set = true;
     }
 #endif
     /* Currently refuse to run if MPI_THREAD_MULTIPLE is enabled */
     if (ompi_mpi_thread_multiple && !mca_btl_base_thread_multiple_override) {
-        BTL_VERBOSE(("openib BTL disqualifying itself because MPI_THREAD_MULTIPLE is being used"));
+        opal_output_verbose(5, ompi_btl_base_framework.framework_output,
+                            "btl:openib: MPI_THREAD_MULTIPLE not suppported; skipping this component");
         goto no_btls;
     }
 
@@ -2351,11 +2502,6 @@ btl_openib_component_init(int *num_btl_modules,
 
     /* Initialize FD listening */
     if (OMPI_SUCCESS != ompi_btl_openib_fd_init()) {
-        goto no_btls;
-    }
-
-    /* Init CPC components */
-    if (OMPI_SUCCESS != (ret = ompi_btl_openib_connect_base_init())) {
         goto no_btls;
     }
 
@@ -2474,23 +2620,10 @@ btl_openib_component_init(int *num_btl_modules,
         goto no_btls;
     }
 
-    /* If we want fork support, try to enable it */
-#ifdef HAVE_IBV_FORK_INIT
-    if (0 != mca_btl_openib_component.want_fork_support) {
-        if (0 != ibv_fork_init()) {
-            /* If the want_fork_support MCA parameter is >0, then the
-               user was specifically asking for fork support and we
-               couldn't provide it.  So print an error and deactivate
-               this BTL. */
-            if (mca_btl_openib_component.want_fork_support > 0) {
-                opal_show_help("help-mpi-btl-openib.txt",
-                               "ibv_fork_init fail", true,
-                               ompi_process_info.nodename);
-                goto no_btls;
-            }
-        }
+    /* If fork support is requested, try to enable it */
+    if (OPAL_SUCCESS != (ret = opal_common_verbs_fork_test())) {
+        goto no_btls;
     }
-#endif
 
     /* Parse the include and exclude lists, checking for errors */
     mca_btl_openib_component.if_include_list =
@@ -2555,12 +2688,11 @@ btl_openib_component_init(int *num_btl_modules,
                 mca_btl_openib_component.ib_num_btls <
                 mca_btl_openib_component.ib_max_btls); i++) {
         if (0 != mca_btl_openib_component.ib_num_btls &&
-            distance != dev_sorted[i].distance) {
-            if (mca_btl_openib_component.device_selection_verbose) {
-                opal_output(0, "[rank=%d] openib: skipping device %s; it is too far away", 
-                            ORTE_PROC_MY_NAME->vpid,
-                            ibv_get_device_name(dev_sorted[i].ib_dev));
-            }
+            (dev_sorted[i].distance - distance) > EPS) {
+            opal_output_verbose(1, ompi_btl_base_framework.framework_output, 
+                                "[rank=%d] openib: skipping device %s; it is too far away", 
+                                ORTE_PROC_MY_NAME->vpid,
+                                ibv_get_device_name(dev_sorted[i].ib_dev));
             break;
         }
 
@@ -2596,15 +2728,12 @@ btl_openib_component_init(int *num_btl_modules,
 
         found = true;
         ret = init_one_device(&btl_list, dev_sorted[i].ib_dev);
-        if (OMPI_SUCCESS != ret && OMPI_ERR_NOT_SUPPORTED != ret) {
+        if (OMPI_ERR_NOT_SUPPORTED == ret) {
+            ++num_devices_intentionally_ignored;
+            continue;
+        } else if (OPAL_SUCCESS != ret) {
             free(dev_sorted);
             goto no_btls;
-        } else {
-            if (mca_btl_openib_component.device_selection_verbose) {
-                opal_output(0, "[rank=%d] openib: using device %s", 
-                            ORTE_PROC_MY_NAME->vpid,
-                            ibv_get_device_name(dev_sorted[i].ib_dev));
-            }
         }
     }
     free(dev_sorted);
@@ -2641,6 +2770,12 @@ btl_openib_component_init(int *num_btl_modules,
                            "no active ports found", true, 
                            ompi_process_info.nodename);
         }
+        goto no_btls;
+    }
+
+    /* Now that we know we have devices and ports that we want to use,
+       init CPC components */
+    if (OMPI_SUCCESS != (ret = ompi_btl_openib_connect_base_init())) {
         goto no_btls;
     }
 
@@ -2692,12 +2827,8 @@ btl_openib_component_init(int *num_btl_modules,
        initialize them */
     i = 0;
     while (NULL != (item = opal_list_remove_first(&btl_list))) {
-        mca_btl_openib_device_t *device;
-        int qp_index;
-
         ib_selected = (mca_btl_base_selected_module_t*)item;
         openib_btl = (mca_btl_openib_module_t*)ib_selected->btl_module;
-        device = openib_btl->device;
 
         /* Search for a CPC that can handle this port */
         ret = ompi_btl_openib_connect_base_select_for_local_port(openib_btl);
@@ -2767,6 +2898,7 @@ btl_openib_component_init(int *num_btl_modules,
     /*Unset malloc hook since the component won't start*/
     if (malloc_hook_set) {
         __malloc_hook = mca_btl_openib_component.previous_malloc_hook;
+        malloc_hook_set = false;
     }
 #endif
     return NULL;

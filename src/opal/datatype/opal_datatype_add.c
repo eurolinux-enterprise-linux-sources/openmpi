@@ -11,6 +11,7 @@
  * Copyright (c) 2004-2006 The Regents of the University of California.
  *                         All rights reserved.
  * Copyright (c) 2009      Oak Ridge National Labs.  All rights reserved.
+ * Copyright (c) 2014 Cisco Systems, Inc.  All rights reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -36,12 +37,10 @@
 #define LMAX(A,B)  ({ OPAL_PTRDIFF_TYPE _a = (A), _b = (B); (_a < _b ? _b : _a) })
 #define LMIN(A,B)  ({ OPAL_PTRDIFF_TYPE _a = (A), _b = (B); (_a < _b ? _a : _b); })
 #define IMAX(A,B)  ({ int _a = (A), _b = (B); (_a < _b ? _b : _a); })
-#define IMIN(A,B)  ({ int _a = (A), _b = (B); (_a < _b ? _a : _b); })
 #else
 static inline OPAL_PTRDIFF_TYPE LMAX( OPAL_PTRDIFF_TYPE a, OPAL_PTRDIFF_TYPE b ) { return ( a < b ? b : a ); }
 static inline OPAL_PTRDIFF_TYPE LMIN( OPAL_PTRDIFF_TYPE a, OPAL_PTRDIFF_TYPE b ) { return ( a < b ? a : b ); }
 static inline int  IMAX( int a, int b ) { return ( a < b ? b : a ); }
-static inline int  IMIN( int a, int b ) { return ( a < b ? a : b ); }
 #endif  /* __GNU__ */
 
 #define OPAL_DATATYPE_COMPUTE_REQUIRED_ENTRIES( _pdtAdd, _count, _extent, _place_needed) \
@@ -86,16 +85,17 @@ static inline int  IMIN( int a, int b ) { return ( a < b ? a : b ); }
     }\
 }
 
-/* When we add a datatype we should update it's definition depending on
- * the initial displacement for the whole data, so the displacement of
- * all elements inside a datatype depend only on the loop displacement
- * and it's own displacement.
+/* When we add a datatype we should update it's definition depending on the
+ * initial displacement for the whole data, so the displacement of all elements
+ * inside a datatype depend only on the loop displacement and it's own
+ * displacement.
  */
 
 /* we have 3 differents structures to update:
- * the first is the real representation of the datatype
- * the second is the internal representation using extents
- * the last is the representation used for send operations
+ * - the first is the real representation of the datatype
+ * - the second is the internal representation using extents
+ * - the last is the representation used for send operations
+ *
  * If the count is ZERO we dont have to add the pdtAdd datatype. But we have to
  * be sure that the pdtBase datatype is correctly initialized with all fields
  * set to ZERO if it's a empty datatype.
@@ -107,6 +107,14 @@ int32_t opal_datatype_add( opal_datatype_t* pdtBase, const opal_datatype_t* pdtA
     short localFlags = 0;  /* no specific options yet */
     dt_elem_desc_t *pLast, *pLoop = NULL;
     OPAL_PTRDIFF_TYPE lb, ub, true_lb, true_ub, epsilon, old_true_ub;
+
+    /**
+     *from MPI-3, page 84, lines 18-20: Most datatype constructors have
+     * replication count or block length arguments. Allowed values are
+     * non-negative integers. If the value is zero, no elements are generated in
+     * the type map and there is no effect on datatype bounds or extent.
+     */
+    if( 0 == count ) return OPAL_SUCCESS;
 
     /* the extent should always be positive. So a negative
      * value here have a special meaning ie. default extent as
@@ -272,7 +280,7 @@ int32_t opal_datatype_add( opal_datatype_t* pdtBase, const opal_datatype_t* pdtA
     if( (pdtAdd->flags & (OPAL_DATATYPE_FLAG_PREDEFINED | OPAL_DATATYPE_FLAG_DATA)) == (OPAL_DATATYPE_FLAG_PREDEFINED | OPAL_DATATYPE_FLAG_DATA) ) {
         pdtBase->btypes[pdtAdd->id] += count;
         if( (extent != (OPAL_PTRDIFF_TYPE)pdtAdd->size) && (count > 1) ) {  /* gaps around the datatype */
-            localFlags = pdtAdd->flags & ~(OPAL_DATATYPE_FLAG_COMMITED | OPAL_DATATYPE_FLAG_CONTIGUOUS | OPAL_DATATYPE_FLAG_NO_GAPS);
+            localFlags = pdtAdd->flags & ~(OPAL_DATATYPE_FLAG_COMMITTED | OPAL_DATATYPE_FLAG_CONTIGUOUS | OPAL_DATATYPE_FLAG_NO_GAPS);
             CREATE_LOOP_START( pLast, count, 2, extent, localFlags );
             pLast++;
             pLast->elem.common.type  = pdtAdd->id;
@@ -291,7 +299,7 @@ int32_t opal_datatype_add( opal_datatype_t* pdtBase, const opal_datatype_t* pdtA
             pLast->elem.disp        = disp;
             pLast->elem.extent      = extent;
             pdtBase->desc.used++;
-            pLast->elem.common.flags  = pdtAdd->flags & ~(OPAL_DATATYPE_FLAG_COMMITED);
+            pLast->elem.common.flags  = pdtAdd->flags & ~(OPAL_DATATYPE_FLAG_COMMITTED);
         }
     } else {
         /* keep trace of the total number of basic datatypes in the datatype definition */
@@ -315,7 +323,7 @@ int32_t opal_datatype_add( opal_datatype_t* pdtBase, const opal_datatype_t* pdtA
             if( count != 1 ) {
                 pLoop = pLast;
                 CREATE_LOOP_START( pLast, count, pdtAdd->desc.used + 1, extent,
-                                   (pdtAdd->flags & ~(OPAL_DATATYPE_FLAG_COMMITED)) );
+                                   (pdtAdd->flags & ~(OPAL_DATATYPE_FLAG_COMMITTED)) );
                 pdtBase->btypes[OPAL_DATATYPE_LOOP] += 2;
                 pdtBase->desc.used += 2;
                 pLast++;

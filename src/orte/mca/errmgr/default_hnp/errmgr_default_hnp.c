@@ -161,8 +161,16 @@ static void job_errors(int fd, short args, void *cbdata)
                          orte_job_state_to_str(jobstate)));
 
     if (ORTE_JOB_STATE_NEVER_LAUNCHED == jobstate ||
-        ORTE_JOB_STATE_ALLOC_FAILED == jobstate) {
+        ORTE_JOB_STATE_ALLOC_FAILED == jobstate || 
+        ORTE_JOB_STATE_MAP_FAILED == jobstate || 
+        ORTE_JOB_STATE_CANNOT_LAUNCH == jobstate) {
         orte_never_launched = true;
+        /* disable routing as we may not have performed the daemon 
+         * wireup - e.g., in a managed environment, all the daemons 
+         * "phone home", but don't actually wireup into the routed 
+         * network until they receive the launch message 
+         */ 
+        orte_routing_is_enabled = false; 
         jdata->num_terminated = jdata->num_procs;
         ORTE_ACTIVATE_JOB_STATE(caddy->jdata, ORTE_JOB_STATE_TERMINATED);
         OBJ_RELEASE(caddy);
@@ -201,8 +209,25 @@ static void job_errors(int fd, short args, void *cbdata)
                 }
             }
         }
+        /* if this is the daemon job, then we need to ensure we
+         * output an error message indicating we couldn't launch the
+         * daemons */
+        if (jdata->jobid == ORTE_PROC_MY_NAME->jobid) {
+            orte_show_help("help-errmgr-base.txt", "failed-daemon-launch", true);
+        }
     }
 
+    /* if the daemon job aborted and we haven't heard from everyone yet,
+     * then this could well have been caused by a daemon not finding
+     * a way back to us. In this case, output a message indicating a daemon
+     * died without reporting. Otherwise, say nothing as we
+     * likely already output an error message */
+    if (ORTE_JOB_STATE_ABORTED == jobstate &&
+        jdata->jobid == ORTE_PROC_MY_NAME->jobid &&
+        jdata->num_procs != jdata->num_reported) {
+        orte_show_help("help-errmgr-base.txt", "failed-daemon", true);
+    }
+        
     /* abort the job */
     ORTE_ACTIVATE_JOB_STATE(caddy->jdata, ORTE_JOB_STATE_FORCED_EXIT);
     /* set the global abnormal exit flag  */
@@ -320,13 +345,20 @@ static void proc_errors(int fd, short args, void *cbdata)
                              ORTE_NAME_PRINT(ORTE_PROC_MY_NAME), ORTE_NAME_PRINT(proc)));
         /* record the first one to fail */
         if (!jdata->abort) {
+            /* output an error message so the user knows what happened */
+            orte_show_help("help-errmgr-base.txt", "node-died", true, pptr->node->name);
+            /* mark the daemon job as failed */
             jdata->state = ORTE_JOB_STATE_COMM_FAILED;
             /* point to the lowest rank to cause the problem */
             jdata->aborted_proc = pptr;
             /* retain the object so it doesn't get free'd */
             OBJ_RETAIN(pptr);
             jdata->abort = true;
+            /* update our exit code */
             ORTE_UPDATE_EXIT_STATUS(pptr->exit_code);
+            /* just in case the exit code hadn't been set, do it here - this
+             * won't override any reported exit code */
+            ORTE_UPDATE_EXIT_STATUS(ORTE_ERR_COMM_FAILURE);
         }
         /* abort the system */
         default_hnp_abort(jdata);
@@ -443,6 +475,11 @@ static void proc_errors(int fd, short args, void *cbdata)
             OBJ_RETAIN(pptr);
             jdata->abort = true;
             ORTE_UPDATE_EXIT_STATUS(pptr->exit_code);
+        }
+        /* if this was a daemon, report it */
+        if (jdata->jobid == ORTE_PROC_MY_NAME->jobid) {
+            /* output a message indicating we failed to launch a daemon */
+            orte_show_help("help-errmgr-base.txt", "failed-daemon-launch", true);
         }
         /* abnormal termination - abort */
         default_hnp_abort(jdata);

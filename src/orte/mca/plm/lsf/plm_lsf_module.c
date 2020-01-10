@@ -56,6 +56,7 @@
 #define SR1_PJOBS
 #include <lsf/lsbatch.h>
 
+#include "opal/mca/base/base.h"
 #include "opal/mca/installdirs/installdirs.h"
 #include "opal/util/argv.h"
 #include "opal/util/output.h"
@@ -278,6 +279,9 @@ static void launch_daemons(int fd, short args, void *cbdata)
     argv[proc_vpid_index] = strdup(vpid_string);
     free(vpid_string);
 
+    /* protect the args in case someone has a script wrapper */
+    mca_base_cmd_line_wrap_args(argv);
+
     if (0 < opal_output_get_verbosity(orte_plm_base_framework.framework_output)) {
         param = opal_argv_join(argv, ' ');
         if (NULL != param) {
@@ -295,7 +299,7 @@ static void launch_daemons(int fd, short args, void *cbdata)
        the LSF plm) */
     cur_prefix = NULL;
     for (i=0; i < jdata->apps->size; i++) {
-        char *app_prefix_dir;
+        char *app_prefix_dir=NULL;
         if (NULL == (app = (orte_app_context_t*)opal_pointer_array_get_item(jdata->apps, i))) {
             continue;
         }

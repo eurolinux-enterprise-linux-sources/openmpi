@@ -37,6 +37,7 @@
 #include "opal/mca/mca.h"
 #include "opal/dss/dss.h"
 #include "opal/threads/threads.h"
+#include "opal/util/argv.h"
 
 #include "orte/constants.h"
 #include "orte/types.h"
@@ -218,6 +219,8 @@ void orte_plm_base_recv(int status, orte_process_name_t* sender,
         } else {
             jdata->bookmark = parent->bookmark;
         }
+        /* provide the parent's last object */
+        jdata->bkmark_obj = parent->bkmark_obj;
 
         /* launch it */
         OPAL_OUTPUT_VERBOSE((5, orte_plm_base_framework.framework_output,
@@ -306,7 +309,9 @@ void orte_plm_base_recv(int status, orte_process_name_t* sender,
                         ORTE_ERROR_LOG(ORTE_ERR_NOT_FOUND);
                         ORTE_FORCED_TERMINATE(ORTE_ERROR_DEFAULT_EXIT_CODE);
                     }
-                    proc->state = state;
+                    /* NEVER update the proc state before activating the state machine - let
+                     * the state cbfunc update it as it may need to compare this
+                     * state against the prior proc state */
                     proc->pid = pid;
                     proc->exit_code = exit_code;
                     ORTE_ACTIVATE_PROC_STATE(&name, state);

@@ -7,9 +7,10 @@
  * $HEADER$
  */
 
-#include "ompi_config.h"
+#include "opal_config.h"
 
 #include <errno.h>
+#include <string.h>
 #include <unistd.h>
 
 #include "opal/align.h"
@@ -56,7 +57,7 @@ void mca_cuda_convertor_init(opal_convertor_t* convertor, const void *pUserBuf)
         return;
     }
 
-    if (ftable.gpu_is_gpu_buffer(pUserBuf)) {
+    if (ftable.gpu_is_gpu_buffer(pUserBuf, convertor)) {
         convertor->flags |= CONVERTOR_CUDA;
     }
 }
@@ -77,7 +78,7 @@ bool opal_cuda_check_bufs(char *dest, char *src)
         return false;
     }
 
-    if (ftable.gpu_is_gpu_buffer(dest) || ftable.gpu_is_gpu_buffer(src)) {
+    if (ftable.gpu_is_gpu_buffer(dest, NULL) || ftable.gpu_is_gpu_buffer(src, NULL)) {
         return true;
     } else {
         return false;
@@ -118,7 +119,7 @@ void *opal_cuda_memcpy(void *dest, const void *src, size_t size, opal_convertor_
  * datatypes.  The current code has macros that cannot handle a convertor
  * argument to the memcpy call.
  */
-void *opal_cuda_memcpy_sync(void *dest, void *src, size_t size)
+void *opal_cuda_memcpy_sync(void *dest, const void *src, size_t size)
 {
     int res;
     res = ftable.gpu_cu_memcpy(dest, src, size);

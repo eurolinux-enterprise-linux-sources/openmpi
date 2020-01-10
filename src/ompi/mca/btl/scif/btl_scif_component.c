@@ -212,7 +212,9 @@ static void mca_btl_scif_autoset_leave_pinned (void) {
 
 static int mca_btl_scif_modex_send (void)
 {
-    mca_btl_scif_modex_t modex = {.port_id = mca_btl_scif_module.port_id};
+    mca_btl_scif_modex_t modex;
+    memset(&modex, 0, sizeof(mca_btl_scif_modex_t));
+    modex.port_id = mca_btl_scif_module.port_id;
 
     return ompi_modex_send (&mca_btl_scif_component.super.btl_version, &modex, sizeof (modex));
 }
@@ -261,6 +263,7 @@ static mca_btl_base_module_t **mca_btl_scif_component_init (int *num_btl_modules
     }
 
     base_modules[0] = &mca_btl_scif_module.super;
+    mca_btl_scif_module.exiting = false;
 
     rc = mca_btl_scif_modex_send ();
     if (OMPI_SUCCESS != rc) {
@@ -354,7 +357,7 @@ static int mca_btl_scif_progress_sends (mca_btl_base_endpoint_t *ep)
 {
     /* try sending any wait listed fragments */
     if (OPAL_UNLIKELY(0 != opal_list_get_size (&ep->frag_wait_list))) {
-        return mca_btl_progress_send_wait_list (ep);
+        return mca_btl_scif_progress_send_wait_list (ep);
     }
 
     return 0;

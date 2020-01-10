@@ -116,9 +116,9 @@ CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am_vtlibwrapgen_OBJECTS = vt_libwrapgen.$(OBJEXT) \
-	vt_libwrapgen_filter.$(OBJEXT) vt_libwrapgen_parser.$(OBJEXT) \
-	installdirs.$(OBJEXT) util.$(OBJEXT)
-nodist_vtlibwrapgen_OBJECTS =
+	vt_libwrapgen_filter.$(OBJEXT) vt_libwrapgen_parser.$(OBJEXT)
+am__objects_1 = installdirs.$(OBJEXT) util.$(OBJEXT)
+nodist_vtlibwrapgen_OBJECTS = $(am__objects_1)
 vtlibwrapgen_OBJECTS = $(am_vtlibwrapgen_OBJECTS) \
 	$(nodist_vtlibwrapgen_OBJECTS)
 am__DEPENDENCIES_1 =
@@ -524,21 +524,33 @@ top_vt_builddir = @top_vt_builddir@
 top_vt_srcdir = @top_vt_srcdir@
 unimci_config_cmd = @unimci_config_cmd@
 AM_CPPFLAGS = $(CTOOLINCDIR) -I$(top_srcdir)/include -I$(top_builddir)/include -I$(top_srcdir)/util -I$(top_builddir)/util
+
+# From Automake v2.0 the 'subdir-objects' option will be required to compile
+# sources located outside of the current build directory. Due to a bug in
+# Automake (see http://debbugs.gnu.org/cgi/bugreport.cgi?bug=13928) we cannot
+# enable this option, so we have to sym link in the following sources (actually
+# located in $(top_srcdir)/util/) to lead Automake to believe that all sources
+# are located in this directory.
+UTILSOURCES = \
+	installdirs.c \
+	util.c
+
 vtlibwrapgen_SOURCES = \
 	vt_libwrapgen.h \
 	vt_libwrapgen_filter.h \
 	vt_libwrapgen_parser.h \
 	vt_libwrapgen.cc \
 	vt_libwrapgen_filter.cc \
-	vt_libwrapgen_parser.cc \
-	$(top_srcdir)/util/installdirs.c \
-	$(top_srcdir)/util/util.c
+	vt_libwrapgen_parser.cc
 
 nodist_vtlibwrapgen_SOURCES = \
-	vt_libwrapgen_defs.h
+	$(UTILSOURCES)
 
 vtlibwrapgen_LDADD = \
 	$(CTOOLLIBDIR) $(CTOOLLIB)
+
+CLEANFILES = \
+	$(UTILSOURCES)
 
 all: all-am
 
@@ -658,34 +670,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
-
-installdirs.o: $(top_srcdir)/util/installdirs.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT installdirs.o -MD -MP -MF $(DEPDIR)/installdirs.Tpo -c -o installdirs.o `test -f '$(top_srcdir)/util/installdirs.c' || echo '$(srcdir)/'`$(top_srcdir)/util/installdirs.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/installdirs.Tpo $(DEPDIR)/installdirs.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_srcdir)/util/installdirs.c' object='installdirs.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o installdirs.o `test -f '$(top_srcdir)/util/installdirs.c' || echo '$(srcdir)/'`$(top_srcdir)/util/installdirs.c
-
-installdirs.obj: $(top_srcdir)/util/installdirs.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT installdirs.obj -MD -MP -MF $(DEPDIR)/installdirs.Tpo -c -o installdirs.obj `if test -f '$(top_srcdir)/util/installdirs.c'; then $(CYGPATH_W) '$(top_srcdir)/util/installdirs.c'; else $(CYGPATH_W) '$(srcdir)/$(top_srcdir)/util/installdirs.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/installdirs.Tpo $(DEPDIR)/installdirs.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_srcdir)/util/installdirs.c' object='installdirs.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o installdirs.obj `if test -f '$(top_srcdir)/util/installdirs.c'; then $(CYGPATH_W) '$(top_srcdir)/util/installdirs.c'; else $(CYGPATH_W) '$(srcdir)/$(top_srcdir)/util/installdirs.c'; fi`
-
-util.o: $(top_srcdir)/util/util.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT util.o -MD -MP -MF $(DEPDIR)/util.Tpo -c -o util.o `test -f '$(top_srcdir)/util/util.c' || echo '$(srcdir)/'`$(top_srcdir)/util/util.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/util.Tpo $(DEPDIR)/util.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_srcdir)/util/util.c' object='util.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o util.o `test -f '$(top_srcdir)/util/util.c' || echo '$(srcdir)/'`$(top_srcdir)/util/util.c
-
-util.obj: $(top_srcdir)/util/util.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT util.obj -MD -MP -MF $(DEPDIR)/util.Tpo -c -o util.obj `if test -f '$(top_srcdir)/util/util.c'; then $(CYGPATH_W) '$(top_srcdir)/util/util.c'; else $(CYGPATH_W) '$(srcdir)/$(top_srcdir)/util/util.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/util.Tpo $(DEPDIR)/util.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_srcdir)/util/util.c' object='util.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o util.obj `if test -f '$(top_srcdir)/util/util.c'; then $(CYGPATH_W) '$(top_srcdir)/util/util.c'; else $(CYGPATH_W) '$(srcdir)/$(top_srcdir)/util/util.c'; fi`
 
 .cc.o:
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -839,6 +823,7 @@ install-strip:
 mostlyclean-generic:
 
 clean-generic:
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
@@ -933,6 +918,10 @@ uninstall-am: uninstall-binPROGRAMS
 	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
 	tags uninstall uninstall-am uninstall-binPROGRAMS
 
+
+# Sym link in util sources to keep the non-subdir-objects behavior
+$(UTILSOURCES):
+	$(LN_S) $(top_srcdir)/util/$@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

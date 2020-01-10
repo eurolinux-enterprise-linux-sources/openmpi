@@ -1,6 +1,9 @@
 /*
  * Copyright (c) 2014      Mellanox Technologies, Inc.
  *                         All rights reserved.
+ * Copyright (c) 2014      Research Organization for Information Science
+ *                         and Technology (RIST). All rights reserved.
+ * Copyright (c) 2014      NVIDIA Corporation.  All rights reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -15,6 +18,9 @@
 #endif /* HAVE_UNISTD_H */
 
 #include "opal/constants.h"
+#include "opal/util/sys_limits.h"
+
+#include "ompi/mca/common/verbs/common_verbs.h"
 
 #include "oshmem/mca/sshmem/sshmem.h"
 #include "oshmem/mca/sshmem/base/base.h"
@@ -96,6 +102,11 @@ verbs_runtime_query(mca_base_module_t **module,
     *priority = 0;
     *module = NULL;
 
+    /* If fork support is requested, try to enable it */
+    if (OSHMEM_SUCCESS != (rc = opal_common_verbs_fork_test())) {
+        return OSHMEM_ERROR;
+    }
+
     memset(device, 0, sizeof(*device));
 
 #ifdef HAVE_IBV_GET_DEVICE_LIST
@@ -111,7 +122,7 @@ verbs_runtime_query(mca_base_module_t **module,
     /* Open device */
     if (NULL != mca_sshmem_verbs_component.hca_name) {
         for (i = 0; i < num_devs; i++) {
-            if (0 == strcmp(mca_sshmem_verbs_component.hca_name, ibv_get_device_name(device->ib_devs[0]))) {
+            if (0 == strcmp(mca_sshmem_verbs_component.hca_name, ibv_get_device_name(device->ib_devs[i]))) {
                 device->ib_dev = device->ib_devs[i];
                 break;
             }
@@ -146,23 +157,23 @@ verbs_runtime_query(mca_base_module_t **module,
     /* Allocate memory */
     if (!rc) {
         void *addr = NULL;
-        size_t size = getpagesize();
+        size_t size = (size_t)opal_getpagesize();
         struct ibv_mr *ib_mr = NULL;
-        int access_flag = IBV_ACCESS_LOCAL_WRITE |
+        uint64_t access_flag = IBV_ACCESS_LOCAL_WRITE |
                           IBV_ACCESS_REMOTE_WRITE |
-                          IBV_ACCESS_REMOTE_READ;
-        int exp_access_flag = 0;
+                          IBV_ACCESS_REMOTE_READ; 
+        uint64_t exp_access_flag = 0;
 
         OBJ_CONSTRUCT(&device->ib_mr_array, opal_value_array_t);
         opal_value_array_init(&device->ib_mr_array, sizeof(struct ibv_mr *));
 
 #if defined(MPAGE_ENABLE) && (MPAGE_ENABLE > 0)
-        exp_access_flag = IBV_EXP_ACCESS_ALLOCATE_MR |
+        exp_access_flag = IBV_EXP_ACCESS_ALLOCATE_MR  |
                           IBV_EXP_ACCESS_SHARED_MR_USER_READ |
-                          IBV_EXP_ACCESS_SHARED_MR_USER_WRITE;
+                          IBV_EXP_ACCESS_SHARED_MR_USER_WRITE; 
 #endif /* MPAGE_ENABLE */
 
-        struct ibv_exp_reg_mr_in in = {device->ib_pd, addr, size, access_flag, exp_access_flag, 0};
+        struct ibv_exp_reg_mr_in in = {device->ib_pd, addr, size, access_flag|exp_access_flag, 0};
         ib_mr = ibv_exp_reg_mr(&in);
         if (NULL == ib_mr) {
             rc = OSHMEM_ERR_OUT_OF_RESOURCE;
@@ -172,23 +183,41 @@ verbs_runtime_query(mca_base_module_t **module,
         }
 
 #if defined(MPAGE_ENABLE) && (MPAGE_ENABLE > 0)
-        if (!rc) {
+        if (!rc && (0 != mca_sshmem_verbs_component.has_shared_mr)) {
+            struct ibv_exp_reg_shared_mr_in in_smr;
+
             access_flag = IBV_ACCESS_LOCAL_WRITE |
                           IBV_ACCESS_REMOTE_WRITE |
                           IBV_ACCESS_REMOTE_READ|
                           IBV_EXP_ACCESS_NO_RDMA;
 
             addr = (void *)mca_sshmem_base_start_address;
-            struct ibv_exp_reg_shared_mr_in in = {0, device->ib_mr_shared->handle, device->ib_pd, addr, access_flag};
-            ib_mr = ibv_exp_reg_shared_mr(&in);
+            mca_sshmem_verbs_fill_shared_mr(&in_smr, device->ib_pd, device->ib_mr_shared->handle,  addr, access_flag);
+            ib_mr = ibv_exp_reg_shared_mr(&in_smr);
             if (NULL == ib_mr) {
-                rc = OSHMEM_ERR_OUT_OF_RESOURCE;
+                if (mca_sshmem_verbs_component.has_shared_mr == 1)
+                    rc = OSHMEM_ERR_OUT_OF_RESOURCE;
+                mca_sshmem_verbs_component.has_shared_mr = 0;
             } else {
                 opal_value_array_append_item(&device->ib_mr_array, &ib_mr);
+                mca_sshmem_verbs_component.has_shared_mr = 1;
             }
         }
+#else
+        if (!rc && mca_sshmem_verbs_component.has_shared_mr == 1) {
+            rc = OSHMEM_ERR_OUT_OF_RESOURCE;
+        }
+        mca_sshmem_verbs_component.has_shared_mr = 0;
 #endif /* MPAGE_ENABLE */
     }
+
+#if !MPAGE_HAVE_IBV_EXP_REG_MR_CREATE_FLAGS
+    /* disqualify ourselves if we can not alloc contig
+     * pages at fixed address
+     */
+    if (mca_sshmem_verbs_component.has_shared_mr == 0)
+        rc = OSHMEM_ERR_OUT_OF_RESOURCE;
+#endif
 
     /* all is well - rainbows and butterflies */
     if (!rc) {
@@ -197,15 +226,16 @@ verbs_runtime_query(mca_base_module_t **module,
     }
 
 out:
-    if (device) {
-        if (opal_value_array_get_size(&device->ib_mr_array)) {
+    {
+        if (0 < (i = opal_value_array_get_size(&device->ib_mr_array))) {
             struct ibv_mr** array;
             struct ibv_mr* ib_mr = NULL;
             array = OPAL_VALUE_ARRAY_GET_BASE(&device->ib_mr_array, struct ibv_mr *);
-            while (opal_value_array_get_size(&device->ib_mr_array) > 0) {
-                ib_mr = array[0];
+            /* destruct shared_mr first in order to avoid proc fs race */
+            for (i--;i >= 0; i--) {
+                ib_mr = array[i];
                 ibv_dereg_mr(ib_mr);
-                opal_value_array_remove_item(&device->ib_mr_array, 0);
+                opal_value_array_remove_item(&device->ib_mr_array, i);
             }
 
             if (device->ib_mr_shared) {
@@ -262,6 +292,17 @@ verbs_register(void)
                                          "hca_name",
                                          MCA_BASE_VAR_SYN_FLAG_DEPRECATED);
     }
+    /* allow user specify hca port, extract hca name
+     * ex: mlx_4_0:1 is allowed
+     */
+    if (mca_sshmem_verbs_component.hca_name) {
+        char *p;
+
+        p = strchr(mca_sshmem_verbs_component.hca_name, ':');
+        if (p)
+            *p = 0;
+    }
+
 
     mca_sshmem_verbs_component.mr_interleave_factor = 2;
     index = mca_base_component_var_register (&mca_sshmem_verbs_component.super.base_version,
@@ -276,6 +317,15 @@ verbs_register(void)
                                          "mr_interleave_factor",
                                          MCA_BASE_VAR_SYN_FLAG_DEPRECATED);
     }
+
+    mca_sshmem_verbs_component.has_shared_mr = -1;
+    index = mca_base_component_var_register (&mca_sshmem_verbs_component.super.base_version,
+                                           "shared_mr", "Shared memory region usage "
+                                           "[0 - off, 1 - on, -1 - auto] (default: -1)", MCA_BASE_VAR_TYPE_INT,
+                                           NULL, 0, MCA_BASE_VAR_FLAG_SETTABLE,
+                                           OPAL_INFO_LVL_4,
+                                           MCA_BASE_VAR_SCOPE_ALL_EQ,
+                                           &mca_sshmem_verbs_component.has_shared_mr);
 
     return OSHMEM_SUCCESS;
 }

@@ -39,7 +39,6 @@ struct ompi_osc_sm_lock_t {
 typedef struct ompi_osc_sm_lock_t ompi_osc_sm_lock_t;
 
 struct ompi_osc_sm_node_state_t {
-    int32_t post_count;
     int32_t complete_count;
     ompi_osc_sm_lock_t lock;
     opal_atomic_lock_t accumulate_lock;
@@ -48,7 +47,6 @@ typedef struct ompi_osc_sm_node_state_t ompi_osc_sm_node_state_t;
 
 struct ompi_osc_sm_component_t {
     ompi_osc_base_component_t super;
-    ompi_free_list_t requests;
 };
 typedef struct ompi_osc_sm_component_t ompi_osc_sm_component_t;
 OMPI_DECLSPEC extern ompi_osc_sm_component_t mca_osc_sm_component;
@@ -85,17 +83,20 @@ struct ompi_osc_sm_module_t {
     ompi_osc_sm_global_state_t *global_state;
     ompi_osc_sm_node_state_t *my_node_state;
     ompi_osc_sm_node_state_t *node_states;
+    uint64_t **posts;
+
+    opal_mutex_t lock;
 };
 typedef struct ompi_osc_sm_module_t ompi_osc_sm_module_t;
 
 int ompi_osc_sm_shared_query(struct ompi_win_t *win, int rank, size_t *size, int *disp_unit, void *baseptr);
 
 int ompi_osc_sm_attach(struct ompi_win_t *win, void *base, size_t len);
-int ompi_osc_sm_detach(struct ompi_win_t *win, void *base);
+int ompi_osc_sm_detach(struct ompi_win_t *win, const void *base);
 
 int ompi_osc_sm_free(struct ompi_win_t *win);
 
-int ompi_osc_sm_put(void *origin_addr,
+int ompi_osc_sm_put(const void *origin_addr,
                           int origin_count,
                           struct ompi_datatype_t *origin_dt,
                           int target,
@@ -113,7 +114,7 @@ int ompi_osc_sm_get(void *origin_addr,
                           struct ompi_datatype_t *target_dt,
                           struct ompi_win_t *win);
 
-int ompi_osc_sm_accumulate(void *origin_addr,
+int ompi_osc_sm_accumulate(const void *origin_addr,
                                  int origin_count,
                                  struct ompi_datatype_t *origin_dt,
                                  int target,
@@ -123,15 +124,15 @@ int ompi_osc_sm_accumulate(void *origin_addr,
                                  struct ompi_op_t *op,
                                  struct ompi_win_t *win);
 
-int ompi_osc_sm_compare_and_swap(void *origin_addr,
-                                       void *compare_addr,
+int ompi_osc_sm_compare_and_swap(const void *origin_addr,
+                                       const void *compare_addr,
                                        void *result_addr,
                                        struct ompi_datatype_t *dt,
                                        int target,
                                        OPAL_PTRDIFF_TYPE target_disp,
                                        struct ompi_win_t *win);
 
-int ompi_osc_sm_fetch_and_op(void *origin_addr,
+int ompi_osc_sm_fetch_and_op(const void *origin_addr,
                                    void *result_addr,
                                    struct ompi_datatype_t *dt,
                                    int target,
@@ -139,7 +140,7 @@ int ompi_osc_sm_fetch_and_op(void *origin_addr,
                                    struct ompi_op_t *op,
                                    struct ompi_win_t *win);
 
-int ompi_osc_sm_get_accumulate(void *origin_addr,
+int ompi_osc_sm_get_accumulate(const void *origin_addr,
                                      int origin_count,
                                      struct ompi_datatype_t *origin_datatype,
                                      void *result_addr,
@@ -152,7 +153,7 @@ int ompi_osc_sm_get_accumulate(void *origin_addr,
                                      struct ompi_op_t *op,
                                      struct ompi_win_t *win);
 
-int ompi_osc_sm_rput(void *origin_addr,
+int ompi_osc_sm_rput(const void *origin_addr,
                            int origin_count,
                            struct ompi_datatype_t *origin_dt,
                            int target,
@@ -172,7 +173,7 @@ int ompi_osc_sm_rget(void *origin_addr,
                            struct ompi_win_t *win,
                            struct ompi_request_t **request);
 
-int ompi_osc_sm_raccumulate(void *origin_addr,
+int ompi_osc_sm_raccumulate(const void *origin_addr,
                                   int origin_count,
                                   struct ompi_datatype_t *origin_dt,
                                   int target,
@@ -183,7 +184,7 @@ int ompi_osc_sm_raccumulate(void *origin_addr,
                                   struct ompi_win_t *win,
                                   struct ompi_request_t **request);
 
-int ompi_osc_sm_rget_accumulate(void *origin_addr,
+int ompi_osc_sm_rget_accumulate(const void *origin_addr,
                                       int origin_count,
                                       struct ompi_datatype_t *origin_datatype,
                                       void *result_addr,

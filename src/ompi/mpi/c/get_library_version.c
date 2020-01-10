@@ -9,6 +9,10 @@
  *                         University of Stuttgart.  All rights reserved.
  * Copyright (c) 2004-2005 The Regents of the University of California.
  *                         All rights reserved.
+ * Copyright (c) 2014-2015 Cisco Systems, Inc.  All rights reserved.
+ * Copyright (c) 2015      Research Organization for Information Science
+ *                         and Technology (RIST). All rights reserved.
+ * Copyright (c) 2015      Intel, Inc. All rights reserved
  * $COPYRIGHT$
  * 
  * Additional copyrights may follow
@@ -31,13 +35,12 @@
 #include "ompi/mpi/c/profile/defines.h"
 #endif
 
-static const char FUNC_NAME[] = "MPI_get_library_version";
+static const char FUNC_NAME[] = "MPI_Get_library_version";
 
 
 int MPI_Get_library_version(char *version, int *resultlen) 
 {
     int len_left;
-    MPI_Comm null = MPI_COMM_NULL;
     char *ptr, tmp[MPI_MAX_LIBRARY_VERSION_STRING];
 
     OPAL_CR_NOOP_PROGRESS();
@@ -60,7 +63,10 @@ int MPI_Get_library_version(char *version, int *resultlen)
                 return OMPI_ERRHANDLER_INVOKE(MPI_COMM_WORLD, MPI_ERR_ARG,
                                               FUNC_NAME);
             } else {
-                return OMPI_ERRHANDLER_INVOKE(null, MPI_ERR_ARG,
+                /* We have no MPI object here so call ompi_errhandle_invoke
+                 * directly */
+                return ompi_errhandler_invoke(NULL, NULL, -1,
+                                              ompi_errcode_get_mpi_code(MPI_ERR_ARG),
                                               FUNC_NAME);
             }
         }
@@ -104,8 +110,7 @@ int MPI_Get_library_version(char *version, int *resultlen)
     }
 
     /* Repository revision */
-    if (OMPI_WANT_REPO_REV &&
-        NULL != OMPI_REPO_REV && strlen(OMPI_REPO_REV) > 0) {
+    if (NULL != OMPI_REPO_REV && strlen(OMPI_REPO_REV) > 0) {
         snprintf(ptr, len_left, ", repo rev: %s", OMPI_REPO_REV);
         ptr = tmp + strlen(tmp);
         len_left = MPI_MAX_LIBRARY_VERSION_STRING - strlen(tmp);

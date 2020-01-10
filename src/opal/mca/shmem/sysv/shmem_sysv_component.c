@@ -13,6 +13,8 @@
  * Copyright (c) 2010-2011 Los Alamos National Security, LLC.
  *                         All rights reserved.
  * Copyright (c) 2011      NVIDIA Corporation.  All rights reserved.
+ * Copyright (c) 2014      Research Organization for Information Science
+ *                         and Technology (RIST). All rights reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -51,6 +53,7 @@
 #include "opal/constants.h"
 #include "opal/util/show_help.h"
 #include "opal/util/output.h"
+#include "opal/util/sys_limits.h"
 #include "opal/mca/shmem/base/base.h"
 #include "opal/mca/shmem/shmem.h"
 #include "shmem_sysv.h"
@@ -71,38 +74,28 @@ static int sysv_runtime_query(mca_base_module_t **module,
  * and pointers to our public functions in it
  */
 opal_shmem_sysv_component_t mca_shmem_sysv_component = {
-    /* ////////////////////////////////////////////////////////////////////// */
-    /* super */
-    /* ////////////////////////////////////////////////////////////////////// */
-    {
+    .super = {
         /* common MCA component data */
         {
             OPAL_SHMEM_BASE_VERSION_2_0_0,
 
             /* component name and version */
-            "sysv",
-            OPAL_MAJOR_VERSION,
-            OPAL_MINOR_VERSION,
-            OPAL_RELEASE_VERSION,
+            .mca_component_name = "sysv",
+            .mca_component_major_version = OPAL_MAJOR_VERSION,
+            .mca_component_minor_version = OPAL_MINOR_VERSION,
+            .mca_component_release_version = OPAL_RELEASE_VERSION,
 
-            /* component open */
-            sysv_open,
-            /* component close */
-            NULL,
-            /* component query */
-            sysv_query,
-            sysv_register
+            .mca_open_component = sysv_open,
+            .mca_query_component = sysv_query,
+            .mca_register_component_params = sysv_register
         },
         /* MCA v2.0.0 component meta data */
-        {
+        .base_data = {
             /* the component is checkpoint ready */
             MCA_BASE_METADATA_PARAM_CHECKPOINT
         },
-        sysv_runtime_query,
+        .runtime_query = sysv_runtime_query,
     },
-    /* ////////////////////////////////////////////////////////////////////// */
-    /* sysv component-specific information */
-    /* see: shmem_sysv.h for more information */
 };
 
 /* ////////////////////////////////////////////////////////////////////////// */
@@ -178,7 +171,7 @@ sysv_runtime_query(mca_base_module_t **module, int *priority, const char *hint)
 
     /* if we are here, then let the run-time test games begin */
 
-    if (-1 == (shmid = shmget(IPC_PRIVATE, (size_t)(getpagesize()),
+    if (-1 == (shmid = shmget(IPC_PRIVATE, (size_t)(opal_getpagesize()),
                               IPC_CREAT | IPC_EXCL | S_IRWXU ))) {
         goto out;
     }

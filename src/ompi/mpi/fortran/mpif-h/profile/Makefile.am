@@ -3,18 +3,20 @@
 # Copyright (c) 2004-2005 The Trustees of Indiana University and Indiana
 #                         University Research and Technology
 #                         Corporation.  All rights reserved.
-# Copyright (c) 2004-2012 The University of Tennessee and The University
+# Copyright (c) 2004-2013 The University of Tennessee and The University
 #                         of Tennessee Research Foundation.  All rights
 #                         reserved.
 # Copyright (c) 2004-2005 High Performance Computing Center Stuttgart, 
 #                         University of Stuttgart.  All rights reserved.
 # Copyright (c) 2004-2005 The Regents of the University of California.
 #                         All rights reserved.
-# Copyright (c) 2009-2014 Cisco Systems, Inc.  All rights reserved.
-# Copyright (c) 2011-2012 Inria.  All rights reserved.
-# Copyright (c) 2011-2012 Universite Bordeaux 1
+# Copyright (c) 2009-2015 Cisco Systems, Inc.  All rights reserved.
+# Copyright (c) 2011-2013 Inria.  All rights reserved.
+# Copyright (c) 2011-2013 Universite Bordeaux 1
 # Copyright (c) 2013-2014 Los Alamos National Security, LLC. All rights
 #                         reserved.
+# Copyright (c) 2015      Research Organization for Information Science
+#                         and Technology (RIST). All rights reserved.
 # $COPYRIGHT$
 # 
 # Additional copyrights may follow
@@ -22,6 +24,10 @@
 # $HEADER$
 #
 
+include $(top_srcdir)/Makefile.man-page-rules
+
+CLEANFILES=
+libmpi_mpifh_pmpi_la_LIBADD =
 
 #
 # OMPI_PROFILING_DEFINES flag is enabled when we want our MPI_* symbols
@@ -46,12 +52,14 @@ endif
 headers = \
     defines.h
 
-nodist_libmpi_mpifh_pmpi_la_SOURCES = \
+linked_files = \
         pabort_f.c \
         padd_error_class_f.c \
         padd_error_code_f.c \
         padd_error_string_f.c \
         paddress_f.c \
+        paint_add_f.c \
+        paint_diff_f.c \
         pallgather_f.c \
         pallgatherv_f.c \
         palloc_mem_f.c \
@@ -313,12 +321,17 @@ nodist_libmpi_mpifh_pmpi_la_SOURCES = \
         prput_f.c \
         pcompare_and_swap_f.c \
         pfetch_and_op_f.c \
+        pwin_allocate_f.c \
+        pwin_allocate_shared_f.c \
+        pwin_attach_f.c \
         pwin_call_errhandler_f.c \
         pwin_complete_f.c \
+        pwin_create_dynamic_f.c \
         pwin_create_errhandler_f.c \
         pwin_create_f.c \
         pwin_create_keyval_f.c \
         pwin_delete_attr_f.c \
+        pwin_detach_f.c \
         pwin_fence_f.c \
         pwin_free_f.c \
         pwin_free_keyval_f.c \
@@ -327,13 +340,17 @@ nodist_libmpi_mpifh_pmpi_la_SOURCES = \
         pwin_get_group_f.c \
         pwin_get_name_f.c \
         pwin_lock_f.c \
+        pwin_lock_all_f.c \
         pwin_post_f.c \
         pwin_set_attr_f.c \
         pwin_set_errhandler_f.c \
         pwin_set_name_f.c \
+        pwin_shared_query_f.c \
         pwin_start_f.c \
+        pwin_sync_f.c \
         pwin_test_f.c \
         pwin_unlock_f.c \
+        pwin_unlock_all_f.c \
         pwin_wait_f.c \
         pwin_flush_f.c \
         pwin_flush_all_f.c \
@@ -342,7 +359,7 @@ nodist_libmpi_mpifh_pmpi_la_SOURCES = \
 
 
 if OMPI_PROVIDE_MPI_FILE_INTERFACE
-nodist_libmpi_mpifh_pmpi_la_SOURCES += \
+linked_files += \
         pfile_call_errhandler_f.c \
         pfile_close_f.c \
         pfile_create_errhandler_f.c \
@@ -404,11 +421,42 @@ endif
 #
 # Sym link in the sources from the real MPI directory
 #
-$(nodist_libmpi_mpifh_pmpi_la_SOURCES):
-	if test ! -r $@ ; then \
+$(linked_files):
+	$(OMPI_V_LN_S) if test ! -r $@ ; then \
 	    pname=`echo $@ | cut -b '2-'` ; \
 	    $(LN_S) $(top_srcdir)/ompi/mpi/fortran/mpif-h/$$pname $@ ; \
 	fi
+
+# psizeof_f.f90 is generated based on some results from configure tests.
+CLEANFILES += psizeof_f.f90
+
+# Build the MPI_SIZEOF code in a separate convenience library (see
+# lengthy comment in ompi/mpi/fortran/mpif-h/Makefile.am for an
+# explanation why).
+if BUILD_FORTRAN_SIZEOF
+noinst_LTLIBRARIES += libmpi_mpifh_psizeof.la
+# Do not dist this file; it is generated
+nodist_libmpi_mpifh_psizeof_la_SOURCES = psizeof_f.f90
+libmpi_mpifh_pmpi_la_LIBADD += libmpi_mpifh_psizeof.la
+endif
+
+sizeof_pl=$(top_srcdir)/ompi/mpi/fortran/base/gen-mpi-sizeof.pl
+
+psizeof_f.f90: $(top_builddir)/config.status
+psizeof_f.f90: $(sizeof_pl)
+psizeof_f.f90:
+	$(OMPI_V_GEN) $(sizeof_pl) \
+	    --impl=$@ --ierror=mandatory --pmpi \
+	    --maxrank=$(OMPI_FORTRAN_MAX_ARRAY_RANK) \
+	    --generate=$(OMPI_FORTRAN_BUILD_SIZEOF) \
+	    --real16=$(OMPI_HAVE_FORTRAN_REAL16) \
+	    --complex32=$(OMPI_HAVE_FORTRAN_COMPLEX32)
+
+#
+# The library itself
+#
+nodist_libmpi_mpifh_pmpi_la_SOURCES = \
+        $(linked_files)
 
 # Conditionally install the header files
 

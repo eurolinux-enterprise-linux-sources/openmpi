@@ -15,9 +15,11 @@
 @SET_MAKE@
 
 #
-# Copyright (c) 2013      Mellanox Technologies, Inc.
+# Copyright (c) 2014      Mellanox Technologies, Inc.
 #                         All rights reserved
 # Copyright (c) 2013-2014 Cisco Systems, Inc.  All rights reserved.
+# Copyright (c) 2014      Research Organization for Information Science
+#                         and Technology (RIST). All rights reserved.
 # $COPYRIGHT$
 # 
 # Additional copyrights may follow
@@ -63,6 +65,100 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
+@OSHMEM_PROFILING_FALSE@am__append_1 = \
+@OSHMEM_PROFILING_FALSE@                    shmem_init_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_global_exit_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_n_pes_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_my_pe_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_barrier_all_f.c \
+@OSHMEM_PROFILING_FALSE@                    shpalloc_f.c \
+@OSHMEM_PROFILING_FALSE@                    shpdeallc_f.c \
+@OSHMEM_PROFILING_FALSE@                    shpclmove_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_ptr_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_pe_accessible_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_addr_accessible_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_put_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_character_put_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_double_put_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_complex_put_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_logical_put_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_integer_put_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_real_put_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_put4_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_put8_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_put32_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_put64_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_put128_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_putmem_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_complex_iput_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_double_iput_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_integer_iput_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_iput128_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_iput32_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_iput4_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_iput64_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_iput8_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_logical_iput_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_real_iput_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_character_get_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_complex_get_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_double_get_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_get128_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_get32_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_get4_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_get64_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_get8_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_getmem_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_integer_get_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_logical_get_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_real_get_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_complex_iget_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_double_iget_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_iget128_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_iget32_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_iget4_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_iget64_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_iget8_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_integer_iget_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_logical_iget_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_real_iget_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_swap_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_int4_swap_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_int8_swap_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_real4_swap_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_real8_swap_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_int4_cswap_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_int8_cswap_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_int4_fadd_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_int8_fadd_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_int4_finc_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_int8_finc_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_int4_add_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_int8_add_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_int4_wait_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_int8_wait_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_wait_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_int4_wait_until_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_int8_wait_until_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_wait_until_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_barrier_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_and_to_all_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_or_to_all_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_xor_to_all_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_max_to_all_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_min_to_all_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_sum_to_all_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_prod_to_all_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_collect_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_broadcast_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_lock_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_cache_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_int4_inc_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_int8_inc_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_quiet_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_fence_f.c \
+@OSHMEM_PROFILING_FALSE@                    shmem_info_f.c
+
 subdir = oshmem/shmem/fortran
 DIST_COMMON = $(am__oshmem_HEADERS_DIST) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(top_srcdir)/config/depcomp
@@ -73,26 +169,7 @@ am__aclocal_m4_deps = $(top_srcdir)/config/c_get_alignment.m4 \
 	$(top_srcdir)/config/cxx_find_template_parameters.m4 \
 	$(top_srcdir)/config/cxx_find_template_repository.m4 \
 	$(top_srcdir)/config/cxx_have_exceptions.m4 \
-	$(top_srcdir)/config/fortran_check.m4 \
-	$(top_srcdir)/config/fortran_check_abstract.m4 \
-	$(top_srcdir)/config/fortran_check_asynchronous.m4 \
-	$(top_srcdir)/config/fortran_check_bind_c.m4 \
-	$(top_srcdir)/config/fortran_check_f08_assumed_rank.m4 \
-	$(top_srcdir)/config/fortran_check_ignore_tkr.m4 \
-	$(top_srcdir)/config/fortran_check_logical_array.m4 \
-	$(top_srcdir)/config/fortran_check_optional_args.m4 \
-	$(top_srcdir)/config/fortran_check_private.m4 \
-	$(top_srcdir)/config/fortran_check_procedure.m4 \
-	$(top_srcdir)/config/fortran_check_real16_c_equiv.m4 \
-	$(top_srcdir)/config/fortran_check_type.m4 \
-	$(top_srcdir)/config/fortran_find_ext_symbol_convention.m4 \
-	$(top_srcdir)/config/fortran_find_module_include_flag.m4 \
-	$(top_srcdir)/config/fortran_get_alignment.m4 \
-	$(top_srcdir)/config/fortran_get_handle_max.m4 \
-	$(top_srcdir)/config/fortran_get_kind_value.m4 \
-	$(top_srcdir)/config/fortran_get_sizeof.m4 \
-	$(top_srcdir)/config/fortran_get_value_true.m4 \
-	$(top_srcdir)/config/libtool.m4 $(top_srcdir)/config/ltdl.m4 \
+	$(top_srcdir)/config/libtool.m4 \
 	$(top_srcdir)/config/ltoptions.m4 \
 	$(top_srcdir)/config/ltsugar.m4 \
 	$(top_srcdir)/config/ltversion.m4 \
@@ -100,18 +177,19 @@ am__aclocal_m4_deps = $(top_srcdir)/config/c_get_alignment.m4 \
 	$(top_srcdir)/config/ompi_check_broken_qsort.m4 \
 	$(top_srcdir)/config/ompi_check_cma.m4 \
 	$(top_srcdir)/config/ompi_check_compiler_works.m4 \
-	$(top_srcdir)/config/ompi_check_func_lib.m4 \
 	$(top_srcdir)/config/ompi_check_icc.m4 \
+	$(top_srcdir)/config/ompi_check_knem.m4 \
 	$(top_srcdir)/config/ompi_check_libfca.m4 \
 	$(top_srcdir)/config/ompi_check_libhcoll.m4 \
-	$(top_srcdir)/config/ompi_check_mx.m4 \
 	$(top_srcdir)/config/ompi_check_mxm.m4 \
 	$(top_srcdir)/config/ompi_check_openfabrics.m4 \
 	$(top_srcdir)/config/ompi_check_package.m4 \
 	$(top_srcdir)/config/ompi_check_portals4.m4 \
 	$(top_srcdir)/config/ompi_check_ps.m4 \
 	$(top_srcdir)/config/ompi_check_psm.m4 \
+	$(top_srcdir)/config/ompi_check_psm2.m4 \
 	$(top_srcdir)/config/ompi_check_pvfs2.m4 \
+	$(top_srcdir)/config/ompi_check_ucx.m4 \
 	$(top_srcdir)/config/ompi_check_ugni.m4 \
 	$(top_srcdir)/config/ompi_check_vendor.m4 \
 	$(top_srcdir)/config/ompi_check_withdir.m4 \
@@ -125,9 +203,34 @@ am__aclocal_m4_deps = $(top_srcdir)/config/c_get_alignment.m4 \
 	$(top_srcdir)/config/ompi_endpoint_tag.m4 \
 	$(top_srcdir)/config/ompi_ensure_contains_optflags.m4 \
 	$(top_srcdir)/config/ompi_ext.m4 \
+	$(top_srcdir)/config/ompi_find_mpi_aint_count_offset.m4 \
 	$(top_srcdir)/config/ompi_find_type.m4 \
+	$(top_srcdir)/config/ompi_fortran_check.m4 \
+	$(top_srcdir)/config/ompi_fortran_check_abstract.m4 \
+	$(top_srcdir)/config/ompi_fortran_check_asynchronous.m4 \
+	$(top_srcdir)/config/ompi_fortran_check_bind_c.m4 \
+	$(top_srcdir)/config/ompi_fortran_check_c_funloc.m4 \
+	$(top_srcdir)/config/ompi_fortran_check_f08_assumed_rank.m4 \
+	$(top_srcdir)/config/ompi_fortran_check_ignore_tkr.m4 \
+	$(top_srcdir)/config/ompi_fortran_check_interface.m4 \
+	$(top_srcdir)/config/ompi_fortran_check_iso_fortran_env.m4 \
+	$(top_srcdir)/config/ompi_fortran_check_logical_array.m4 \
+	$(top_srcdir)/config/ompi_fortran_check_max_array_rank.m4 \
+	$(top_srcdir)/config/ompi_fortran_check_optional_args.m4 \
+	$(top_srcdir)/config/ompi_fortran_check_private.m4 \
+	$(top_srcdir)/config/ompi_fortran_check_procedure.m4 \
 	$(top_srcdir)/config/ompi_fortran_check_protected.m4 \
-	$(top_srcdir)/config/ompi_fortran_check_ticket_4157.m4 \
+	$(top_srcdir)/config/ompi_fortran_check_real16_c_equiv.m4 \
+	$(top_srcdir)/config/ompi_fortran_check_storage_size.m4 \
+	$(top_srcdir)/config/ompi_fortran_check_type.m4 \
+	$(top_srcdir)/config/ompi_fortran_check_use_only.m4 \
+	$(top_srcdir)/config/ompi_fortran_find_ext_symbol_convention.m4 \
+	$(top_srcdir)/config/ompi_fortran_find_module_include_flag.m4 \
+	$(top_srcdir)/config/ompi_fortran_get_alignment.m4 \
+	$(top_srcdir)/config/ompi_fortran_get_handle_max.m4 \
+	$(top_srcdir)/config/ompi_fortran_get_kind_value.m4 \
+	$(top_srcdir)/config/ompi_fortran_get_sizeof.m4 \
+	$(top_srcdir)/config/ompi_fortran_get_value_true.m4 \
 	$(top_srcdir)/config/ompi_interix.m4 \
 	$(top_srcdir)/config/ompi_lang_link_with_c.m4 \
 	$(top_srcdir)/config/ompi_load_platform.m4 \
@@ -147,6 +250,7 @@ am__aclocal_m4_deps = $(top_srcdir)/config/c_get_alignment.m4 \
 	$(top_srcdir)/config/opal_check_compiler_version.m4 \
 	$(top_srcdir)/config/opal_check_cuda.m4 \
 	$(top_srcdir)/config/opal_check_ident.m4 \
+	$(top_srcdir)/config/opal_check_libfabric.m4 \
 	$(top_srcdir)/config/opal_check_offsetof.m4 \
 	$(top_srcdir)/config/opal_check_os_flavors.m4 \
 	$(top_srcdir)/config/opal_check_pmi.m4 \
@@ -158,10 +262,10 @@ am__aclocal_m4_deps = $(top_srcdir)/config/c_get_alignment.m4 \
 	$(top_srcdir)/config/opal_config_threads.m4 \
 	$(top_srcdir)/config/opal_configure_options.m4 \
 	$(top_srcdir)/config/opal_functions.m4 \
+	$(top_srcdir)/config/opal_search_libs.m4 \
 	$(top_srcdir)/config/opal_setup_cc.m4 \
 	$(top_srcdir)/config/opal_setup_cxx.m4 \
 	$(top_srcdir)/config/opal_setup_java.m4 \
-	$(top_srcdir)/config/opal_setup_libltdl.m4 \
 	$(top_srcdir)/config/opal_setup_wrappers.m4 \
 	$(top_srcdir)/config/orte_check_alps.m4 \
 	$(top_srcdir)/config/orte_check_loadleveler.m4 \
@@ -174,8 +278,10 @@ am__aclocal_m4_deps = $(top_srcdir)/config/c_get_alignment.m4 \
 	$(top_srcdir)/config/orte_setup_debugger_flags.m4 \
 	$(top_srcdir)/config/oshmem_config_files.m4 \
 	$(top_srcdir)/config/oshmem_configure_options.m4 \
+	$(top_srcdir)/config/oshmem_setup_profiling.m4 \
 	$(top_srcdir)/config/autogen_found_items.m4 \
 	$(top_srcdir)/opal/mca/backtrace/configure.m4 \
+	$(top_srcdir)/opal/mca/dl/configure.m4 \
 	$(top_srcdir)/opal/mca/event/configure.m4 \
 	$(top_srcdir)/opal/mca/hwloc/configure.m4 \
 	$(top_srcdir)/opal/mca/installdirs/configure.m4 \
@@ -193,15 +299,17 @@ am__aclocal_m4_deps = $(top_srcdir)/config/c_get_alignment.m4 \
 	$(top_srcdir)/opal/mca/crs/blcr/configure.m4 \
 	$(top_srcdir)/opal/mca/db/pmi/configure.m4 \
 	$(top_srcdir)/opal/mca/db/sqlite/configure.m4 \
+	$(top_srcdir)/opal/mca/dl/libltdl/configure.m4 \
+	$(top_srcdir)/opal/mca/dl/dlopen/configure.m4 \
 	$(top_srcdir)/opal/mca/event/libevent2021/configure.m4 \
 	$(top_srcdir)/opal/mca/event/external/configure.m4 \
-	$(top_srcdir)/opal/mca/hwloc/hwloc172/configure.m4 \
-	$(top_srcdir)/opal/mca/hwloc/hwloc172/hwloc/config/hwloc.m4 \
-	$(top_srcdir)/opal/mca/hwloc/hwloc172/hwloc/config/hwloc_pkg.m4 \
-	$(top_srcdir)/opal/mca/hwloc/hwloc172/hwloc/config/hwloc_check_attributes.m4 \
-	$(top_srcdir)/opal/mca/hwloc/hwloc172/hwloc/config/hwloc_check_visibility.m4 \
-	$(top_srcdir)/opal/mca/hwloc/hwloc172/hwloc/config/hwloc_check_vendor.m4 \
-	$(top_srcdir)/opal/mca/hwloc/hwloc172/hwloc/config/hwloc_components.m4 \
+	$(top_srcdir)/opal/mca/hwloc/hwloc191/configure.m4 \
+	$(top_srcdir)/opal/mca/hwloc/hwloc191/hwloc/config/hwloc.m4 \
+	$(top_srcdir)/opal/mca/hwloc/hwloc191/hwloc/config/hwloc_pkg.m4 \
+	$(top_srcdir)/opal/mca/hwloc/hwloc191/hwloc/config/hwloc_check_attributes.m4 \
+	$(top_srcdir)/opal/mca/hwloc/hwloc191/hwloc/config/hwloc_check_visibility.m4 \
+	$(top_srcdir)/opal/mca/hwloc/hwloc191/hwloc/config/hwloc_check_vendor.m4 \
+	$(top_srcdir)/opal/mca/hwloc/hwloc191/hwloc/config/hwloc_components.m4 \
 	$(top_srcdir)/opal/mca/hwloc/external/configure.m4 \
 	$(top_srcdir)/opal/mca/if/solaris_ipv6/configure.m4 \
 	$(top_srcdir)/opal/mca/if/bsdx_ipv4/configure.m4 \
@@ -246,7 +354,6 @@ am__aclocal_m4_deps = $(top_srcdir)/config/c_get_alignment.m4 \
 	$(top_srcdir)/orte/mca/ras/lsf/configure.m4 \
 	$(top_srcdir)/orte/mca/ras/tm/configure.m4 \
 	$(top_srcdir)/orte/mca/rmaps/mindist/configure.m4 \
-	$(top_srcdir)/orte/mca/rmaps/lama/configure.m4 \
 	$(top_srcdir)/orte/mca/rmaps/rank_file/configure.m4 \
 	$(top_srcdir)/orte/mca/rml/ftrm/configure.m4 \
 	$(top_srcdir)/orte/mca/sensor/resusage/configure.m4 \
@@ -262,9 +369,9 @@ am__aclocal_m4_deps = $(top_srcdir)/config/c_get_alignment.m4 \
 	$(top_srcdir)/ompi/mca/io/configure.m4 \
 	$(top_srcdir)/ompi/mca/rte/configure.m4 \
 	$(top_srcdir)/ompi/mca/sharedfp/configure.m4 \
+	$(top_srcdir)/ompi/mca/common/verbs_usnic/configure.m4 \
 	$(top_srcdir)/ompi/mca/common/ugni/configure.m4 \
 	$(top_srcdir)/ompi/mca/common/sm/configure.m4 \
-	$(top_srcdir)/ompi/mca/common/mx/configure.m4 \
 	$(top_srcdir)/ompi/mca/common/verbs/configure.m4 \
 	$(top_srcdir)/ompi/mca/common/cuda/configure.m4 \
 	$(top_srcdir)/ompi/mca/bml/r2/configure.m4 \
@@ -279,8 +386,10 @@ am__aclocal_m4_deps = $(top_srcdir)/config/c_get_alignment.m4 \
 	$(top_srcdir)/ompi/mca/btl/usnic/configure.m4 \
 	$(top_srcdir)/ompi/mca/coll/hierarch/configure.m4 \
 	$(top_srcdir)/ompi/mca/coll/hcoll/configure.m4 \
+	$(top_srcdir)/ompi/mca/coll/ml/configure.m4 \
 	$(top_srcdir)/ompi/mca/coll/fca/configure.m4 \
 	$(top_srcdir)/ompi/mca/coll/portals4/configure.m4 \
+	$(top_srcdir)/ompi/mca/coll/cuda/configure.m4 \
 	$(top_srcdir)/ompi/mca/crcp/bkmrk/configure.m4 \
 	$(top_srcdir)/ompi/mca/dpm/orte/configure.m4 \
 	$(top_srcdir)/ompi/mca/fbtl/pvfs2/configure.m4 \
@@ -291,26 +400,30 @@ am__aclocal_m4_deps = $(top_srcdir)/config/c_get_alignment.m4 \
 	$(top_srcdir)/ompi/mca/mpool/rgpusm/configure.m4 \
 	$(top_srcdir)/ompi/mca/mpool/gpusm/configure.m4 \
 	$(top_srcdir)/ompi/mca/mtl/psm/configure.m4 \
+	$(top_srcdir)/ompi/mca/mtl/ofi/configure.m4 \
 	$(top_srcdir)/ompi/mca/mtl/mxm/configure.m4 \
 	$(top_srcdir)/ompi/mca/mtl/portals4/configure.m4 \
-	$(top_srcdir)/ompi/mca/mtl/mx/configure.m4 \
-	$(top_srcdir)/ompi/mca/osc/rdma/configure.m4 \
+	$(top_srcdir)/ompi/mca/mtl/psm2/configure.m4 \
+	$(top_srcdir)/ompi/mca/osc/pt2pt/configure.m4 \
 	$(top_srcdir)/ompi/mca/osc/portals4/configure.m4 \
 	$(top_srcdir)/ompi/mca/pml/bfo/configure.m4 \
 	$(top_srcdir)/ompi/mca/pml/crcpw/configure.m4 \
 	$(top_srcdir)/ompi/mca/pml/v/configure.m4 \
+	$(top_srcdir)/ompi/mca/pml/yalla/configure.m4 \
 	$(top_srcdir)/ompi/mca/pml/ob1/configure.m4 \
+	$(top_srcdir)/ompi/mca/pml/ucx/configure.m4 \
 	$(top_srcdir)/ompi/mca/pubsub/pmi/configure.m4 \
 	$(top_srcdir)/ompi/mca/pubsub/orte/configure.m4 \
-	$(top_srcdir)/ompi/mca/rte/pmi/configure.m4 \
 	$(top_srcdir)/ompi/mca/rte/orte/configure.m4 \
 	$(top_srcdir)/ompi/mca/sbgp/basesmsocket/configure.m4 \
 	$(top_srcdir)/ompi/mca/sbgp/p2p/configure.m4 \
 	$(top_srcdir)/oshmem/mca/memheap/configure.m4 \
 	$(top_srcdir)/oshmem/mca/spml/configure.m4 \
 	$(top_srcdir)/oshmem/mca/atomic/mxm/configure.m4 \
+	$(top_srcdir)/oshmem/mca/atomic/ucx/configure.m4 \
 	$(top_srcdir)/oshmem/mca/scoll/fca/configure.m4 \
 	$(top_srcdir)/oshmem/mca/spml/ikrit/configure.m4 \
+	$(top_srcdir)/oshmem/mca/spml/ucx/configure.m4 \
 	$(top_srcdir)/oshmem/mca/sshmem/mmap/configure.m4 \
 	$(top_srcdir)/oshmem/mca/sshmem/verbs/configure.m4 \
 	$(top_srcdir)/oshmem/mca/sshmem/sysv/configure.m4 \
@@ -325,51 +438,121 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/opal/include/opal_config.h \
 	$(top_builddir)/orte/include/orte_config.h \
-	$(top_builddir)/ompi/include/ompi_config.h \
 	$(top_builddir)/ompi/include/mpi.h \
-	$(top_builddir)/oshmem/include/oshmem_config.h \
 	$(top_builddir)/oshmem/include/shmem.h \
-	$(top_builddir)/opal/mca/hwloc/hwloc172/hwloc/include/private/autogen/config.h \
-	$(top_builddir)/opal/mca/hwloc/hwloc172/hwloc/include/hwloc/autogen/config.h
+	$(top_builddir)/opal/mca/hwloc/hwloc191/hwloc/include/private/autogen/config.h \
+	$(top_builddir)/opal/mca/hwloc/hwloc191/hwloc/include/hwloc/autogen/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 liboshmem_fortran_la_LIBADD =
-am_liboshmem_fortran_la_OBJECTS = start_pes_f.lo num_pes_f.lo \
-	my_pe_f.lo shmem_finalize_f.lo shmem_barrier_all_f.lo \
-	shpalloc_f.lo shpdeallc_f.lo shpclmove_f.lo shmem_ptr_f.lo \
-	shmem_pe_accessible_f.lo shmem_addr_accessible_f.lo \
-	shmem_put_f.lo shmem_character_put_f.lo shmem_double_put_f.lo \
-	shmem_complex_put_f.lo shmem_logical_put_f.lo \
-	shmem_integer_put_f.lo shmem_real_put_f.lo shmem_put4_f.lo \
-	shmem_put8_f.lo shmem_put32_f.lo shmem_put64_f.lo \
-	shmem_putmem_f.lo shmem_complex_iput_f.lo \
-	shmem_double_iput_f.lo shmem_integer_iput_f.lo \
-	shmem_iput128_f.lo shmem_iput32_f.lo shmem_iput4_f.lo \
-	shmem_iput64_f.lo shmem_iput8_f.lo shmem_logical_iput_f.lo \
-	shmem_real_iput_f.lo shmem_character_get_f.lo \
-	shmem_complex_get_f.lo shmem_double_get_f.lo shmem_get128_f.lo \
-	shmem_get32_f.lo shmem_get4_f.lo shmem_get64_f.lo \
-	shmem_get8_f.lo shmem_getmem_f.lo shmem_integer_get_f.lo \
-	shmem_logical_get_f.lo shmem_real_get_f.lo \
-	shmem_complex_iget_f.lo shmem_double_iget_f.lo \
-	shmem_iget128_f.lo shmem_iget32_f.lo shmem_iget4_f.lo \
-	shmem_iget64_f.lo shmem_iget8_f.lo shmem_integer_iget_f.lo \
-	shmem_logical_iget_f.lo shmem_real_iget_f.lo shmem_swap_f.lo \
-	shmem_int4_swap_f.lo shmem_int8_swap_f.lo \
-	shmem_real4_swap_f.lo shmem_real8_swap_f.lo \
-	shmem_int4_cswap_f.lo shmem_int8_cswap_f.lo \
-	shmem_int4_fadd_f.lo shmem_int8_fadd_f.lo shmem_int4_finc_f.lo \
-	shmem_int8_finc_f.lo shmem_int4_add_f.lo shmem_int8_add_f.lo \
-	shmem_int4_wait_f.lo shmem_int8_wait_f.lo shmem_wait_f.lo \
-	shmem_int4_wait_until_f.lo shmem_int8_wait_until_f.lo \
-	shmem_wait_until_f.lo shmem_barrier_f.lo shmem_and_to_all_f.lo \
-	shmem_or_to_all_f.lo shmem_xor_to_all_f.lo \
-	shmem_max_to_all_f.lo shmem_min_to_all_f.lo \
-	shmem_sum_to_all_f.lo shmem_prod_to_all_f.lo \
-	shmem_collect_f.lo shmem_broadcast_f.lo shmem_lock_f.lo \
-	shmem_cache_f.lo shmem_int4_inc_f.lo shmem_int8_inc_f.lo \
-	shmem_quiet_f.lo shmem_fence_f.lo
+am__liboshmem_fortran_la_SOURCES_DIST = shmem_finalize_f.c \
+	shmem_init_f.c shmem_global_exit_f.c shmem_n_pes_f.c \
+	shmem_my_pe_f.c shmem_barrier_all_f.c shpalloc_f.c \
+	shpdeallc_f.c shpclmove_f.c shmem_ptr_f.c \
+	shmem_pe_accessible_f.c shmem_addr_accessible_f.c \
+	shmem_put_f.c shmem_character_put_f.c shmem_double_put_f.c \
+	shmem_complex_put_f.c shmem_logical_put_f.c \
+	shmem_integer_put_f.c shmem_real_put_f.c shmem_put4_f.c \
+	shmem_put8_f.c shmem_put32_f.c shmem_put64_f.c \
+	shmem_put128_f.c shmem_putmem_f.c shmem_complex_iput_f.c \
+	shmem_double_iput_f.c shmem_integer_iput_f.c shmem_iput128_f.c \
+	shmem_iput32_f.c shmem_iput4_f.c shmem_iput64_f.c \
+	shmem_iput8_f.c shmem_logical_iput_f.c shmem_real_iput_f.c \
+	shmem_character_get_f.c shmem_complex_get_f.c \
+	shmem_double_get_f.c shmem_get128_f.c shmem_get32_f.c \
+	shmem_get4_f.c shmem_get64_f.c shmem_get8_f.c shmem_getmem_f.c \
+	shmem_integer_get_f.c shmem_logical_get_f.c shmem_real_get_f.c \
+	shmem_complex_iget_f.c shmem_double_iget_f.c shmem_iget128_f.c \
+	shmem_iget32_f.c shmem_iget4_f.c shmem_iget64_f.c \
+	shmem_iget8_f.c shmem_integer_iget_f.c shmem_logical_iget_f.c \
+	shmem_real_iget_f.c shmem_swap_f.c shmem_int4_swap_f.c \
+	shmem_int8_swap_f.c shmem_real4_swap_f.c shmem_real8_swap_f.c \
+	shmem_int4_cswap_f.c shmem_int8_cswap_f.c shmem_int4_fadd_f.c \
+	shmem_int8_fadd_f.c shmem_int4_finc_f.c shmem_int8_finc_f.c \
+	shmem_int4_add_f.c shmem_int8_add_f.c shmem_int4_wait_f.c \
+	shmem_int8_wait_f.c shmem_wait_f.c shmem_int4_wait_until_f.c \
+	shmem_int8_wait_until_f.c shmem_wait_until_f.c \
+	shmem_barrier_f.c shmem_and_to_all_f.c shmem_or_to_all_f.c \
+	shmem_xor_to_all_f.c shmem_max_to_all_f.c shmem_min_to_all_f.c \
+	shmem_sum_to_all_f.c shmem_prod_to_all_f.c shmem_collect_f.c \
+	shmem_broadcast_f.c shmem_lock_f.c shmem_cache_f.c \
+	shmem_int4_inc_f.c shmem_int8_inc_f.c shmem_quiet_f.c \
+	shmem_fence_f.c shmem_info_f.c
+@OSHMEM_PROFILING_FALSE@am__objects_1 = shmem_init_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_global_exit_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_n_pes_f.lo shmem_my_pe_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_barrier_all_f.lo shpalloc_f.lo \
+@OSHMEM_PROFILING_FALSE@	shpdeallc_f.lo shpclmove_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_ptr_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_pe_accessible_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_addr_accessible_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_put_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_character_put_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_double_put_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_complex_put_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_logical_put_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_integer_put_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_real_put_f.lo shmem_put4_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_put8_f.lo shmem_put32_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_put64_f.lo shmem_put128_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_putmem_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_complex_iput_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_double_iput_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_integer_iput_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_iput128_f.lo shmem_iput32_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_iput4_f.lo shmem_iput64_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_iput8_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_logical_iput_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_real_iput_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_character_get_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_complex_get_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_double_get_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_get128_f.lo shmem_get32_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_get4_f.lo shmem_get64_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_get8_f.lo shmem_getmem_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_integer_get_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_logical_get_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_real_get_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_complex_iget_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_double_iget_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_iget128_f.lo shmem_iget32_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_iget4_f.lo shmem_iget64_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_iget8_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_integer_iget_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_logical_iget_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_real_iget_f.lo shmem_swap_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_int4_swap_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_int8_swap_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_real4_swap_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_real8_swap_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_int4_cswap_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_int8_cswap_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_int4_fadd_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_int8_fadd_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_int4_finc_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_int8_finc_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_int4_add_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_int8_add_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_int4_wait_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_int8_wait_f.lo shmem_wait_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_int4_wait_until_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_int8_wait_until_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_wait_until_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_barrier_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_and_to_all_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_or_to_all_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_xor_to_all_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_max_to_all_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_min_to_all_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_sum_to_all_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_prod_to_all_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_collect_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_broadcast_f.lo shmem_lock_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_cache_f.lo shmem_int4_inc_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_int8_inc_f.lo shmem_quiet_f.lo \
+@OSHMEM_PROFILING_FALSE@	shmem_fence_f.lo shmem_info_f.lo
+am_liboshmem_fortran_la_OBJECTS = shmem_finalize_f.lo $(am__objects_1)
 liboshmem_fortran_la_OBJECTS = $(am_liboshmem_fortran_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -388,7 +571,7 @@ AM_V_at = $(am__v_at_@AM_V@)
 am__v_at_ = $(am__v_at_@AM_DEFAULT_V@)
 am__v_at_0 = @
 am__v_at_1 = 
-DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)/opal/include -I$(top_builddir)/orte/include -I$(top_builddir)/ompi/include -I$(top_builddir)/oshmem/include -I$(top_builddir)/opal/mca/hwloc/hwloc172/hwloc/include/private/autogen -I$(top_builddir)/opal/mca/hwloc/hwloc172/hwloc/include/hwloc/autogen
+DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)/opal/include -I$(top_builddir)/orte/include -I$(top_builddir)/ompi/include -I$(top_builddir)/oshmem/include -I$(top_builddir)/opal/mca/hwloc/hwloc191/hwloc/include/private/autogen -I$(top_builddir)/opal/mca/hwloc/hwloc191/hwloc/include/hwloc/autogen
 depcomp = $(SHELL) $(top_srcdir)/config/depcomp
 am__depfiles_maybe = depfiles
 am__mv = mv -f
@@ -411,7 +594,14 @@ am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
 SOURCES = $(liboshmem_fortran_la_SOURCES)
-DIST_SOURCES = $(liboshmem_fortran_la_SOURCES)
+DIST_SOURCES = $(am__liboshmem_fortran_la_SOURCES_DIST)
+RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
+	html-recursive info-recursive install-data-recursive \
+	install-dvi-recursive install-exec-recursive \
+	install-html-recursive install-info-recursive \
+	install-pdf-recursive install-ps-recursive install-recursive \
+	installcheck-recursive installdirs-recursive pdf-recursive \
+	ps-recursive uninstall-recursive
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -448,9 +638,40 @@ am__uninstall_files_from_dir = { \
   }
 am__installdirs = "$(DESTDIR)$(oshmemdir)"
 HEADERS = $(oshmem_HEADERS)
+RECURSIVE_CLEAN_TARGETS = mostlyclean-recursive clean-recursive	\
+  distclean-recursive maintainer-clean-recursive
+AM_RECURSIVE_TARGETS = $(RECURSIVE_TARGETS:-recursive=) \
+	$(RECURSIVE_CLEAN_TARGETS:-recursive=) tags TAGS ctags CTAGS \
+	distdir
 ETAGS = etags
 CTAGS = ctags
+DIST_SUBDIRS = profile
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
+am__relativize = \
+  dir0=`pwd`; \
+  sed_first='s,^\([^/]*\)/.*$$,\1,'; \
+  sed_rest='s,^[^/]*/*,,'; \
+  sed_last='s,^.*/\([^/]*\)$$,\1,'; \
+  sed_butlast='s,/*[^/]*$$,,'; \
+  while test -n "$$dir1"; do \
+    first=`echo "$$dir1" | sed -e "$$sed_first"`; \
+    if test "$$first" != "."; then \
+      if test "$$first" = ".."; then \
+        dir2=`echo "$$dir0" | sed -e "$$sed_last"`/"$$dir2"; \
+        dir0=`echo "$$dir0" | sed -e "$$sed_butlast"`; \
+      else \
+        first2=`echo "$$dir2" | sed -e "$$sed_first"`; \
+        if test "$$first2" = "$$first"; then \
+          dir2=`echo "$$dir2" | sed -e "$$sed_rest"`; \
+        else \
+          dir2="../$$dir2"; \
+        fi; \
+        dir0="$$dir0"/"$$first"; \
+      fi; \
+    fi; \
+    dir1=`echo "$$dir1" | sed -e "$$sed_rest"`; \
+  done; \
+  reldir="$$dir2"
 ACLOCAL = @ACLOCAL@
 AMCA_PARAM_SETS_DIR = @AMCA_PARAM_SETS_DIR@
 AMTAR = @AMTAR@
@@ -524,10 +745,12 @@ HWLOC_PCIACCESS_CFLAGS = @HWLOC_PCIACCESS_CFLAGS@
 HWLOC_PCIACCESS_LIBS = @HWLOC_PCIACCESS_LIBS@
 HWLOC_PCIUTILS_CFLAGS = @HWLOC_PCIUTILS_CFLAGS@
 HWLOC_PCIUTILS_LIBS = @HWLOC_PCIUTILS_LIBS@
+HWLOC_PLUGINS_DIR = @HWLOC_PLUGINS_DIR@
+HWLOC_PLUGINS_PATH = @HWLOC_PLUGINS_PATH@
 HWLOC_REQUIRES = @HWLOC_REQUIRES@
+HWLOC_X11_LIBS = @HWLOC_X11_LIBS@
 HWLOC_top_builddir = @HWLOC_top_builddir@
 HWLOC_top_srcdir = @HWLOC_top_srcdir@
-INCLTDL = @INCLTDL@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -541,15 +764,11 @@ LDFLAGS = @LDFLAGS@
 LEX = @LEX@
 LEXLIB = @LEXLIB@
 LEX_OUTPUT_ROOT = @LEX_OUTPUT_ROOT@
-LIBLTDL = @LIBLTDL@
-LIBLTDL_SUBDIR = @LIBLTDL_SUBDIR@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
 LN_S = @LN_S@
-LTDLDEPS = @LTDLDEPS@
-LTDLINCL = @LTDLINCL@
 LTLIBOBJS = @LTLIBOBJS@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
@@ -771,6 +990,13 @@ MCA_opal_db_DSO_SUBDIRS = @MCA_opal_db_DSO_SUBDIRS@
 MCA_opal_db_STATIC_COMPONENTS = @MCA_opal_db_STATIC_COMPONENTS@
 MCA_opal_db_STATIC_LTLIBS = @MCA_opal_db_STATIC_LTLIBS@
 MCA_opal_db_STATIC_SUBDIRS = @MCA_opal_db_STATIC_SUBDIRS@
+MCA_opal_dl_ALL_COMPONENTS = @MCA_opal_dl_ALL_COMPONENTS@
+MCA_opal_dl_ALL_SUBDIRS = @MCA_opal_dl_ALL_SUBDIRS@
+MCA_opal_dl_DSO_COMPONENTS = @MCA_opal_dl_DSO_COMPONENTS@
+MCA_opal_dl_DSO_SUBDIRS = @MCA_opal_dl_DSO_SUBDIRS@
+MCA_opal_dl_STATIC_COMPONENTS = @MCA_opal_dl_STATIC_COMPONENTS@
+MCA_opal_dl_STATIC_LTLIBS = @MCA_opal_dl_STATIC_LTLIBS@
+MCA_opal_dl_STATIC_SUBDIRS = @MCA_opal_dl_STATIC_SUBDIRS@
 MCA_opal_event_ALL_COMPONENTS = @MCA_opal_event_ALL_COMPONENTS@
 MCA_opal_event_ALL_SUBDIRS = @MCA_opal_event_ALL_SUBDIRS@
 MCA_opal_event_DSO_COMPONENTS = @MCA_opal_event_DSO_COMPONENTS@
@@ -1056,6 +1282,7 @@ OMPI_F08_SUFFIX = @OMPI_F08_SUFFIX@
 OMPI_FC = @OMPI_FC@
 OMPI_FC_ABSOLUTE = @OMPI_FC_ABSOLUTE@
 OMPI_FC_MODULE_FLAG = @OMPI_FC_MODULE_FLAG@
+OMPI_FORTRAN_BUILD_SIZEOF = @OMPI_FORTRAN_BUILD_SIZEOF@
 OMPI_FORTRAN_CKINDS = @OMPI_FORTRAN_CKINDS@
 OMPI_FORTRAN_EXTRA_SHARED_LIBRARY_FLAGS = @OMPI_FORTRAN_EXTRA_SHARED_LIBRARY_FLAGS@
 OMPI_FORTRAN_F08_PREDECL = @OMPI_FORTRAN_F08_PREDECL@
@@ -1063,12 +1290,19 @@ OMPI_FORTRAN_F08_TYPE = @OMPI_FORTRAN_F08_TYPE@
 OMPI_FORTRAN_HAVE_ABSTRACT = @OMPI_FORTRAN_HAVE_ABSTRACT@
 OMPI_FORTRAN_HAVE_ASYNCHRONOUS = @OMPI_FORTRAN_HAVE_ASYNCHRONOUS@
 OMPI_FORTRAN_HAVE_BIND_C = @OMPI_FORTRAN_HAVE_BIND_C@
+OMPI_FORTRAN_HAVE_C_FUNLOC = @OMPI_FORTRAN_HAVE_C_FUNLOC@
+OMPI_FORTRAN_HAVE_INTERFACE = @OMPI_FORTRAN_HAVE_INTERFACE@
+OMPI_FORTRAN_HAVE_ISO_C_BINDING = @OMPI_FORTRAN_HAVE_ISO_C_BINDING@
+OMPI_FORTRAN_HAVE_ISO_FORTRAN_ENV = @OMPI_FORTRAN_HAVE_ISO_FORTRAN_ENV@
 OMPI_FORTRAN_HAVE_PRIVATE = @OMPI_FORTRAN_HAVE_PRIVATE@
 OMPI_FORTRAN_HAVE_PROCEDURE = @OMPI_FORTRAN_HAVE_PROCEDURE@
 OMPI_FORTRAN_HAVE_PROTECTED = @OMPI_FORTRAN_HAVE_PROTECTED@
+OMPI_FORTRAN_HAVE_STORAGE_SIZE = @OMPI_FORTRAN_HAVE_STORAGE_SIZE@
+OMPI_FORTRAN_HAVE_USE_ONLY = @OMPI_FORTRAN_HAVE_USE_ONLY@
 OMPI_FORTRAN_IGNORE_TKR_PREDECL = @OMPI_FORTRAN_IGNORE_TKR_PREDECL@
 OMPI_FORTRAN_IGNORE_TKR_TYPE = @OMPI_FORTRAN_IGNORE_TKR_TYPE@
 OMPI_FORTRAN_IKINDS = @OMPI_FORTRAN_IKINDS@
+OMPI_FORTRAN_MAX_ARRAY_RANK = @OMPI_FORTRAN_MAX_ARRAY_RANK@
 OMPI_FORTRAN_NEED_WRAPPER_ROUTINES = @OMPI_FORTRAN_NEED_WRAPPER_ROUTINES@
 OMPI_FORTRAN_RKINDS = @OMPI_FORTRAN_RKINDS@
 OMPI_FORTRAN_STATUS_SIZE = @OMPI_FORTRAN_STATUS_SIZE@
@@ -1148,6 +1382,7 @@ OMPI_MPI_COUNT_KIND = @OMPI_MPI_COUNT_KIND@
 OMPI_MPI_INTEGER_KIND = @OMPI_MPI_INTEGER_KIND@
 OMPI_MPI_OFFSET_KIND = @OMPI_MPI_OFFSET_KIND@
 OMPI_MPI_PREFIX = @OMPI_MPI_PREFIX@
+OMPI_PKG_CONFIG_LDFLAGS = @OMPI_PKG_CONFIG_LDFLAGS@
 OMPI_PROVIDE_MPI_FILE_INTERFACE = @OMPI_PROVIDE_MPI_FILE_INTERFACE@
 OMPI_RELEASE_DATE = @OMPI_RELEASE_DATE@
 OMPI_RELEASE_VERSION = @OMPI_RELEASE_VERSION@
@@ -1176,10 +1411,10 @@ OMPI_SIZEOF_FORTRAN_REAL16 = @OMPI_SIZEOF_FORTRAN_REAL16@
 OMPI_SIZEOF_FORTRAN_REAL2 = @OMPI_SIZEOF_FORTRAN_REAL2@
 OMPI_SIZEOF_FORTRAN_REAL4 = @OMPI_SIZEOF_FORTRAN_REAL4@
 OMPI_SIZEOF_FORTRAN_REAL8 = @OMPI_SIZEOF_FORTRAN_REAL8@
+OMPI_TARBALL_VERSION = @OMPI_TARBALL_VERSION@
 OMPI_TOP_BUILDDIR = @OMPI_TOP_BUILDDIR@
 OMPI_TOP_SRCDIR = @OMPI_TOP_SRCDIR@
 OMPI_VERSION = @OMPI_VERSION@
-OMPI_WANT_REPO_REV = @OMPI_WANT_REPO_REV@
 OMPI_WRAPPER_CXX_LIB = @OMPI_WRAPPER_CXX_LIB@
 OMPI_WRAPPER_CXX_REQUIRED_FILE = @OMPI_WRAPPER_CXX_REQUIRED_FILE@
 OMPI_WRAPPER_EXTRA_CFLAGS = @OMPI_WRAPPER_EXTRA_CFLAGS@
@@ -1201,6 +1436,7 @@ OPAL_ASM_SUPPORT_64BIT = @OPAL_ASM_SUPPORT_64BIT@
 OPAL_ASM_TEXT = @OPAL_ASM_TEXT@
 OPAL_ASM_TYPE = @OPAL_ASM_TYPE@
 OPAL_ASSEMBLY_ARCH = @OPAL_ASSEMBLY_ARCH@
+OPAL_ASSEMBLY_BUILTIN = @OPAL_ASSEMBLY_BUILTIN@
 OPAL_ASSEMBLY_FORMAT = @OPAL_ASSEMBLY_FORMAT@
 OPAL_CC_ABSOLUTE = @OPAL_CC_ABSOLUTE@
 OPAL_CONFIGURE_DATE = @OPAL_CONFIGURE_DATE@
@@ -1222,11 +1458,12 @@ OPAL_MAX_PORT_NAME = @OPAL_MAX_PORT_NAME@
 OPAL_MAX_PROCESSOR_NAME = @OPAL_MAX_PROCESSOR_NAME@
 OPAL_MINOR_VERSION = @OPAL_MINOR_VERSION@
 OPAL_PARAM_FROM_PLATFORM = @OPAL_PARAM_FROM_PLATFORM@
+OPAL_PKG_CONFIG_LDFLAGS = @OPAL_PKG_CONFIG_LDFLAGS@
 OPAL_RELEASE_DATE = @OPAL_RELEASE_DATE@
 OPAL_RELEASE_VERSION = @OPAL_RELEASE_VERSION@
 OPAL_REPO_REV = @OPAL_REPO_REV@
+OPAL_TARBALL_VERSION = @OPAL_TARBALL_VERSION@
 OPAL_VERSION = @OPAL_VERSION@
-OPAL_WANT_REPO_REV = @OPAL_WANT_REPO_REV@
 OPAL_WRAPPER_EXTRA_CFLAGS = @OPAL_WRAPPER_EXTRA_CFLAGS@
 OPAL_WRAPPER_EXTRA_CFLAGS_PREFIX = @OPAL_WRAPPER_EXTRA_CFLAGS_PREFIX@
 OPAL_WRAPPER_EXTRA_CPPFLAGS = @OPAL_WRAPPER_EXTRA_CPPFLAGS@
@@ -1238,11 +1475,12 @@ OPAL_WRAPPER_EXTRA_LIBS = @OPAL_WRAPPER_EXTRA_LIBS@
 ORTE_GREEK_VERSION = @ORTE_GREEK_VERSION@
 ORTE_MAJOR_VERSION = @ORTE_MAJOR_VERSION@
 ORTE_MINOR_VERSION = @ORTE_MINOR_VERSION@
+ORTE_PKG_CONFIG_LDFLAGS = @ORTE_PKG_CONFIG_LDFLAGS@
 ORTE_RELEASE_DATE = @ORTE_RELEASE_DATE@
 ORTE_RELEASE_VERSION = @ORTE_RELEASE_VERSION@
 ORTE_REPO_REV = @ORTE_REPO_REV@
+ORTE_TARBALL_VERSION = @ORTE_TARBALL_VERSION@
 ORTE_VERSION = @ORTE_VERSION@
-ORTE_WANT_REPO_REV = @ORTE_WANT_REPO_REV@
 ORTE_WRAPPER_EXTRA_CFLAGS = @ORTE_WRAPPER_EXTRA_CFLAGS@
 ORTE_WRAPPER_EXTRA_CFLAGS_PREFIX = @ORTE_WRAPPER_EXTRA_CFLAGS_PREFIX@
 ORTE_WRAPPER_EXTRA_CPPFLAGS = @ORTE_WRAPPER_EXTRA_CPPFLAGS@
@@ -1259,8 +1497,8 @@ OSHMEM_MINOR_VERSION = @OSHMEM_MINOR_VERSION@
 OSHMEM_RELEASE_DATE = @OSHMEM_RELEASE_DATE@
 OSHMEM_RELEASE_VERSION = @OSHMEM_RELEASE_VERSION@
 OSHMEM_REPO_REV = @OSHMEM_REPO_REV@
+OSHMEM_TARBALL_VERSION = @OSHMEM_TARBALL_VERSION@
 OSHMEM_VERSION = @OSHMEM_VERSION@
-OSHMEM_WANT_REPO_REV = @OSHMEM_WANT_REPO_REV@
 OTOOL = @OTOOL@
 OTOOL64 = @OTOOL64@
 PACKAGE = @PACKAGE@
@@ -1281,6 +1519,11 @@ SHELL = @SHELL@
 STRIP = @STRIP@
 VERSION = @VERSION@
 WRAPPER_CC = @WRAPPER_CC@
+XMKMF = @XMKMF@
+X_CFLAGS = @X_CFLAGS@
+X_EXTRA_LIBS = @X_EXTRA_LIBS@
+X_LIBS = @X_LIBS@
+X_PRE_LIBS = @X_PRE_LIBS@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -1300,6 +1543,10 @@ atomic_mxm_CFLAGS = @atomic_mxm_CFLAGS@
 atomic_mxm_CPPFLAGS = @atomic_mxm_CPPFLAGS@
 atomic_mxm_LDFLAGS = @atomic_mxm_LDFLAGS@
 atomic_mxm_LIBS = @atomic_mxm_LIBS@
+atomic_ucx_CFLAGS = @atomic_ucx_CFLAGS@
+atomic_ucx_CPPFLAGS = @atomic_ucx_CPPFLAGS@
+atomic_ucx_LDFLAGS = @atomic_ucx_LDFLAGS@
+atomic_ucx_LIBS = @atomic_ucx_LIBS@
 bindir = @bindir@
 btl_openib_CFLAGS = @btl_openib_CFLAGS@
 btl_openib_CPPFLAGS = @btl_openib_CPPFLAGS@
@@ -1315,10 +1562,6 @@ btl_sm_CPPFLAGS = @btl_sm_CPPFLAGS@
 btl_ugni_CPPFLAGS = @btl_ugni_CPPFLAGS@
 btl_ugni_LDFLAGS = @btl_ugni_LDFLAGS@
 btl_ugni_LIBS = @btl_ugni_LIBS@
-btl_usnic_CFLAGS = @btl_usnic_CFLAGS@
-btl_usnic_CPPFLAGS = @btl_usnic_CPPFLAGS@
-btl_usnic_LDFLAGS = @btl_usnic_LDFLAGS@
-btl_usnic_LIBS = @btl_usnic_LIBS@
 btl_vader_CFLAGS = @btl_vader_CFLAGS@
 btl_vader_CPPFLAGS = @btl_vader_CPPFLAGS@
 btl_vader_LDFLAGS = @btl_vader_LDFLAGS@
@@ -1334,21 +1577,14 @@ coll_fca_CPPFLAGS = @coll_fca_CPPFLAGS@
 coll_fca_HOME = @coll_fca_HOME@
 coll_fca_LDFLAGS = @coll_fca_LDFLAGS@
 coll_fca_LIBS = @coll_fca_LIBS@
-coll_fca_extra_CPPFLAGS = @coll_fca_extra_CPPFLAGS@
 coll_hcoll_CFLAGS = @coll_hcoll_CFLAGS@
 coll_hcoll_CPPFLAGS = @coll_hcoll_CPPFLAGS@
-coll_hcoll_HOME = @coll_hcoll_HOME@
 coll_hcoll_LDFLAGS = @coll_hcoll_LDFLAGS@
 coll_hcoll_LIBS = @coll_hcoll_LIBS@
-coll_hcoll_extra_CPPFLAGS = @coll_hcoll_extra_CPPFLAGS@
 coll_portals4_CPPFLAGS = @coll_portals4_CPPFLAGS@
 coll_portals4_LDFLAGS = @coll_portals4_LDFLAGS@
 coll_portals4_LIBS = @coll_portals4_LIBS@
 common_cuda_CPPFLAGS = @common_cuda_CPPFLAGS@
-common_mx_CFLAGS = @common_mx_CFLAGS@
-common_mx_CPPFLAGS = @common_mx_CPPFLAGS@
-common_mx_LDFLAGS = @common_mx_LDFLAGS@
-common_mx_LIBS = @common_mx_LIBS@
 common_pmi_CPPFLAGS = @common_pmi_CPPFLAGS@
 common_pmi_LDFLAGS = @common_pmi_LDFLAGS@
 common_pmi_LIBS = @common_pmi_LIBS@
@@ -1359,6 +1595,9 @@ common_verbs_CFLAGS = @common_verbs_CFLAGS@
 common_verbs_CPPFLAGS = @common_verbs_CPPFLAGS@
 common_verbs_LDFLAGS = @common_verbs_LDFLAGS@
 common_verbs_LIBS = @common_verbs_LIBS@
+common_verbs_usnic_CPPFLAGS = @common_verbs_usnic_CPPFLAGS@
+common_verbs_usnic_LDFLAGS = @common_verbs_usnic_LDFLAGS@
+common_verbs_usnic_LIBS = @common_verbs_usnic_LIBS@
 datadir = @datadir@
 datarootdir = @datarootdir@
 db_pmi_CPPFLAGS = @db_pmi_CPPFLAGS@
@@ -1409,6 +1648,7 @@ libmca_common_sm_so_version = @libmca_common_sm_so_version@
 libmca_common_ugni_so_version = @libmca_common_ugni_so_version@
 libmca_common_verbs_so_version = @libmca_common_verbs_so_version@
 libmca_opal_common_hwloc_so_version = @libmca_opal_common_hwloc_so_version@
+libmca_opal_common_libfabric_so_version = @libmca_opal_common_libfabric_so_version@
 libmca_opal_common_pmi_so_version = @libmca_opal_common_pmi_so_version@
 libmpi_cxx_so_version = @libmpi_cxx_so_version@
 libmpi_java_so_version = @libmpi_java_so_version@
@@ -1429,10 +1669,6 @@ mkdir_p = @mkdir_p@
 mpool_udreg_CPPFLAGS = @mpool_udreg_CPPFLAGS@
 mpool_udreg_LDFLAGS = @mpool_udreg_LDFLAGS@
 mpool_udreg_LIBS = @mpool_udreg_LIBS@
-mtl_mx_CFLAGS = @mtl_mx_CFLAGS@
-mtl_mx_CPPFLAGS = @mtl_mx_CPPFLAGS@
-mtl_mx_LDFLAGS = @mtl_mx_LDFLAGS@
-mtl_mx_LIBS = @mtl_mx_LIBS@
 mtl_mxm_CFLAGS = @mtl_mxm_CFLAGS@
 mtl_mxm_CPPFLAGS = @mtl_mxm_CPPFLAGS@
 mtl_mxm_LDFLAGS = @mtl_mxm_LDFLAGS@
@@ -1440,24 +1676,38 @@ mtl_mxm_LIBS = @mtl_mxm_LIBS@
 mtl_portals4_CPPFLAGS = @mtl_portals4_CPPFLAGS@
 mtl_portals4_LDFLAGS = @mtl_portals4_LDFLAGS@
 mtl_portals4_LIBS = @mtl_portals4_LIBS@
+mtl_psm2_CFLAGS = @mtl_psm2_CFLAGS@
+mtl_psm2_CPPFLAGS = @mtl_psm2_CPPFLAGS@
+mtl_psm2_LDFLAGS = @mtl_psm2_LDFLAGS@
+mtl_psm2_LIBS = @mtl_psm2_LIBS@
 mtl_psm_CFLAGS = @mtl_psm_CFLAGS@
 mtl_psm_CPPFLAGS = @mtl_psm_CPPFLAGS@
 mtl_psm_LDFLAGS = @mtl_psm_LDFLAGS@
 mtl_psm_LIBS = @mtl_psm_LIBS@
 oldincludedir = @oldincludedir@
+ompi_btl_usnic_CPPFLAGS = @ompi_btl_usnic_CPPFLAGS@
+ompi_btl_usnic_LDFLAGS = @ompi_btl_usnic_LDFLAGS@
+ompi_btl_usnic_LIBS = @ompi_btl_usnic_LIBS@
+ompi_mtl_ofi_CPPFLAGS = @ompi_mtl_ofi_CPPFLAGS@
+ompi_mtl_ofi_LDFLAGS = @ompi_mtl_ofi_LDFLAGS@
+ompi_mtl_ofi_LIBS = @ompi_mtl_ofi_LIBS@
 ompidatadir = @ompidatadir@
 ompiincludedir = @ompiincludedir@
 ompilibdir = @ompilibdir@
 opal_datatype_cuda_CPPFLAGS = @opal_datatype_cuda_CPPFLAGS@
+opal_dl_dlopen_LIBS = @opal_dl_dlopen_LIBS@
+opal_dl_libltdl_CPPFLAGS = @opal_dl_libltdl_CPPFLAGS@
+opal_dl_libltdl_LDFLAGS = @opal_dl_libltdl_LDFLAGS@
+opal_dl_libltdl_LIBS = @opal_dl_libltdl_LIBS@
 opal_event_external_CPPFLAGS = @opal_event_external_CPPFLAGS@
 opal_event_external_LDFLAGS = @opal_event_external_LDFLAGS@
 opal_event_external_LIBS = @opal_event_external_LIBS@
 opal_hwloc_external_LDFLAGS = @opal_hwloc_external_LDFLAGS@
 opal_hwloc_external_LIBS = @opal_hwloc_external_LIBS@
-opal_hwloc_hwloc172_CFLAGS = @opal_hwloc_hwloc172_CFLAGS@
-opal_hwloc_hwloc172_CPPFLAGS = @opal_hwloc_hwloc172_CPPFLAGS@
-opal_hwloc_hwloc172_LDFLAGS = @opal_hwloc_hwloc172_LDFLAGS@
-opal_hwloc_hwloc172_LIBS = @opal_hwloc_hwloc172_LIBS@
+opal_hwloc_hwloc191_CFLAGS = @opal_hwloc_hwloc191_CFLAGS@
+opal_hwloc_hwloc191_CPPFLAGS = @opal_hwloc_hwloc191_CPPFLAGS@
+opal_hwloc_hwloc191_LDFLAGS = @opal_hwloc_hwloc191_LDFLAGS@
+opal_hwloc_hwloc191_LIBS = @opal_hwloc_hwloc191_LIBS@
 opal_memchecker_valgrind_CPPFLAGS = @opal_memchecker_valgrind_CPPFLAGS@
 osc_portals4_CPPFLAGS = @osc_portals4_CPPFLAGS@
 osc_portals4_LDFLAGS = @osc_portals4_LDFLAGS@
@@ -1476,6 +1726,12 @@ plm_slurm_LIBS = @plm_slurm_LIBS@
 plm_tm_CPPFLAGS = @plm_tm_CPPFLAGS@
 plm_tm_LDFLAGS = @plm_tm_LDFLAGS@
 plm_tm_LIBS = @plm_tm_LIBS@
+pml_ucx_CPPFLAGS = @pml_ucx_CPPFLAGS@
+pml_ucx_LDFLAGS = @pml_ucx_LDFLAGS@
+pml_ucx_LIBS = @pml_ucx_LIBS@
+pml_yalla_CPPFLAGS = @pml_yalla_CPPFLAGS@
+pml_yalla_LDFLAGS = @pml_yalla_LDFLAGS@
+pml_yalla_LIBS = @pml_yalla_LIBS@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
@@ -1495,9 +1751,6 @@ ras_slurm_LIBS = @ras_slurm_LIBS@
 ras_tm_CPPFLAGS = @ras_tm_CPPFLAGS@
 ras_tm_LDFLAGS = @ras_tm_LDFLAGS@
 ras_tm_LIBS = @ras_tm_LIBS@
-rte_pmi_CPPFLAGS = @rte_pmi_CPPFLAGS@
-rte_pmi_LDFLAGS = @rte_pmi_LDFLAGS@
-rte_pmi_LIBS = @rte_pmi_LIBS@
 sbindir = @sbindir@
 scoll_fca_CFLAGS = @scoll_fca_CFLAGS@
 scoll_fca_CPPFLAGS = @scoll_fca_CPPFLAGS@
@@ -1512,6 +1765,10 @@ spml_ikrit_CFLAGS = @spml_ikrit_CFLAGS@
 spml_ikrit_CPPFLAGS = @spml_ikrit_CPPFLAGS@
 spml_ikrit_LDFLAGS = @spml_ikrit_LDFLAGS@
 spml_ikrit_LIBS = @spml_ikrit_LIBS@
+spml_ucx_CFLAGS = @spml_ucx_CFLAGS@
+spml_ucx_CPPFLAGS = @spml_ucx_CPPFLAGS@
+spml_ucx_LDFLAGS = @spml_ucx_LDFLAGS@
+spml_ucx_LIBS = @spml_ucx_LIBS@
 srcdir = @srcdir@
 sysconfdir = @sysconfdir@
 target = @target@
@@ -1525,111 +1782,22 @@ top_builddir = @top_builddir@
 top_ompi_builddir = @top_ompi_builddir@
 top_ompi_srcdir = @top_ompi_srcdir@
 top_srcdir = @top_srcdir@
-AM_CPPFLAGS = -DOSHMEM_PROFILING_DEFINES=0 -DOSHMEM_HAVE_WEAK_SYMBOLS=0
-@OSHMEM_BUILD_FORTRAN_BINDINGS_FALSE@oshmem_fortran_lib = 
 
 # This is guaranteed to be false if we're not building OSHMEM at all
+#
+@OSHMEM_BUILD_FORTRAN_BINDINGS_TRUE@@OSHMEM_PROFILING_TRUE@SUBDIRS = profile
+@OSHMEM_BUILD_FORTRAN_BINDINGS_FALSE@oshmem_fortran_lib = 
 @OSHMEM_BUILD_FORTRAN_BINDINGS_TRUE@oshmem_fortran_lib = liboshmem_fortran.la
 noinst_LTLIBRARIES = $(oshmem_fortran_lib)
 headers = prototypes_shmem.h \
           bindings.h \
           shmem_fortran_pointer.h
 
-liboshmem_fortran_la_SOURCES = \
-                    start_pes_f.c \
-                    num_pes_f.c \
-                    my_pe_f.c \
-                    shmem_finalize_f.c \
-                    shmem_barrier_all_f.c \
-                    shpalloc_f.c \
-                    shpdeallc_f.c \
-                    shpclmove_f.c \
-                    shmem_ptr_f.c \
-                    shmem_pe_accessible_f.c \
-                    shmem_addr_accessible_f.c \
-                    shmem_put_f.c \
-                    shmem_character_put_f.c \
-                    shmem_double_put_f.c \
-                    shmem_complex_put_f.c \
-                    shmem_logical_put_f.c \
-                    shmem_integer_put_f.c \
-                    shmem_real_put_f.c \
-                    shmem_put4_f.c \
-                    shmem_put8_f.c \
-                    shmem_put32_f.c \
-                    shmem_put64_f.c \
-                    shmem_putmem_f.c \
-                    shmem_complex_iput_f.c \
-                    shmem_double_iput_f.c \
-                    shmem_integer_iput_f.c \
-                    shmem_iput128_f.c \
-                    shmem_iput32_f.c \
-                    shmem_iput4_f.c \
-                    shmem_iput64_f.c \
-                    shmem_iput8_f.c \
-                    shmem_logical_iput_f.c \
-                    shmem_real_iput_f.c \
-                    shmem_character_get_f.c \
-                    shmem_complex_get_f.c \
-                    shmem_double_get_f.c \
-                    shmem_get128_f.c \
-                    shmem_get32_f.c \
-                    shmem_get4_f.c \
-                    shmem_get64_f.c \
-                    shmem_get8_f.c \
-                    shmem_getmem_f.c \
-                    shmem_integer_get_f.c \
-                    shmem_logical_get_f.c \
-                    shmem_real_get_f.c \
-                    shmem_complex_iget_f.c \
-                    shmem_double_iget_f.c \
-                    shmem_iget128_f.c \
-                    shmem_iget32_f.c \
-                    shmem_iget4_f.c \
-                    shmem_iget64_f.c \
-                    shmem_iget8_f.c \
-                    shmem_integer_iget_f.c \
-                    shmem_logical_iget_f.c \
-                    shmem_real_iget_f.c \
-                    shmem_swap_f.c \
-                    shmem_int4_swap_f.c \
-                    shmem_int8_swap_f.c \
-                    shmem_real4_swap_f.c \
-                    shmem_real8_swap_f.c \
-                    shmem_int4_cswap_f.c \
-                    shmem_int8_cswap_f.c \
-                    shmem_int4_fadd_f.c \
-                    shmem_int8_fadd_f.c \
-                    shmem_int4_finc_f.c \
-                    shmem_int8_finc_f.c \
-                    shmem_int4_add_f.c \
-                    shmem_int8_add_f.c \
-                    shmem_int4_wait_f.c \
-                    shmem_int8_wait_f.c \
-                    shmem_wait_f.c \
-                    shmem_int4_wait_until_f.c \
-                    shmem_int8_wait_until_f.c \
-                    shmem_wait_until_f.c \
-                    shmem_barrier_f.c \
-                    shmem_and_to_all_f.c \
-                    shmem_or_to_all_f.c \
-                    shmem_xor_to_all_f.c \
-                    shmem_max_to_all_f.c \
-                    shmem_min_to_all_f.c \
-                    shmem_sum_to_all_f.c \
-                    shmem_prod_to_all_f.c \
-                    shmem_collect_f.c \
-                    shmem_broadcast_f.c \
-                    shmem_lock_f.c \
-                    shmem_cache_f.c \
-                    shmem_int4_inc_f.c \
-                    shmem_int8_inc_f.c \
-                    shmem_quiet_f.c \
-                    shmem_fence_f.c
-
+liboshmem_fortran_la_SOURCES = shmem_finalize_f.c $(am__append_1)
+@OSHMEM_PROFILING_FALSE@AM_CPPFLAGS = -DOSHMEM_PROFILING=0
 @PROJECT_OSHMEM_TRUE@@WANT_INSTALL_HEADERS_TRUE@oshmemdir = $(ompiincludedir)/$(subdir)
 @PROJECT_OSHMEM_TRUE@@WANT_INSTALL_HEADERS_TRUE@oshmem_HEADERS = $(headers)
-all: all-am
+all: all-recursive
 
 .SUFFIXES:
 .SUFFIXES: .c .lo .o .obj
@@ -1683,8 +1851,6 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/my_pe_f.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/num_pes_f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shmem_addr_accessible_f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shmem_and_to_all_f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shmem_barrier_all_f.Plo@am__quote@
@@ -1710,11 +1876,14 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shmem_get64_f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shmem_get8_f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shmem_getmem_f.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shmem_global_exit_f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shmem_iget128_f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shmem_iget32_f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shmem_iget4_f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shmem_iget64_f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shmem_iget8_f.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shmem_info_f.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shmem_init_f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shmem_int4_add_f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shmem_int4_cswap_f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shmem_int4_fadd_f.Plo@am__quote@
@@ -1747,10 +1916,13 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shmem_logical_put_f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shmem_max_to_all_f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shmem_min_to_all_f.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shmem_my_pe_f.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shmem_n_pes_f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shmem_or_to_all_f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shmem_pe_accessible_f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shmem_prod_to_all_f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shmem_ptr_f.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shmem_put128_f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shmem_put32_f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shmem_put4_f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shmem_put64_f.Plo@am__quote@
@@ -1772,7 +1944,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shpalloc_f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shpclmove_f.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shpdeallc_f.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/start_pes_f.Plo@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
@@ -1825,6 +1996,53 @@ uninstall-oshmemHEADERS:
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	dir='$(DESTDIR)$(oshmemdir)'; $(am__uninstall_files_from_dir)
 
+# This directory's subdirectories are mostly independent; you can cd
+# into them and run 'make' without going through this Makefile.
+# To change the values of 'make' variables: instead of editing Makefiles,
+# (1) if the variable is set in 'config.status', edit 'config.status'
+#     (which will cause the Makefiles to be regenerated when you run 'make');
+# (2) otherwise, pass the desired values on the 'make' command line.
+$(RECURSIVE_TARGETS) $(RECURSIVE_CLEAN_TARGETS):
+	@fail= failcom='exit 1'; \
+	for f in x $$MAKEFLAGS; do \
+	  case $$f in \
+	    *=* | --[!k]*);; \
+	    *k*) failcom='fail=yes';; \
+	  esac; \
+	done; \
+	dot_seen=no; \
+	target=`echo $@ | sed s/-recursive//`; \
+	case "$@" in \
+	  distclean-* | maintainer-clean-*) list='$(DIST_SUBDIRS)' ;; \
+	  *) list='$(SUBDIRS)' ;; \
+	esac; \
+	for subdir in $$list; do \
+	  echo "Making $$target in $$subdir"; \
+	  if test "$$subdir" = "."; then \
+	    dot_seen=yes; \
+	    local_target="$$target-am"; \
+	  else \
+	    local_target="$$target"; \
+	  fi; \
+	  ($(am__cd) $$subdir && $(MAKE) $(AM_MAKEFLAGS) $$local_target) \
+	  || eval $$failcom; \
+	done; \
+	if test "$$dot_seen" = "no"; then \
+	  $(MAKE) $(AM_MAKEFLAGS) "$$target-am" || exit 1; \
+	fi; test -z "$$fail"
+tags-recursive:
+	list='$(SUBDIRS)'; for subdir in $$list; do \
+	  test "$$subdir" = . || ($(am__cd) $$subdir && $(MAKE) $(AM_MAKEFLAGS) tags); \
+	done
+ctags-recursive:
+	list='$(SUBDIRS)'; for subdir in $$list; do \
+	  test "$$subdir" = . || ($(am__cd) $$subdir && $(MAKE) $(AM_MAKEFLAGS) ctags); \
+	done
+cscopelist-recursive:
+	list='$(SUBDIRS)'; for subdir in $$list; do \
+	  test "$$subdir" = . || ($(am__cd) $$subdir && $(MAKE) $(AM_MAKEFLAGS) cscopelist); \
+	done
+
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
 	unique=`for i in $$list; do \
@@ -1835,10 +2053,23 @@ ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	mkid -fID $$unique
 tags: TAGS
 
-TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
+TAGS: tags-recursive $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
 		$(TAGS_FILES) $(LISP)
 	set x; \
 	here=`pwd`; \
+	if ($(ETAGS) --etags-include --version) >/dev/null 2>&1; then \
+	  include_option=--etags-include; \
+	  empty_fix=.; \
+	else \
+	  include_option=--include; \
+	  empty_fix=; \
+	fi; \
+	list='$(SUBDIRS)'; for subdir in $$list; do \
+	  if test "$$subdir" = .; then :; else \
+	    test ! -f $$subdir/TAGS || \
+	      set "$$@" "$$include_option=$$here/$$subdir/TAGS"; \
+	  fi; \
+	done; \
 	list='$(SOURCES) $(HEADERS)  $(LISP) $(TAGS_FILES)'; \
 	unique=`for i in $$list; do \
 	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
@@ -1857,7 +2088,7 @@ TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
 	  fi; \
 	fi
 ctags: CTAGS
-CTAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
+CTAGS: ctags-recursive $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
 		$(TAGS_FILES) $(LISP)
 	list='$(SOURCES) $(HEADERS)  $(LISP) $(TAGS_FILES)'; \
 	unique=`for i in $$list; do \
@@ -1874,7 +2105,7 @@ GTAGS:
 	  && $(am__cd) $(top_srcdir) \
 	  && gtags -i $(GTAGS_ARGS) "$$here"
 
-cscopelist:  $(HEADERS) $(SOURCES) $(LISP)
+cscopelist: cscopelist-recursive $(HEADERS) $(SOURCES) $(LISP)
 	list='$(SOURCES) $(HEADERS) $(LISP)'; \
 	case "$(srcdir)" in \
 	  [\\/]* | ?:[\\/]*) sdir="$(srcdir)" ;; \
@@ -1921,22 +2152,48 @@ distdir: $(DISTFILES)
 	    || exit 1; \
 	  fi; \
 	done
+	@list='$(DIST_SUBDIRS)'; for subdir in $$list; do \
+	  if test "$$subdir" = .; then :; else \
+	    $(am__make_dryrun) \
+	      || test -d "$(distdir)/$$subdir" \
+	      || $(MKDIR_P) "$(distdir)/$$subdir" \
+	      || exit 1; \
+	    dir1=$$subdir; dir2="$(distdir)/$$subdir"; \
+	    $(am__relativize); \
+	    new_distdir=$$reldir; \
+	    dir1=$$subdir; dir2="$(top_distdir)"; \
+	    $(am__relativize); \
+	    new_top_distdir=$$reldir; \
+	    echo " (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) top_distdir="$$new_top_distdir" distdir="$$new_distdir" \\"; \
+	    echo "     am__remove_distdir=: am__skip_length_check=: am__skip_mode_fix=: distdir)"; \
+	    ($(am__cd) $$subdir && \
+	      $(MAKE) $(AM_MAKEFLAGS) \
+	        top_distdir="$$new_top_distdir" \
+	        distdir="$$new_distdir" \
+		am__remove_distdir=: \
+		am__skip_length_check=: \
+		am__skip_mode_fix=: \
+	        distdir) \
+	      || exit 1; \
+	  fi; \
+	done
 check-am: all-am
-check: check-am
+check: check-recursive
 all-am: Makefile $(LTLIBRARIES) $(HEADERS)
-installdirs:
+installdirs: installdirs-recursive
+installdirs-am:
 	for dir in "$(DESTDIR)$(oshmemdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
-install: install-am
-install-exec: install-exec-am
-install-data: install-data-am
-uninstall: uninstall-am
+install: install-recursive
+install-exec: install-exec-recursive
+install-data: install-data-recursive
+uninstall: uninstall-recursive
 
 install-am: all-am
 	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
 
-installcheck: installcheck-am
+installcheck: installcheck-recursive
 install-strip:
 	if test -z '$(STRIP)'; then \
 	  $(MAKE) $(AM_MAKEFLAGS) INSTALL_PROGRAM="$(INSTALL_STRIP_PROGRAM)" \
@@ -1959,92 +2216,96 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
-clean: clean-am
+clean: clean-recursive
 
 clean-am: clean-generic clean-libtool clean-noinstLTLIBRARIES \
 	mostlyclean-am
 
-distclean: distclean-am
+distclean: distclean-recursive
 	-rm -rf ./$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
 
-dvi: dvi-am
+dvi: dvi-recursive
 
 dvi-am:
 
-html: html-am
+html: html-recursive
 
 html-am:
 
-info: info-am
+info: info-recursive
 
 info-am:
 
 install-data-am: install-oshmemHEADERS
 
-install-dvi: install-dvi-am
+install-dvi: install-dvi-recursive
 
 install-dvi-am:
 
 install-exec-am:
 
-install-html: install-html-am
+install-html: install-html-recursive
 
 install-html-am:
 
-install-info: install-info-am
+install-info: install-info-recursive
 
 install-info-am:
 
 install-man:
 
-install-pdf: install-pdf-am
+install-pdf: install-pdf-recursive
 
 install-pdf-am:
 
-install-ps: install-ps-am
+install-ps: install-ps-recursive
 
 install-ps-am:
 
 installcheck-am:
 
-maintainer-clean: maintainer-clean-am
+maintainer-clean: maintainer-clean-recursive
 	-rm -rf ./$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
-mostlyclean: mostlyclean-am
+mostlyclean: mostlyclean-recursive
 
 mostlyclean-am: mostlyclean-compile mostlyclean-generic \
 	mostlyclean-libtool
 
-pdf: pdf-am
+pdf: pdf-recursive
 
 pdf-am:
 
-ps: ps-am
+ps: ps-recursive
 
 ps-am:
 
 uninstall-am: uninstall-oshmemHEADERS
 
-.MAKE: install-am install-strip
+.MAKE: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) \
+	cscopelist-recursive ctags-recursive install-am install-strip \
+	tags-recursive
 
-.PHONY: CTAGS GTAGS all all-am check check-am clean clean-generic \
-	clean-libtool clean-noinstLTLIBRARIES cscopelist ctags \
-	distclean distclean-compile distclean-generic \
+.PHONY: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) CTAGS GTAGS \
+	all all-am check check-am clean clean-generic clean-libtool \
+	clean-noinstLTLIBRARIES cscopelist cscopelist-recursive ctags \
+	ctags-recursive distclean distclean-compile distclean-generic \
 	distclean-libtool distclean-tags distdir dvi dvi-am html \
 	html-am info info-am install install-am install-data \
 	install-data-am install-dvi install-dvi-am install-exec \
 	install-exec-am install-html install-html-am install-info \
 	install-info-am install-man install-oshmemHEADERS install-pdf \
 	install-pdf-am install-ps install-ps-am install-strip \
-	installcheck installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-compile \
-	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	tags uninstall uninstall-am uninstall-oshmemHEADERS
+	installcheck installcheck-am installdirs installdirs-am \
+	maintainer-clean maintainer-clean-generic mostlyclean \
+	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
+	pdf pdf-am ps ps-am tags tags-recursive uninstall uninstall-am \
+	uninstall-oshmemHEADERS
 
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.

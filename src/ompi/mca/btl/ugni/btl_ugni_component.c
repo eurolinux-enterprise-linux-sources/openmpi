@@ -288,6 +288,13 @@ mca_btl_ugni_component_init (int *num_btl_modules,
     unsigned int i;
     int rc;
 
+    /* Currently refuse to run if MPI_THREAD_MULTIPLE is enabled */
+    if (ompi_mpi_thread_multiple && !mca_btl_base_thread_multiple_override) {
+        opal_output_verbose(5, ompi_btl_base_framework.framework_output,
+                            "btl:ugni: MPI_THREAD_MULTIPLE not supported; skipping this component");
+        return NULL;
+    }
+
     if (16384 < mca_btl_ugni_component.ugni_smsg_limit) {
         mca_btl_ugni_component.ugni_smsg_limit = 16384;
     }
@@ -509,7 +516,7 @@ mca_btl_ugni_progress_wait_list (mca_btl_ugni_module_t *ugni_module)
 
         endpoint->wait_listed = false;
 
-        rc = mca_btl_progress_send_wait_list (endpoint);
+        rc = mca_btl_ugni_progress_send_wait_list (endpoint);
         if (OMPI_SUCCESS != rc && false == endpoint->wait_listed) {
             opal_list_append (&ugni_module->ep_wait_list, &endpoint->super);
             endpoint->wait_listed = true;

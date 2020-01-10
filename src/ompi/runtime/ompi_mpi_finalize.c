@@ -1,4 +1,4 @@
-/* -*- Mode: C; c-basic-offset:4 ; -*- */
+/* -*- Mode: C; c-basic-offset:4 ; indent-tabs-mode:nil -*- */
 /*
  * Copyright (c) 2004-2010 The Trustees of Indiana University and Indiana
  *                         University Research and Technology
@@ -11,7 +11,7 @@
  * Copyright (c) 2004-2005 The Regents of the University of California.
  *                         All rights reserved.
  * Copyright (c) 2006-2013 Cisco Systems, Inc.  All rights reserved.
- * Copyright (c) 2006-2012 Los Alamos National Security, LLC.  All rights
+ * Copyright (c) 2006-2014 Los Alamos National Security, LLC.  All rights
  *                         reserved. 
  * Copyright (c) 2006      University of Houston. All rights reserved.
  * Copyright (c) 2009      Sun Microsystems, Inc.  All rights reserved.
@@ -74,6 +74,7 @@
 #include "ompi/mca/mpool/base/mpool_base_tree.h"
 #include "ompi/mca/rcache/base/base.h"
 #include "ompi/mca/pml/base/pml_base_bsend.h"
+#include "ompi/mca/allocator/base/base.h"
 #include "ompi/runtime/params.h"
 #include "ompi/mca/dpm/base/base.h"
 #include "ompi/mca/pubsub/base/base.h"
@@ -90,7 +91,6 @@ extern bool ompi_enable_timing;
 int ompi_mpi_finalize(void)
 {
     int ret;
-    static int32_t finalize_has_already_started = 0;
     opal_list_item_t *item;
     struct timeval ompistart, ompistop;
     ompi_rte_collective_t *coll;
@@ -102,7 +102,7 @@ int ompi_mpi_finalize(void)
        ompi_comm_free() (or run into other nasty lions, tigers, or
        bears) */
 
-    if (! opal_atomic_cmpset_32(&finalize_has_already_started, 0, 1)) {
+    if (! opal_atomic_cmpset_32(&ompi_mpi_finalize_started, 0, 1)) {
         /* Note that if we're already finalized, we cannot raise an
            MPI exception.  The best that we can do is write something
            to stderr. */
@@ -139,7 +139,7 @@ int ompi_mpi_finalize(void)
     (void)mca_pml_base_bsend_detach(NULL, NULL);
 
     nprocs = 0;
-    procs = ompi_proc_all(&nprocs);
+    procs = ompi_proc_world(&nprocs);
     MCA_PML_CALL(del_procs(procs, nprocs));
     free(procs);
 
@@ -225,7 +225,7 @@ int ompi_mpi_finalize(void)
     }
 
     /* wait for barrier to complete */
-    OMPI_WAIT_FOR_COMPLETION(coll->active);
+    OMPI_LAZY_WAIT_FOR_COMPLETION(coll->active);
     OBJ_RELEASE(coll);
 
     /* check for timing request - get stop time and report elapsed
@@ -280,13 +280,15 @@ int ompi_mpi_finalize(void)
         return ret;
     }
 
+    /* free communicator resources. this MUST come before finalizing the PML
+     * as this will call into the pml */
+    if (OMPI_SUCCESS != (ret = ompi_comm_finalize())) {
+        return ret;
+    }
+
     /* free pml resource */ 
     if(OMPI_SUCCESS != (ret = mca_pml_base_finalize())) { 
       return ret;
-    }
-    /* free communicator resources */
-    if (OMPI_SUCCESS != (ret = ompi_comm_finalize())) {
-        return ret;
     }
 
     /* free requests */
@@ -336,11 +338,6 @@ int ompi_mpi_finalize(void)
         return ret;
     }
 
-    /* free proc resources */
-    if ( OMPI_SUCCESS != (ret = ompi_proc_finalize())) {
-        return ret;
-    }
-    
     /* finalize the pubsub functions */
     if (OMPI_SUCCESS != (ret = mca_base_framework_close(&ompi_pubsub_base_framework) ) ) {
         return ret;
@@ -409,6 +406,14 @@ int ompi_mpi_finalize(void)
         return ret;
     }
     if (OMPI_SUCCESS != (ret = mca_base_framework_close(&ompi_rcache_base_framework))) {
+        return ret;
+    }
+    if (OMPI_SUCCESS != (ret = mca_base_framework_close(&ompi_allocator_base_framework))) {
+        return ret;
+    }
+
+    /* free proc resources */
+    if ( OMPI_SUCCESS != (ret = ompi_proc_finalize())) {
         return ret;
     }
 

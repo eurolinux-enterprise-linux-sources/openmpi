@@ -232,10 +232,12 @@ int bcol_ptpcoll_allreduce_narraying_init(bcol_function_args_t *input_args,
     mca_bcol_ptpcoll_module_t *ptpcoll_module = (mca_bcol_ptpcoll_module_t *)const_args->bcol_module;
     uint64_t sequence_number = input_args->sequence_num;
     uint32_t buffer_index = input_args->buffer_index;
+    int tag;
+#if OPAL_ENABLE_DEBUG
+    size_t buffer_size;
     int count = input_args->count;
     struct ompi_datatype_t *dtype = input_args->dtype;
-    size_t buffer_size;
-    int tag;
+#endif
 
     tag = (PTPCOLL_TAG_OFFSET + sequence_number * PTPCOLL_TAG_FACTOR) & (ptpcoll_module->tag_mask);
     ptpcoll_module->ml_mem.ml_buf_desc[buffer_index].tag = tag = -tag;
@@ -252,10 +254,12 @@ int bcol_ptpcoll_allreduce_narraying_init(bcol_function_args_t *input_args,
      */
     /* This has to be based on ml buffer size. Need to take into account the space used
      * by the headers of other bcol modules. */
+#if OPAL_ENABLE_DEBUG
     buffer_size  = ptpcoll_module->ml_mem.size_buffer - BCOL_HEADER_MAX;
     assert(buffer_size >= count * dtype->super.size *
            ptpcoll_module->k_nomial_radix);
-
+#endif
+    
     return bcol_ptpcoll_allreduce_narraying_progress (input_args, const_args);
 }
 

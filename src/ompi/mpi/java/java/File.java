@@ -1,4 +1,21 @@
 /*
+ * Copyright (c) 2004-2007 The Trustees of Indiana University and Indiana
+ *                         University Research and Technology
+ *                         Corporation.  All rights reserved.
+ * Copyright (c) 2004-2005 The University of Tennessee and The University
+ *                         of Tennessee Research Foundation.  All rights
+ *                         reserved.
+ * Copyright (c) 2004-2005 High Performance Computing Center Stuttgart, 
+ *                         University of Stuttgart.  All rights reserved.
+ * Copyright (c) 2004-2005 The Regents of the University of California.
+ *                         All rights reserved.
+ * $COPYRIGHT$
+ * 
+ * Additional copyrights may follow
+ * 
+ * $HEADER$
+ */
+/*
  * IMPLEMENTATION DETAILS
  * 
  * All methods with buffers that can be direct or non direct have
@@ -6,6 +23,7 @@
  * 
  * Checking if a buffer is direct is faster in Java than C.
  */
+
 package mpi;
 
 import java.nio.*;
@@ -249,7 +267,7 @@ public Status readAt(long offset, Object buf, int count, Datatype type)
 
     if(buf instanceof Buffer && !(db = ((Buffer)buf).isDirect()))
     {
-        off = ((Buffer)buf).arrayOffset();
+        off = type.getOffset(buf);
         buf = ((Buffer)buf).array();
     }
 
@@ -282,7 +300,7 @@ public Status readAtAll(long offset, Object buf, int count, Datatype type)
 
     if(buf instanceof Buffer && !(db = ((Buffer)buf).isDirect()))
     {
-        off = ((Buffer)buf).arrayOffset();
+        off = type.getOffset(buf);
         buf = ((Buffer)buf).array();
     }
 
@@ -315,7 +333,7 @@ public Status writeAt(long offset, Object buf, int count, Datatype type)
 
     if(buf instanceof Buffer && !(db = ((Buffer)buf).isDirect()))
     {
-        off = ((Buffer)buf).arrayOffset();
+        off = type.getOffset(buf);
         buf = ((Buffer)buf).array();
     }
 
@@ -348,7 +366,7 @@ public Status writeAtAll(long offset, Object buf, int count, Datatype type)
 
     if(buf instanceof Buffer && !(db = ((Buffer)buf).isDirect()))
     {
-        off = ((Buffer)buf).arrayOffset();
+        off = type.getOffset(buf);
         buf = ((Buffer)buf).array();
     }
 
@@ -376,7 +394,9 @@ public Request iReadAt(long offset, Buffer buf, int count, Datatype type)
 {
     MPI.check();
     assertDirectBuffer(buf);
-    return new Request(iReadAt(handle, offset, buf, count, type.handle));
+    Request req = new Request(iReadAt(handle, offset, buf, count, type.handle));
+    req.addRecvBufRef(buf);
+    return req;
 }
 
 private native long iReadAt(
@@ -397,7 +417,9 @@ public Request iWriteAt(long offset, Buffer buf, int count, Datatype type)
 {
     MPI.check();
     assertDirectBuffer(buf);
-    return new Request(iWriteAt(handle, offset, buf, count, type.handle));
+    Request req = new Request(iWriteAt(handle, offset, buf, count, type.handle));
+    req.addSendBufRef(buf);
+    return req;
 }
 
 private native long iWriteAt(
@@ -421,7 +443,7 @@ public Status read(Object buf, int count, Datatype type) throws MPIException
 
     if(buf instanceof Buffer && !(db = ((Buffer)buf).isDirect()))
     {
-        off = ((Buffer)buf).arrayOffset();
+        off = type.getOffset(buf);
         buf = ((Buffer)buf).array();
     }
 
@@ -450,7 +472,7 @@ public Status readAll(Object buf, int count, Datatype type) throws MPIException
 
     if(buf instanceof Buffer && !(db = ((Buffer)buf).isDirect()))
     {
-        off = ((Buffer)buf).arrayOffset();
+        off = type.getOffset(buf);
         buf = ((Buffer)buf).array();
     }
 
@@ -479,7 +501,7 @@ public Status write(Object buf, int count, Datatype type) throws MPIException
 
     if(buf instanceof Buffer && !(db = ((Buffer)buf).isDirect()))
     {
-        off = ((Buffer)buf).arrayOffset();
+        off = type.getOffset(buf);
         buf = ((Buffer)buf).array();
     }
 
@@ -508,7 +530,7 @@ public Status writeAll(Object buf, int count, Datatype type) throws MPIException
 
     if(buf instanceof Buffer && !(db = ((Buffer)buf).isDirect()))
     {
-        off = ((Buffer)buf).arrayOffset();
+        off = type.getOffset(buf);
         buf = ((Buffer)buf).array();
     }
 
@@ -532,7 +554,9 @@ public Request iRead(Buffer buf, int count, Datatype type) throws MPIException
 {
     MPI.check();
     assertDirectBuffer(buf);
-    return new Request(iRead(handle, buf, count, type.handle));
+    Request req = new Request(iRead(handle, buf, count, type.handle));
+    req.addRecvBufRef(buf);
+    return req;
 }
 
 private native long iRead(long fh, Buffer buf, int count, long type)
@@ -550,7 +574,9 @@ public Request iWrite(Buffer buf, int count, Datatype type) throws MPIException
 {
     MPI.check();
     assertDirectBuffer(buf);
-    return new Request(iWrite(handle, buf, count, type.handle));
+    Request req = new Request(iWrite(handle, buf, count, type.handle));
+    req.addSendBufRef(buf);
+    return req;
 }
 
 private native long iWrite(long fh, Buffer buf, int count, long type)
@@ -615,7 +641,7 @@ public Status readShared(Object buf, int count, Datatype type)
 
     if(buf instanceof Buffer && !(db = ((Buffer)buf).isDirect()))
     {
-        off = ((Buffer)buf).arrayOffset();
+        off = type.getOffset(buf);
         buf = ((Buffer)buf).array();
     }
 
@@ -647,7 +673,7 @@ public Status writeShared(Object buf, int count, Datatype type)
 
     if(buf instanceof Buffer && !(db = ((Buffer)buf).isDirect()))
     {
-        off = ((Buffer)buf).arrayOffset();
+        off = type.getOffset(buf);
         buf = ((Buffer)buf).array();
     }
 
@@ -674,7 +700,9 @@ public Request iReadShared(Buffer buf, int count, Datatype type)
 {
     MPI.check();
     assertDirectBuffer(buf);
-    return new Request(iReadShared(handle, buf, count, type.handle));
+    Request req = new Request(iReadShared(handle, buf, count, type.handle));
+    req.addRecvBufRef(buf);
+    return req;
 }
 
 private native long iReadShared(long fh, Buffer buf, int count, long type)
@@ -693,7 +721,9 @@ public Request iWriteShared(Buffer buf, int count, Datatype type)
 {
     MPI.check();
     assertDirectBuffer(buf);
-    return new Request(iWriteShared(handle, buf, count, type.handle));
+    Request req = new Request(iWriteShared(handle, buf, count, type.handle));
+    req.addSendBufRef(buf);
+    return req;
 }
 
 private native long iWriteShared(long fh, Buffer buf, int count, long type)
@@ -717,7 +747,7 @@ public Status readOrdered(Object buf, int count, Datatype type)
 
     if(buf instanceof Buffer && !(db = ((Buffer)buf).isDirect()))
     {
-        off = ((Buffer)buf).arrayOffset();
+        off = type.getOffset(buf);
         buf = ((Buffer)buf).array();
     }
 
@@ -749,7 +779,7 @@ public Status writeOrdered(Object buf, int count, Datatype type)
 
     if(buf instanceof Buffer && !(db = ((Buffer)buf).isDirect()))
     {
-        off = ((Buffer)buf).arrayOffset();
+        off = type.getOffset(buf);
         buf = ((Buffer)buf).array();
     }
 
@@ -815,7 +845,7 @@ public void readAtAllBegin(long offset, Object buf, int count, Datatype type)
 
         if(isHeapBuffer(buf))
         {
-            off = ((Buffer)buf).arrayOffset();
+            off = type.getOffset(buf);
             buf = ((Buffer)buf).array();
         }
 
@@ -879,7 +909,7 @@ public void writeAtAllBegin(long offset, Object buf, int count, Datatype type)
 
         if(isHeapBuffer(buf))
         {
-            off = ((Buffer)buf).arrayOffset();
+            off = type.getOffset(buf);
             buf = ((Buffer)buf).array();
         }
 
@@ -942,7 +972,7 @@ public void readAllBegin(Object buf, int count, Datatype type)
 
         if(isHeapBuffer(buf))
         {
-            off = ((Buffer)buf).arrayOffset();
+            off = type.getOffset(buf);
             buf = ((Buffer)buf).array();
         }
 
@@ -1004,7 +1034,7 @@ public void writeAllBegin(Object buf, int count, Datatype type)
 
         if(isHeapBuffer(buf))
         {
-            off = ((Buffer)buf).arrayOffset();
+            off = type.getOffset(buf);
             buf = ((Buffer)buf).array();
         }
 
@@ -1066,7 +1096,7 @@ public void readOrderedBegin(Object buf, int count, Datatype type)
 
         if(isHeapBuffer(buf))
         {
-            off = ((Buffer)buf).arrayOffset();
+            off = type.getOffset(buf);
             buf = ((Buffer)buf).array();
         }
 
@@ -1128,7 +1158,7 @@ public void writeOrderedBegin(Object buf, int count, Datatype type)
 
         if(isHeapBuffer(buf))
         {
-            off = ((Buffer)buf).arrayOffset();
+            off = type.getOffset(buf);
             buf = ((Buffer)buf).array();
         }
 

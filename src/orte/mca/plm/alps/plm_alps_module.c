@@ -1,3 +1,4 @@
+/* -*- Mode: C; c-basic-offset:4 ; indent-tabs-mode:nil -*- */
 /*
  * Copyright (c) 2004-2007 The Trustees of Indiana University and Indiana
  *                         University Research and Technology
@@ -10,7 +11,7 @@
  * Copyright (c) 2004-2005 The Regents of the University of California.
  *                         All rights reserved.
  * Copyright (c) 2006-2011 Cisco Systems, Inc.  All rights reserved.
- * Copyright (c) 2007-2012 Los Alamos National Security, LLC.  All rights
+ * Copyright (c) 2007-2014 Los Alamos National Security, LLC.  All rights
  *                         reserved. 
  * Copyright (c) 2014      Intel Corporation.  All rights reserved.
  * $COPYRIGHT$
@@ -54,6 +55,7 @@
 #include <fcntl.h>
 #endif
 
+#include "opal/mca/base/base.h"
 #include "opal/mca/installdirs/installdirs.h"
 #include "opal/util/argv.h"
 #include "opal/util/output.h"
@@ -153,6 +155,21 @@ static int plm_alps_init(void)
  */
 static int plm_alps_launch_job(orte_job_t *jdata)
 {
+    orte_app_context_t *app;
+
+    for (int i = 0 ; i < jdata->apps->size ; ++i) {
+        int env_count;
+
+        if (NULL == (app = (orte_app_context_t*)opal_pointer_array_get_item(jdata->apps, i))) {
+            continue;
+        }
+
+        for (env_count = 0 ; app->env && app->env[env_count] ; ++env_count);
+        /* disable PMI for the application. this will prevent the pmi library from printing useless warnings */
+        opal_argv_append (&env_count, &app->env, "PMI_NO_FORK=1");
+        opal_argv_append (&env_count, &app->env, "PMI_NO_PREINITIALIZE=1");
+    }
+
     if (ORTE_JOB_CONTROL_RESTART & jdata->controls) {
         /* this is a restart situation - skip to the mapping stage */
         ORTE_ACTIVATE_JOB_STATE(jdata, ORTE_JOB_STATE_MAP);
@@ -305,10 +322,10 @@ static void launch_daemons(int fd, short args, void *cbdata)
     nodelist_flat = opal_argv_join(nodelist_argv, ',');
     opal_argv_free(nodelist_argv);
 
-    /* if we are using all allocated nodes, then alps
-     * doesn't need a nodelist
+    /* if we are using all allocated nodes, , or if running without a batch scheduler,
+     * then alps doesn't need a nodelist
      */
-    if (map->num_new_daemons < orte_num_allocated_nodes) {
+    if (map->num_new_daemons < orte_num_allocated_nodes || (orte_num_allocated_nodes == 0)) {
         opal_argv_append(&argc, &argv, "-L");
         opal_argv_append(&argc, &argv, nodelist_flat);
     }
@@ -384,6 +401,9 @@ static void launch_daemons(int fd, short args, void *cbdata)
             }
         }
     }
+
+    /* protect the args in case someone has a script wrapper around aprun */
+    mca_base_cmd_line_wrap_args(argv);
 
     /* setup environment */
     env = opal_argv_copy(orte_launch_environ);
@@ -503,13 +523,6 @@ static void alps_wait_cb(pid_t pid, int status, void* cbdata){
     
     if (0 != status) {
         if (failed_launch) {
-            /* we have a problem during launch */
-            opal_output(0, "ERROR: alps failed to start the required daemons.");
-            opal_output(0, "ERROR: This could be due to an inability to find the orted binary (--prefix)");
-            opal_output(0, "ERROR: on one or more remote nodes, compilation of the orted with dynamic libraries,");
-            opal_output(0, "ERROR: lack of authority to execute on one or more specified nodes,");
-            opal_output(0, "ERROR: or the inability to write startup files into /tmp (--tmpdir/orte_tmpdir_base).");
-            
             /* report that the daemon has failed so we break out of the daemon
              * callback receive and exit
              */

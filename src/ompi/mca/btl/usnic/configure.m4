@@ -6,112 +6,48 @@
 # Copyright (c) 2004-2005 The University of Tennessee and The University
 #                         of Tennessee Research Foundation.  All rights
 #                         reserved.
-# Copyright (c) 2004-2005 High Performance Computing Center Stuttgart, 
+# Copyright (c) 2004-2005 High Performance Computing Center Stuttgart,
 #                         University of Stuttgart.  All rights reserved.
 # Copyright (c) 2004-2005 The Regents of the University of California.
 #                         All rights reserved.
 # Copyright (c) 2006      Sandia National Laboratories. All rights
 #                         reserved.
-# Copyright (c) 2010-2014 Cisco Systems, Inc.  All rights reserved.
+# Copyright (c) 2010-2015 Cisco Systems, Inc.  All rights reserved.
 # $COPYRIGHT$
-# 
+#
 # Additional copyrights may follow
-# 
+#
 # $HEADER$
 #
-
-# OMPI_CHECK_LIBNL3(prefix, [action-if-found], [action-if-not-found])
-# --------------------------------------------------------
-# check if libnl3 support can be found.  sets prefix_{CPPFLAGS,
-# LDFLAGS, LIBS} as needed and runs action-if-found if there is
-# support, otherwise executes action-if-not-found
-#
-# libnl3 changed its default header location as of v3.2 (released ca. September
-# 2011).  It was previously "${prefix}/include/netlink/...".  It now is
-# "${prefix}/libnl3/include/netlink/...".  The logic below only supports
-# >=v3.2, under the assumption that it is not widely deployed.
-AC_DEFUN([OMPI_CHECK_LIBNL3],[
-    AC_ARG_WITH([libnl3],
-        [AC_HELP_STRING([--with-libnl3(=DIR)],
-             [Build libnl3 support])])
-    OMPI_CHECK_WITHDIR([libnl3], [$with_libnl3], [include/libnl3/netlink/netlink.h])
-    AC_ARG_WITH([libnl3-libdir],
-        [AC_HELP_STRING([--with-libnl3-libdir=DIR],
-             [Search for libnl3 libraries in DIR])])
-    OMPI_CHECK_WITHDIR([libnl3-libdir], [$with_libnl3_libdir], [libnl-3.*])
-
-    ompi_check_libnl3_$1_save_CPPFLAGS="$CPPFLAGS"
-    ompi_check_libnl3_$1_save_LDFLAGS="$LDFLAGS"
-    ompi_check_libnl3_$1_save_LIBS="$LIBS"
-
-    ompi_check_libnl3_$1_orig_CPPFLAGS="$$1_CPPFLAGS"
-    ompi_check_libnl3_$1_orig_LDFLAGS="$$1_LDFLAGS"
-    ompi_check_libnl3_$1_orig_LIBS="$$1_LIBS"
-
-    AS_IF([test "$with_libnl3" != "no"],
-          [AS_IF([test ! -z "$with_libnl3" -a "$with_libnl3" != "yes"],
-                 [ompi_check_libnl3_dir="$with_libnl3"])
-           AS_IF([test ! -z "$with_libnl3_libdir" -a "$with_libnl3_libdir" != "yes"],
-                 [ompi_check_libnl3_libdir="$with_libnl3_libdir"])
-
-           # OMPI_CHECK_PACKAGE unfortunately can't handle this weird include
-           # dir layout
-           AS_IF([test -n "$ompi_check_libnl3_dir"],
-                 [ompi_check_libnl3_includedir="$ompi_check_libnl3_dir/include/libnl3"],
-                 [ompi_check_libnl3_includedir="/usr/include/libnl3"])
-           $1_CPPFLAGS="$$1_CPPFLAGS -I$ompi_check_libnl3_includedir"
-           CPPFLAGS="$CPPFLAGS -I$ompi_check_libnl3_includedir"
-
-           AC_CHECK_HEADER([netlink/netlink.h],
-                           [# nl_recvmsgs_report appears to be a symbol which
-                            # is present in libnl-3 but not libnl (v1)
-                            _OMPI_CHECK_PACKAGE_LIB([$1],
-                                                    [nl-3],
-                                                    [nl_recvmsgs_report],
-                                                    [],
-                                                    [$ompi_check_libnl3_dir],
-                                                    [$ompi_check_libnl3_libdir],
-                                                    [ompi_check_libnl3_happy="yes"],
-                                                    [ompi_check_libnl3_happy="no"])],
-                           [ompi_check_libnl3_happy=no])
-
-           # make sure that we don't pollute the cache with the results of a
-           # test performed under different CPPFLAGS
-           AS_UNSET([ac_cv_header_netlink_netlink_h])],
-          [ompi_check_libnl3_happy="no"])
-
-    # restore global flags
-    CPPFLAGS="$ompi_check_libnl3_$1_save_CPPFLAGS"
-    LDFLAGS="$ompi_check_libnl3_$1_save_LDFLAGS"
-    LIBS="$ompi_check_libnl3_$1_save_LIBS"
-
-    AS_IF([test "$ompi_check_libnl3_happy" = "yes"],
-          [$2],
-          [AS_IF([test ! -z "$with_libnl3" -a "$with_libnl3" != "no"],
-                 [AC_MSG_ERROR([libnl3 support requested but not found.  Aborting])])
-           # restore prefixed flags on failure
-           $1_CPPFLAGS="$ompi_check_package_$1_orig_CPPFLAGS"
-           $1_LDFLAGS="$ompi_check_package_$1_orig_LDFLAGS"
-           $1_LIBS="$ompi_check_package_$1_orig_LIBS"
-           $3])
-])
 
 # MCA_ompi_btl_usnic_POST_CONFIG([should_build])
 # ------------------------------------------
 AC_DEFUN([MCA_ompi_btl_usnic_POST_CONFIG], [
     AM_CONDITIONAL([OMPI_BTL_USNIC_BUILD_UNIT_TESTS],
                    [test "$1" -eq 1 && test "X$enable_ompi_btl_usnic_unit_tests" = "Xyes"])
-    AM_CONDITIONAL([OMPI_BTL_USNIC_BUILD_LIBNL1_UTILS],
-                   [test "$1" -eq 1 && test "X$enable_ompi_btl_usnic_libnl1_utils" = "Xyes"])
-    AM_CONDITIONAL([OMPI_BTL_USNIC_BUILD_LIBNL3_UTILS],
-                   [test "$1" -eq 1 && test "X$enable_ompi_btl_usnic_libnl3_utils" = "Xyes"])
 ])
 
-# MCA_btl_usnic_CONFIG([action-if-can-compile], 
+# MCA_btl_usnic_CONFIG([action-if-can-compile],
 #                      [action-if-cant-compile])
 # ------------------------------------------------
 AC_DEFUN([MCA_ompi_btl_usnic_CONFIG],[
     AC_CONFIG_FILES([ompi/mca/btl/usnic/Makefile])
+
+    AC_ARG_WITH([usnic],
+                [AS_HELP_STRING([--with-usnic],
+                                [If specified, cause an error if usNIC
+                                 support cannot be built])])
+
+    # If --without-usnic was specified, then gracefully exit.
+    # Otherwise, do the rest of the config.
+    AS_IF([test "x$with_usnic" = "xno"],
+          [AC_MSG_WARN([--without-usnic specified; skipping usnic BTL])
+           $2],
+          [_OMPI_BTL_USNIC_DO_CONFIG($1, $2)])
+])
+
+AC_DEFUN([_OMPI_BTL_USNIC_DO_CONFIG],[
+    OPAL_VAR_SCOPE_PUSH([unit_tests])
 
     # see README.test for information about this scheme
     AC_ARG_ENABLE([ompi-btl-usnic-unit-tests],
@@ -127,76 +63,82 @@ AC_DEFUN([MCA_ompi_btl_usnic_CONFIG],[
                        [define to 1 if usnic BTL unit tests are enabled, 0 otherwise])
     unset unit_tests
 
-    OMPI_CHECK_OPENFABRICS([btl_usnic],
-                        [btl_usnic_happy="yes"],
-                        [btl_usnic_happy="no"])
+    # The current logic in btl_usnic_compat.h checks the OMPI version as a
+    # proxy for the top-level OMPI version.  Unfortunately this does the wrong
+    # thing for other top-level projects that might use the usnic BTL, such as
+    # ORCM.  ORCM's versioning is totally unrelated to OMPI's.  As a short term
+    # workaround, just disqualify ourselves if the OMPI version seems too old.
+    # In the longer term we should be doing something else, like versioning
+    # OMPI and OMPI separately.
+    ompi_btl_usnic_happy=yes
+    AS_IF([test "$OMPI_MAJOR_VERSION" -eq "1" && \
+           test "$OMPI_MINOR_VERSION" -lt "7"],
+          [AC_MSG_NOTICE([OMPI version appears to be too old, disabling the usnic BTL])
+           ompi_btl_usnic_happy=no])
 
     # We only want to build on 64 bit Linux.
-    AS_IF([test "$btl_usnic_happy" = "yes"],
+    AS_IF([test "$ompi_btl_usnic_happy" = "yes"],
           [AC_CHECK_SIZEOF([void *])
            AC_MSG_CHECKING([for 64 bit Linux])
            case $host_os in
                *linux*)
                    AS_IF([test $ac_cv_sizeof_void_p -eq 8],
-                         [btl_usnic_happy=yes],
-                         [btl_usnic_happy=no])
+                         [],
+                         [ompi_btl_usnic_happy=no])
                    ;;
                *)
-                   btl_usnic_happy=no
+                   ompi_btl_usnic_happy=no
                    ;;
            esac
-           AC_MSG_RESULT([$btl_usnic_happy])
-          ]
-    )
+           AC_MSG_RESULT([$ompi_btl_usnic_happy])
+          ])
 
-    AS_IF([test "$btl_usnic_happy" = "yes"],
-          [AC_CHECK_DECLS([IBV_EVENT_GID_CHANGE, ibv_event_type_str], [], [],
-                          [#include <infiniband/verbs.h>
-])
-          ]
-    )
+    # The usnic BTL requires libfabric support.
+    AS_IF([test "$ompi_btl_usnic_happy" = "yes"],
+          [OPAL_CHECK_LIBFABRIC([ompi_btl_usnic],
+              [ompi_btl_usnic_happy=yes],
+              [ompi_btl_usnic_happy=no])])
 
-    # Search for libnl so we can query routing information.  We need to
-    # distinguish between v1 and v3.
-    enable_ompi_btl_usnic_libnl1_utils=no
-    enable_ompi_btl_usnic_libnl3_utils=no
-    AS_IF([test "$btl_usnic_happy" = "yes"],
-          [OMPI_CHECK_LIBNL3([btl_usnic_libnl],
-                             [enable_ompi_btl_usnic_libnl3_utils=yes],
-                             [enable_ompi_btl_usnic_libnl3_utils=no])
+    # The usnic BTL requires at least libfabric v1.1 (there was a
+    # critical bug in libfabric v1.0).
+    AS_IF([test "$opal_btl_usnic_happy" = "yes"],
+          [AC_MSG_CHECKING([whether libfabric is >= v1.1])
+           opal_btl_usnic_CPPFLAGS_save=$CPPFLAGS
+           CPPFLAGS="$opal_common_libfabric_CPPFLAGS $CPPFLAGS"
+           AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <rdma/fabric.h>]],
+[[
+#if !defined(FI_MAJOR_VERSION)
+#error your version of libfabric is too old
+#elif FI_VERSION(FI_MAJOR_VERSION, FI_MINOR_VERSION) < FI_VERSION(1, 1)
+#error your version of libfabric is too old
+#endif
+]])],
+                 [opal_btl_usnic_happy=yes],
+                 [opal_btl_usnic_happy=no])
+           AC_MSG_RESULT([$opal_btl_usnic_happy])
+           CPPFLAGS=$opal_btl_usnic_CPPFLAGS_save
+          ])
 
-           # fall back to libnl1 if libnl3 could not be found
-           AS_IF([test "X$enable_ompi_btl_usnic_libnl3_utils" = "Xno"],
-                 [OMPI_CHECK_PACKAGE([btl_usnic_libnl],
-                                     [netlink/netlink.h],
-                                     [nl],
-                                     [nl_recvmsgs_default],
-                                     [],
-                                     [],
-                                     [],
-                                     [enable_ompi_btl_usnic_libnl1_utils=yes],
-                                     [enable_ompi_btl_usnic_libnl1_utils=no])])
+    # Make sure we can find the libfabric usnic extensions header
+    AS_IF([test "$ompi_btl_usnic_happy" = "yes" ],
+          [ompi_btl_usnic_CPPFLAGS_save=$CPPFLAGS
+           CPPFLAGS="$ompi_btl_usnic_CPPFLAGS $CPPFLAGS"
+           AC_CHECK_HEADER([rdma/fi_ext_usnic.h],
+                            [],
+                            [ompi_btl_usnic_happy=no])
+           CPPFLAGS=$ompi_btl_usnic_CPPFLAGS_save
+          ])
 
-           AS_IF([test "X$enable_ompi_btl_usnic_libnl3_utils" = "Xno" &&
-                  test "X$enable_ompi_btl_usnic_libnl1_utils" = "Xno"],
-                 [AC_MSG_NOTICE([could not find a libnl or libnl-3, disabling the usnic BTL])
-                  btl_usnic_happy="no"])
+    # All done
+    AS_IF([test "$ompi_btl_usnic_happy" = "yes"],
+          [$1
+           btl_usnic_WRAPPER_EXTRA_LDFLAGS=$ompi_btl_usnic_LDFLAGS
+           btl_usnic_WRAPPER_EXTRA_LIBS=$ompi_btl_usnic_LIBS],
+          [AS_IF([test "$with_usnic" = "yes"],
+                 [AC_MSG_WARN([--with-usnic was specified, but Cisco usNIC support cannot be built])
+                  AC_MSG_ERROR([Cannot continue])],
+                 [$2])
+          ])
 
-           btl_usnic_CPPFLAGS="$btl_usnic_CPPFLAGS $btl_usnic_libnl_CPPFLAGS"
-           btl_usnic_CFLAGS="$btl_usnic_CFLAGS $btl_usnic_libnl_CFLAGS"
-           btl_usnic_LDFLAGS="$btl_usnic_LDFLAGS $btl_usnic_libnl_LDFLAGS"
-           btl_usnic_LIBS="$btl_usnic_libnl_LIBS $btl_usnic_LIBS"
-           ])
-
-    AS_IF([test "$btl_usnic_happy" = "yes"],
-          [btl_usnic_WRAPPER_EXTRA_LDFLAGS="$btl_usnic_LDFLAGS"
-           btl_usnic_WRAPPER_EXTRA_LIBS="$btl_usnic_LIBS"
-           $1],
-          [$2])
-
-    # Substitute in the things needed to build USNIC
-    AC_SUBST([btl_usnic_CPPFLAGS])
-    AC_SUBST([btl_usnic_CFLAGS])
-    AC_SUBST([btl_usnic_LDFLAGS])
-    AC_SUBST([btl_usnic_LIBS])
+    OPAL_VAR_SCOPE_POP
 ])dnl

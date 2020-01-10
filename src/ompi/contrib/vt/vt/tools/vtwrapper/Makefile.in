@@ -122,10 +122,12 @@ CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(vtdatadir)"
 PROGRAMS = $(bin_PROGRAMS)
 am_@CROSS_PREFIX@vtwrapper_OBJECTS =  \
-	@CROSS_PREFIX@vtwrapper-vt_wrapper.$(OBJEXT) \
-	installdirs.$(OBJEXT) util.$(OBJEXT)
+	@CROSS_PREFIX@vtwrapper-vt_wrapper.$(OBJEXT)
+am__objects_1 = installdirs.$(OBJEXT) util.$(OBJEXT)
+nodist_@CROSS_PREFIX@vtwrapper_OBJECTS = $(am__objects_1)
 @CROSS_PREFIX@vtwrapper_OBJECTS =  \
-	$(am_@CROSS_PREFIX@vtwrapper_OBJECTS)
+	$(am_@CROSS_PREFIX@vtwrapper_OBJECTS) \
+	$(nodist_@CROSS_PREFIX@vtwrapper_OBJECTS)
 @CROSS_PREFIX@vtwrapper_LDADD = $(LDADD)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -187,7 +189,8 @@ AM_V_CXXLD = $(am__v_CXXLD_@AM_V@)
 am__v_CXXLD_ = $(am__v_CXXLD_@AM_DEFAULT_V@)
 am__v_CXXLD_0 = @echo "  CXXLD   " $@;
 am__v_CXXLD_1 = 
-SOURCES = $(@CROSS_PREFIX@vtwrapper_SOURCES)
+SOURCES = $(@CROSS_PREFIX@vtwrapper_SOURCES) \
+	$(nodist_@CROSS_PREFIX@vtwrapper_SOURCES)
 DIST_SOURCES = $(@CROSS_PREFIX@vtwrapper_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
@@ -604,10 +607,22 @@ vtdatadir = $(datadir)
 @AMHAVECROSSPREFIX_TRUE@	@CROSS_PREFIX@vtnvcc-wrapper-data.txt
 
 AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/include -I$(top_srcdir)/util -I$(top_builddir)/util
+
+# From Automake v2.0 the 'subdir-objects' option will be required to compile
+# sources located outside of the current build directory. Due to a bug in
+# Automake (see http://debbugs.gnu.org/cgi/bugreport.cgi?bug=13928) we cannot
+# enable this option, so we have to sym link in the following sources (actually
+# located in $(top_srcdir)/util/) to lead Automake to believe that all sources
+# are located in this directory.
+UTILSOURCES = \
+	installdirs.c \
+	util.c
+
 @CROSS_PREFIX@vtwrapper_SOURCES = \
-	vt_wrapper.cc \
-	$(top_srcdir)/util/installdirs.c \
-	$(top_srcdir)/util/util.c
+	vt_wrapper.cc
+
+nodist_@CROSS_PREFIX@vtwrapper_SOURCES = \
+	$(UTILSOURCES)
 
 @CROSS_PREFIX@vtwrapper_CXXFLAGS = \
 	$(HAVEFCCXXFLAGS) \
@@ -616,7 +631,10 @@ AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/include -I$(top_srcdir)/
 	$(HAVETHREADSCXXFLAGS) \
 	$(HAVEOMPCXXFLAGS)
 
-CLEANFILES = $(CROSSPREFIXCLEANFILES)
+CLEANFILES = \
+	$(CROSSPREFIXCLEANFILES) \
+	$(UTILSOURCES)
+
 EXTRA_DIST = \
 	fake_omp.h \
 	TAUINST.SPEC \
@@ -744,34 +762,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
-
-installdirs.o: $(top_srcdir)/util/installdirs.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT installdirs.o -MD -MP -MF $(DEPDIR)/installdirs.Tpo -c -o installdirs.o `test -f '$(top_srcdir)/util/installdirs.c' || echo '$(srcdir)/'`$(top_srcdir)/util/installdirs.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/installdirs.Tpo $(DEPDIR)/installdirs.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_srcdir)/util/installdirs.c' object='installdirs.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o installdirs.o `test -f '$(top_srcdir)/util/installdirs.c' || echo '$(srcdir)/'`$(top_srcdir)/util/installdirs.c
-
-installdirs.obj: $(top_srcdir)/util/installdirs.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT installdirs.obj -MD -MP -MF $(DEPDIR)/installdirs.Tpo -c -o installdirs.obj `if test -f '$(top_srcdir)/util/installdirs.c'; then $(CYGPATH_W) '$(top_srcdir)/util/installdirs.c'; else $(CYGPATH_W) '$(srcdir)/$(top_srcdir)/util/installdirs.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/installdirs.Tpo $(DEPDIR)/installdirs.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_srcdir)/util/installdirs.c' object='installdirs.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o installdirs.obj `if test -f '$(top_srcdir)/util/installdirs.c'; then $(CYGPATH_W) '$(top_srcdir)/util/installdirs.c'; else $(CYGPATH_W) '$(srcdir)/$(top_srcdir)/util/installdirs.c'; fi`
-
-util.o: $(top_srcdir)/util/util.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT util.o -MD -MP -MF $(DEPDIR)/util.Tpo -c -o util.o `test -f '$(top_srcdir)/util/util.c' || echo '$(srcdir)/'`$(top_srcdir)/util/util.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/util.Tpo $(DEPDIR)/util.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_srcdir)/util/util.c' object='util.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o util.o `test -f '$(top_srcdir)/util/util.c' || echo '$(srcdir)/'`$(top_srcdir)/util/util.c
-
-util.obj: $(top_srcdir)/util/util.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT util.obj -MD -MP -MF $(DEPDIR)/util.Tpo -c -o util.obj `if test -f '$(top_srcdir)/util/util.c'; then $(CYGPATH_W) '$(top_srcdir)/util/util.c'; else $(CYGPATH_W) '$(srcdir)/$(top_srcdir)/util/util.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/util.Tpo $(DEPDIR)/util.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_srcdir)/util/util.c' object='util.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o util.obj `if test -f '$(top_srcdir)/util/util.c'; then $(CYGPATH_W) '$(top_srcdir)/util/util.c'; else $(CYGPATH_W) '$(srcdir)/$(top_srcdir)/util/util.c'; fi`
 
 .cc.o:
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -1120,6 +1110,9 @@ uninstall-local: uninstall-local-exec-always uninstall-local-data-always uninsta
 @AMHAVECROSSPREFIX_TRUE@	@cp vtfort-wrapper-data.txt @CROSS_PREFIX@vtfort-wrapper-data.txt
 @AMHAVECROSSPREFIX_TRUE@@CROSS_PREFIX@vtnvcc-wrapper-data.txt: vtnvcc-wrapper-data.txt
 @AMHAVECROSSPREFIX_TRUE@	@cp vtnvcc-wrapper-data.txt @CROSS_PREFIX@vtnvcc-wrapper-data.txt
+
+$(UTILSOURCES):
+	$(LN_S) $(top_srcdir)/util/$@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

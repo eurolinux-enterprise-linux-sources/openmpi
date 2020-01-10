@@ -13,7 +13,9 @@
  * Copyright (c) 2009      Institut National de Recherche en Informatique
  *                         et Automatique. All rights reserved.
  * Copyright (c) 2011-2012 Los Alamos National Security, LLC.
- * Copyright (c) 2013      Intel, Inc. All rights reserved.
+ * Copyright (c) 2013-2015 Intel, Inc. All rights reserved.
+ * Copyright (c) 2014-2015 Research Organization for Information Science
+ *                         and Technology (RIST). All rights reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -84,22 +86,14 @@ void orte_plm_base_daemons_reported(int fd, short args, void *cbdata)
 #if OPAL_HAVE_HWLOC
     {
         hwloc_topology_t t;
+        orte_job_t *jdata;
         orte_node_t *node;
+        orte_proc_t *dmn1;
         int i;
 
-        /* if the user didn't indicate that the node topologies were
-         * different, then set the nodes to point to the topology
-         * of the first node.
-         *
-         * NOTE: We do -not- point the nodes at the topology of
-         * mpirun because many "homogeneous" clusters have a head
-         * node that differs from all the compute nodes!
-         */
-        if (!orte_hetero_nodes) {
-            if (NULL == (t = (hwloc_topology_t)opal_pointer_array_get_item(orte_node_topologies, 1))) {
-                /* all collapsed down into mpirun's topology */
-                t = (hwloc_topology_t)opal_pointer_array_get_item(orte_node_topologies, 0);
-            }
+        if (orte_do_not_launch) {
+            node = (orte_node_t*)opal_pointer_array_get_item(orte_node_pool, 0);
+            t = node->topology;
             for (i=1; i < orte_node_pool->size; i++) {
                 if (NULL == (node = (orte_node_t*)opal_pointer_array_get_item(orte_node_pool, i))) {
                     continue;
@@ -108,7 +102,42 @@ void orte_plm_base_daemons_reported(int fd, short args, void *cbdata)
                     node->topology = t;
                 }
             }
+        } else {
+            /* if we got back topology info from the first node, then we use
+             * it as the "standard" for all other nodes unless they sent
+             * back their own topology */
+            if (1 < orte_process_info.num_procs) {
+                /* find daemon.vpid = 1 */
+                jdata = orte_get_job_data_object(ORTE_PROC_MY_NAME->jobid);
+                if (NULL == (dmn1 = (orte_proc_t*)opal_pointer_array_get_item(jdata->procs, 1))) {
+                    /* something is wrong */
+                    ORTE_ERROR_LOG(ORTE_ERR_NOT_FOUND);
+                    ORTE_FORCED_TERMINATE(ORTE_ERR_NOT_FOUND);
+                    OBJ_RELEASE(caddy);
+                    return;
+                }
+                if (NULL == (node = dmn1->node) ||
+                    NULL == (t = node->topology)) {
+                    /* something is wrong */
+                    ORTE_ERROR_LOG(ORTE_ERR_NOT_FOUND);
+                    ORTE_FORCED_TERMINATE(ORTE_ERR_NOT_FOUND);
+                    OBJ_RELEASE(caddy);
+                    return;
+                }
+                OPAL_OUTPUT_VERBOSE((5, orte_plm_base_framework.framework_output,
+                                    "%s plm:base:setting topo to that from node %s",
+                                    ORTE_NAME_PRINT(ORTE_PROC_MY_NAME), node->name));
+                for (i=1; i < orte_node_pool->size; i++) {
+                    if (NULL == (node = (orte_node_t*)opal_pointer_array_get_item(orte_node_pool, i))) {
+                        continue;
+                    }
+                    if (NULL == node->topology) {
+                        node->topology = t;
+                    }
+                }
+            }
         }
+
         /* if this is an unmanaged allocation, then set the default
          * slots on each node as directed or using default
          */
@@ -414,6 +443,10 @@ void orte_plm_base_complete_setup(int fd, short args, void *cbdata)
             /* cycle thru the nodes looking for coprocessors */
             for (i=0; i < orte_node_pool->size; i++) {
                 if (NULL == (node = (orte_node_t*)opal_pointer_array_get_item(orte_node_pool, i))) {
+                    continue;
+                }
+                /* if we don't have a daemon assigned to this node, ignore it */
+                if (NULL == node->daemon) {
                     continue;
                 }
                 /* if we don't have a serial number, then we are not a coprocessor */
@@ -831,15 +864,28 @@ void orte_plm_base_daemon_callback(int status, orte_process_name_t* sender,
 
 #if OPAL_HAVE_HWLOC
         {
-            char *coprocessors, **sns;
+            char *coprocessors, **sns, *sig;
             uint32_t h;
-            hwloc_topology_t topo, t;
+            hwloc_topology_t topo;
+            orte_topology_t *t;
             int i;
             bool found;
-
+            uint8_t tflag;
+            
             /* store the local resources for that node */
-            if (1 == dname.vpid || orte_hetero_nodes) {
-                 
+            idx=1;
+            if (OPAL_SUCCESS != (rc = opal_dss.unpack(buffer, &tflag, &idx, OPAL_UINT8))) {
+                ORTE_ERROR_LOG(rc);
+                orted_failed_launch = true;
+                goto CLEANUP;
+            }
+            if (1 == tflag) {
+                idx=1;
+                if (OPAL_SUCCESS != (rc = opal_dss.unpack(buffer, &sig, &idx, OPAL_STRING))) {
+                    ORTE_ERROR_LOG(rc);
+                    orted_failed_launch = true;
+                    goto CLEANUP;
+                }
                 idx=1;
                 if (OPAL_SUCCESS != (rc = opal_dss.unpack(buffer, &topo, &idx, OPAL_HWLOC_TOPO))) {
                     ORTE_ERROR_LOG(rc);
@@ -847,36 +893,61 @@ void orte_plm_base_daemon_callback(int status, orte_process_name_t* sender,
                     goto CLEANUP;
                 }
                 OPAL_OUTPUT_VERBOSE((5, orte_plm_base_framework.framework_output,
-                                     "%s RECEIVED TOPOLOGY FROM NODE %s",
-                                     ORTE_NAME_PRINT(ORTE_PROC_MY_NAME), nodename));
+                                     "%s RECEIVED TOPOLOGY FROM NODE %s SIG %s",
+                                     ORTE_NAME_PRINT(ORTE_PROC_MY_NAME), nodename,
+                                     (NULL == sig) ? "NULL" : sig));
                 if (10 < opal_output_get_verbosity(orte_plm_base_framework.framework_output)) {
                     opal_dss.dump(0, topo, OPAL_HWLOC_TOPO);
                 }
-                /* do we already have this topology from some other node? */
-                found = false;
-                for (i=0; i < orte_node_topologies->size; i++) {
-                    if (NULL == (t = (hwloc_topology_t)opal_pointer_array_get_item(orte_node_topologies, i))) {
-                        continue;
-                    }
-                    if (OPAL_EQUAL == opal_dss.compare(topo, t, OPAL_HWLOC_TOPO)) {
-                        /* yes - just point to it */
-                        OPAL_OUTPUT_VERBOSE((5, orte_plm_base_framework.framework_output,
-                                             "%s TOPOLOGY MATCHES - DISCARDING",
-                                             ORTE_NAME_PRINT(ORTE_PROC_MY_NAME)));
-                        found = true;
-                        node->topology = t;
-                        hwloc_topology_destroy(topo);
-                        break;
-                    }
-                }
-                if (!found) {
-                    /* nope - add it */
+                if (1 == dname.vpid || orte_hetero_nodes) {
+                    /* the user has told us that something is different, so just store it */
                     OPAL_OUTPUT_VERBOSE((5, orte_plm_base_framework.framework_output,
-                                         "%s NEW TOPOLOGY - ADDING",
+                                         "%s ADDING TOPOLOGY PER USER REQUEST",
                                          ORTE_NAME_PRINT(ORTE_PROC_MY_NAME)));
-                    
-                    opal_pointer_array_add(orte_node_topologies, topo);
+                    t = OBJ_NEW(orte_topology_t);
+                    /* filter the topology as we'll need it that way later */
+                    opal_hwloc_base_filter_cpus(topo);
+                    t->topo = topo;
+                    t->sig = sig;
+                    opal_pointer_array_add(orte_node_topologies, t);
                     node->topology = topo;
+                } else {
+                    /* do we already have this topology from some other node? */
+                    found = false;
+                    for (i=0; i < orte_node_topologies->size; i++) {
+                        if (NULL == (t = (orte_topology_t*)opal_pointer_array_get_item(orte_node_topologies, i))) {
+                            continue;
+                        }
+                        if (NULL == t->sig) {
+                            opal_output(0, "%s NULL sig on topology", ORTE_NAME_PRINT(ORTE_PROC_MY_NAME));
+                            orted_failed_launch = true;
+                            goto CLEANUP;
+                        }
+                        /* just check the signature */
+                        if (0 == strcmp(sig, t->sig)) {
+                            OPAL_OUTPUT_VERBOSE((5, orte_plm_base_framework.framework_output,
+                                                 "%s TOPOLOGY ALREADY RECORDED",
+                                                 ORTE_NAME_PRINT(ORTE_PROC_MY_NAME)));
+                            found = true;
+                            node->topology = t->topo;
+                            hwloc_topology_destroy(topo);
+                            free(sig);
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        /* nope - add it */
+                        OPAL_OUTPUT_VERBOSE((5, orte_plm_base_framework.framework_output,
+                                             "%s NEW TOPOLOGY - ADDING",
+                                             ORTE_NAME_PRINT(ORTE_PROC_MY_NAME)));
+                        t = OBJ_NEW(orte_topology_t);
+                        /* filter the topology as we'll need it that way later */
+                        opal_hwloc_base_filter_cpus(topo);
+                        t->topo = topo;
+                        t->sig = sig;
+                        opal_pointer_array_add(orte_node_topologies, t);
+                        node->topology = topo;
+                    }
                 }
             }
         
@@ -1056,7 +1127,7 @@ int orte_plm_base_orted_append_basic_args(int *argc, char ***argv,
     char *param = NULL;
     const char **tmp_value;
     int loc_id;
-    char * tmp_force = NULL;
+    char *tmp_force = NULL;
     int i, j, cnt, rc;
     orte_job_t *jdata;
     char *rml_uri;
@@ -1065,14 +1136,26 @@ int orte_plm_base_orted_append_basic_args(int *argc, char ***argv,
 
     /* check for debug flags */
     if (orte_debug_flag) {
-        opal_argv_append(argc, argv, "--debug");
+        opal_argv_append(argc, argv, "-mca");
+        opal_argv_append(argc, argv, "orte_debug");
+        opal_argv_append(argc, argv, "1");
     }
     if (orte_debug_daemons_flag) {
-        opal_argv_append(argc, argv, "--debug-daemons");
+        opal_argv_append(argc, argv, "-mca");
+        opal_argv_append(argc, argv, "orte_debug_daemons");
+        opal_argv_append(argc, argv, "1");
     }
     if (orte_debug_daemons_file_flag) {
-        opal_argv_append(argc, argv, "--debug-daemons-file");
+        opal_argv_append(argc, argv, "-mca");
+        opal_argv_append(argc, argv, "orte_debug_daemons_file");
+        opal_argv_append(argc, argv, "1");
     }
+    if (orte_leave_session_attached) {
+        opal_argv_append(argc, argv, "-mca");
+        opal_argv_append(argc, argv, "orte_leave_session_attached");
+        opal_argv_append(argc, argv, "1");
+    }
+
     if (orted_spin_flag) {
         opal_argv_append(argc, argv, "--spin");
     }
@@ -1082,6 +1165,9 @@ int orte_plm_base_orted_append_basic_args(int *argc, char ***argv,
         opal_argv_append(argc, argv, "orte_report_bindings");
         opal_argv_append(argc, argv, "1");
     }
+    /* pass our topology signature */
+    opal_argv_append(argc, argv, "--hnp-topo-sig");
+    opal_argv_append(argc, argv, orte_topo_signature);
     if (orte_hetero_nodes) {
         opal_argv_append(argc, argv, "-mca");
         opal_argv_append(argc, argv, "orte_hetero_nodes");
@@ -1153,19 +1239,18 @@ int orte_plm_base_orted_append_basic_args(int *argc, char ***argv,
     if (ORTE_PROC_IS_HNP) {
         rml_uri = orte_rml.get_contact_info();
     } else {
-        asprintf(&param, "\"%s\"", orte_rml.get_contact_info() );
+        rml_uri = orte_rml.get_contact_info();
         opal_argv_append(argc, argv, "-mca");
         opal_argv_append(argc, argv, "orte_parent_uri");
-        opal_argv_append(argc, argv, param);
-        free(param);
+        opal_argv_append(argc, argv, rml_uri);
+        free(rml_uri);
     
-        rml_uri = orte_process_info.my_hnp_uri;
+        rml_uri = strdup(orte_process_info.my_hnp_uri);
     }
-    asprintf(&param, "\"%s\"", rml_uri);
     opal_argv_append(argc, argv, "-mca");
     opal_argv_append(argc, argv, "orte_hnp_uri");
-    opal_argv_append(argc, argv, param);
-    free(param);
+    opal_argv_append(argc, argv, rml_uri);
+    free(rml_uri);
 
     /* if we have static ports, pass the node list */
     if (orte_static_ports && NULL != nodes) {
@@ -1284,7 +1369,7 @@ int orte_plm_base_orted_append_basic_args(int *argc, char ***argv,
                 }
             }
             if (!ignore) {
-                /* must be okay - pass it along */
+                /* pass it along */
                 opal_argv_append(argc, argv, orted_cmd_line[i]);
                 opal_argv_append(argc, argv, orted_cmd_line[i+1]);
                 opal_argv_append(argc, argv, orted_cmd_line[i+2]);
@@ -1308,6 +1393,7 @@ int orte_plm_base_setup_virtual_machine(orte_job_t *jdata)
     bool one_filter = false;
     int num_nodes;
     bool default_hostfile_used;
+    bool singleton=false;
 
     OPAL_OUTPUT_VERBOSE((5, orte_plm_base_framework.framework_output,
                          "%s plm:base:setup_vm",
@@ -1316,6 +1402,71 @@ int orte_plm_base_setup_virtual_machine(orte_job_t *jdata)
     if (NULL == (daemons = orte_get_job_data_object(ORTE_PROC_MY_NAME->jobid))) {
         ORTE_ERROR_LOG(ORTE_ERR_NOT_FOUND);
         return ORTE_ERR_NOT_FOUND;
+    }
+    map = daemons->map;
+
+    /* if this is a dynamic spawn, then we don't make any changes to
+     * the virtual machine unless specifically requested to do so
+     */
+    if (ORTE_JOBID_INVALID != jdata->originator.jobid) {
+        OBJ_CONSTRUCT(&nodes, opal_list_t);
+        if (NULL == daemons->map) {
+            OPAL_OUTPUT_VERBOSE((5, orte_plm_base_framework.framework_output,
+                                 "%s plm:base:setup_vm creating map",
+                                 ORTE_NAME_PRINT(ORTE_PROC_MY_NAME)));
+            /* this is the first time thru, so the vm is just getting
+             * defined - create a map for it and put us in as we
+             * are obviously already here! The ess will already
+             * have assigned our node to us.
+             */
+            daemons->map = OBJ_NEW(orte_job_map_t);
+            node = (orte_node_t*)opal_pointer_array_get_item(orte_node_pool, 0);
+            opal_pointer_array_add(daemons->map->nodes, (void*)node);
+            ++(daemons->map->num_nodes);
+            /* maintain accounting */
+            OBJ_RETAIN(node);
+            /* mark that this is from a singleton */
+            singleton = true;
+        }
+        map = daemons->map;
+        for (i=1; i < orte_node_pool->size; i++) {
+            if (NULL == (node = (orte_node_t*)opal_pointer_array_get_item(orte_node_pool, i))) {
+                continue;
+            }
+            /* only add in nodes marked as "added" */
+            if (!singleton && ORTE_NODE_STATE_ADDED != node->state) {
+                OPAL_OUTPUT_VERBOSE((10, orte_plm_base_framework.framework_output,
+                                     "%s plm_base:setup_vm NODE %s WAS NOT ADDED",
+                                     ORTE_NAME_PRINT(ORTE_PROC_MY_NAME), node->name));
+                continue;
+            }
+            OPAL_OUTPUT_VERBOSE((10, orte_plm_base_framework.framework_output,
+                                 "%s plm_base:setup_vm ADDING NODE %s",
+                                 ORTE_NAME_PRINT(ORTE_PROC_MY_NAME), node->name));
+            /* retain a copy for our use in case the item gets
+             * destructed along the way
+             */
+            OBJ_RETAIN(node);
+            opal_list_append(&nodes, &node->super);
+            /* reset the state so it can be used for mapping */
+            node->state = ORTE_NODE_STATE_UP;
+        }
+        map->num_new_daemons = 0;
+        /* if we didn't get anything, then there is nothing else to
+         * do as no other daemons are to be launched
+         */
+        if (0 == opal_list_get_size(&nodes)) {
+            OPAL_OUTPUT_VERBOSE((5, orte_plm_base_framework.framework_output,
+                                 "%s plm:base:setup_vm no new daemons required",
+                                 ORTE_NAME_PRINT(ORTE_PROC_MY_NAME)));
+            OBJ_DESTRUCT(&nodes);
+            /* mark that the daemons have reported so we can proceed */
+            daemons->state = ORTE_JOB_STATE_DAEMONS_REPORTED;
+            daemons->updated = false;
+            return ORTE_SUCCESS;
+        }
+        /* if we got some new nodes to launch, we need to handle it */
+        goto process;
     }
 
     /* if we are not working with a virtual machine, then we

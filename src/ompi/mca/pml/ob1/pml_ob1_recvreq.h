@@ -12,6 +12,8 @@
  * Copyright (c) 2008      UT-Battelle, LLC. All rights reserved.
  * Copyright (c) 2011-2012 Los Alamos National Security, LLC. All rights
  *                         reserved.
+ * Copyright (c) 2014      Research Organization for Information Science
+ *                         and Technology (RIST). All rights reserved.
  *
  * $COPYRIGHT$
  * 
@@ -123,14 +125,25 @@ do {                                                                \
         ompi_request_complete( &(recvreq->req_recv.req_base.req_ompi), true );        \
     } while (0)
 
+static inline void mca_pml_ob1_recv_request_fini (mca_pml_ob1_recv_request_t *recvreq)
+{
+    MCA_PML_BASE_RECV_REQUEST_FINI(&recvreq->req_recv);
+#if 0
+    if ((recvreq)->local_handle) {
+        mca_bml_base_deregister_mem (recvreq->rdma_bml, recvreq->local_handle);
+        recvreq->local_handle = NULL;
+    }
+#endif
+}
+
 /*
  *  Free the PML receive request
  */
 #define MCA_PML_OB1_RECV_REQUEST_RETURN(recvreq)                        \
     {                                                                   \
-        MCA_PML_BASE_RECV_REQUEST_FINI(&(recvreq)->req_recv);           \
-        OMPI_FREE_LIST_RETURN_MT( &mca_pml_base_recv_requests,             \
-                               (ompi_free_list_item_t*)(recvreq));      \
+        mca_pml_ob1_recv_request_fini (recvreq);                        \
+        OMPI_FREE_LIST_RETURN_MT (&mca_pml_base_recv_requests,          \
+                                 (ompi_free_list_item_t*)(recvreq));    \
     }
 
 /**
@@ -161,6 +174,9 @@ recv_request_pml_complete(mca_pml_ob1_recv_request_t *recvreq)
 
     OPAL_THREAD_LOCK(&ompi_request_lock);
     if(true == recvreq->req_recv.req_base.req_free_called) {
+        if( MPI_SUCCESS != recvreq->req_recv.req_base.req_ompi.req_status.MPI_ERROR ) {
+            ompi_mpi_abort(&ompi_mpi_comm_world.comm, MPI_ERR_REQUEST, true);
+        }
         MCA_PML_OB1_RECV_REQUEST_RETURN(recvreq);
     } else {
         /* initialize request status */
@@ -270,7 +286,7 @@ do {                                                                            
             }                                                                     \
         }                                                                         \
         PERUSE_TRACE_COMM_OMPI_EVENT (PERUSE_COMM_REQ_XFER_CONTINUE,              \
-                                      &(recvreq->req_recv.req_base), max_data,    \
+                                      &(request->req_recv.req_base), max_data,    \
                                       PERUSE_RECV);                               \
         opal_convertor_set_position( &(request->req_recv.req_base.req_convertor), \
                                      &data_offset );                              \

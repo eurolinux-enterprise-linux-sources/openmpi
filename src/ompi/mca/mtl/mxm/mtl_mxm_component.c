@@ -1,5 +1,9 @@
+/* -*- Mode: C; c-basic-offset:4 ; indent-tabs-mode:nil -*- */
 /*
  * Copyright (C) Mellanox Technologies Ltd. 2001-2011.  ALL RIGHTS RESERVED.
+ * Copyright (c) 2015      Los Alamos National Security, LLC.  All rights
+ *                         reserved.
+ * Copyright (c) 2015 Cisco Systems, Inc.  All rights reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -24,8 +28,11 @@
 #include <unistd.h>
 
 static int ompi_mtl_mxm_component_open(void);
+static int ompi_mtl_mxm_component_query(mca_base_module_t **module, int *priority);
 static int ompi_mtl_mxm_component_close(void);
 static int ompi_mtl_mxm_component_register(void);
+
+static int param_priority;
 
 int mca_mtl_mxm_output = -1;
 
@@ -42,14 +49,14 @@ mca_mtl_mxm_component_t mca_mtl_mxm_component = {
      */
     {
         MCA_MTL_BASE_VERSION_2_0_0,
-        "mxm", /* MCA component name */
-        OMPI_MAJOR_VERSION, /* MCA component major version */
-        OMPI_MINOR_VERSION, /* MCA component minor version */
-        OMPI_RELEASE_VERSION, /* MCA component release version */
-        ompi_mtl_mxm_component_open, /* component open */
-        ompi_mtl_mxm_component_close, /* component close */
-        NULL,
-        ompi_mtl_mxm_component_register
+        .mca_component_name = "mxm",
+        .mca_component_major_version = OMPI_MAJOR_VERSION,
+        .mca_component_minor_version = OMPI_MINOR_VERSION,
+        .mca_component_release_version = OMPI_RELEASE_VERSION,
+        .mca_open_component = ompi_mtl_mxm_component_open,
+        .mca_close_component = ompi_mtl_mxm_component_close,
+        .mca_query_component = ompi_mtl_mxm_component_query,
+        .mca_register_component_params = ompi_mtl_mxm_component_register,
     },
     {
         /* The component is not checkpoint ready */
@@ -86,6 +93,53 @@ static int ompi_mtl_mxm_component_register(void)
                                            MCA_BASE_VAR_SCOPE_READONLY,
                                            &ompi_mtl_mxm.mxm_np);
 
+    param_priority = 30;
+    (void) mca_base_component_var_register (c,
+                                            "priority", "Priority of the MXM MTL component",
+                                            MCA_BASE_VAR_TYPE_INT, NULL, 0, 0,
+                                            OPAL_INFO_LVL_9,
+                                            MCA_BASE_VAR_SCOPE_READONLY,
+                                            &param_priority);
+
+
+#if MXM_API >= MXM_VERSION(3,1)
+{
+    unsigned long cur_ver = mxm_get_version();
+
+    ompi_mtl_mxm.bulk_connect = 0;
+
+    if (cur_ver < MXM_VERSION(3,2)) {
+        ompi_mtl_mxm.bulk_disconnect = 0;
+    } else {
+        ompi_mtl_mxm.bulk_disconnect = 1;
+    }
+
+    (void) mca_base_component_var_register(c, "bulk_connect",
+                               "[integer] use bulk connect",
+                               MCA_BASE_VAR_TYPE_INT, NULL, 0, 0,
+                               OPAL_INFO_LVL_9,
+                               MCA_BASE_VAR_SCOPE_READONLY,
+                               &ompi_mtl_mxm.bulk_connect);
+
+    (void) mca_base_component_var_register(c, "bulk_disconnect",
+                               "[integer] use bulk disconnect",
+                               MCA_BASE_VAR_TYPE_INT, NULL, 0, 0,
+                               OPAL_INFO_LVL_9,
+                               MCA_BASE_VAR_SCOPE_READONLY,
+                               &ompi_mtl_mxm.bulk_disconnect);
+
+    if (cur_ver < MXM_VERSION(3,2) &&
+           (ompi_mtl_mxm.bulk_connect || ompi_mtl_mxm.bulk_disconnect)) {
+        ompi_mtl_mxm.bulk_connect    = 0;
+        ompi_mtl_mxm.bulk_disconnect = 0;
+
+        MXM_VERBOSE(1, "WARNING: OMPI runs with %s version of MXM that is less than 3.2, "
+                       "so bulk connect/disconnect cannot work properly and will be turn off.",
+                        ompi_mtl_mxm.runtime_version);
+    }
+}
+#endif
+
     return OMPI_SUCCESS;
 }
 
@@ -113,14 +167,14 @@ static int ompi_mtl_mxm_component_open(void)
         ((OPAL_MEMORY_FREE_SUPPORT | OPAL_MEMORY_MUNMAP_SUPPORT) &
          opal_mem_hooks_support_level()))
     {
-        setenv("MXM_MEM_ON_DEMAND_MAP", "y", 0);
+        setenv("MXM_MPI_MEM_ON_DEMAND_MAP", "y", 0);
         MXM_VERBOSE(1, "Enabling on-demand memory mapping");
         ompi_mtl_mxm.using_mem_hooks = 1;
     } else {
         MXM_VERBOSE(1, "Disabling on-demand memory mapping");
         ompi_mtl_mxm.using_mem_hooks = 0;
     }
-    setenv("MXM_SINGLE_THREAD", ompi_mpi_thread_multiple ? "n" : "y" , 0);
+    setenv("MXM_MPI_SINGLE_THREAD", ompi_mpi_thread_multiple ? "n" : "y" , 0);
 #endif
 
 #if MXM_API >= MXM_VERSION(2,1)
@@ -168,12 +222,21 @@ static int ompi_mtl_mxm_component_open(void)
     return OMPI_SUCCESS;
 }
 
+static int ompi_mtl_mxm_component_query(mca_base_module_t **module, int *priority)
+{
+
+    /*
+     * if we get here it means that mxm is available so give high priority
+     */
+
+    *priority = param_priority;
+    *module = (mca_base_module_t *)&ompi_mtl_mxm.super;
+    return OMPI_SUCCESS;
+}
+
 static int ompi_mtl_mxm_component_close(void)
 {
-    unsigned long cur_ver;
-
-    cur_ver = mxm_get_version();
-    if ((cur_ver == MXM_API) && (ompi_mtl_mxm.mxm_context != NULL)) {
+    if (ompi_mtl_mxm.mxm_context != NULL) {
         mxm_cleanup(ompi_mtl_mxm.mxm_context);
         ompi_mtl_mxm.mxm_context = NULL;
         OBJ_DESTRUCT(&mca_mtl_mxm_component.mxm_messages);

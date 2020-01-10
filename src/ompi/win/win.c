@@ -12,7 +12,7 @@
  *                         All rights reserved.
  * Copyright (c) 2009      Sun Microsystems, Inc. All rights reserved.
  * Copyright (c) 2009-2012 Cisco Systems, Inc.  All rights reserved.
- * Copyright (c) 2013      Los Alamos National Security, LLC.  All rights
+ * Copyright (c) 2013-2015 Los Alamos National Security, LLC.  All rights
  *                         reserved.
  * $COPYRIGHT$
  * 
@@ -33,6 +33,7 @@
 #include "ompi/mca/osc/base/base.h"
 #include "ompi/mca/osc/osc.h"
 
+#include "ompi/runtime/params.h"
 
 /*
  * Table for Fortran <-> C communicator handle conversion.  Note that
@@ -52,6 +53,10 @@ OBJ_CLASS_INSTANCE(ompi_win_t, opal_object_t,
 int
 ompi_win_init(void)
 {
+    int ret;
+
+    assert (sizeof (ompi_predefined_win_t) >= sizeof (ompi_win_t));
+
     /* setup window Fortran array */
     OBJ_CONSTRUCT(&ompi_mpi_windows, opal_pointer_array_t);
     if( OPAL_SUCCESS != opal_pointer_array_init(&ompi_mpi_windows, 0,
@@ -70,10 +75,29 @@ ompi_win_init(void)
     return OMPI_SUCCESS;
 }
 
-
-int
-ompi_win_finalize(void)
+static void ompi_win_dump (ompi_win_t *win)
 {
+    opal_output(0, "Dumping information for window: %s\n", win->w_name);
+    opal_output(0,"  Fortran window handle: %d, window size: %d\n",
+                win->w_f_to_c_index, ompi_group_size (win->w_group));
+}
+
+int ompi_win_finalize(void)
+{
+    size_t size = opal_pointer_array_get_size (&ompi_mpi_windows);
+    /* start at 1 to skip win null */
+    for (size_t i = 1 ; i < size ; ++i) {
+        ompi_win_t *win =
+            (ompi_win_t *) opal_pointer_array_get_item (&ompi_mpi_windows, i);
+        if (NULL != win) {
+            if (ompi_debug_show_handle_leaks && !ompi_win_invalid(win)){
+                opal_output(0,"WARNING: MPI_Win still allocated in MPI_Finalize\n");
+                ompi_win_dump (win);
+            }
+            ompi_win_free (win);
+        }
+    }
+
     OBJ_DESTRUCT(&ompi_mpi_win_null.win);
     OBJ_DESTRUCT(&ompi_mpi_windows);
 
@@ -81,7 +105,7 @@ ompi_win_finalize(void)
 }
 
 static ompi_win_t *
-alloc_window(struct ompi_communicator_t *comm)
+alloc_window(struct ompi_communicator_t *comm, int flavor)
 {
     ompi_win_t *win;
     ompi_group_t *group;
@@ -95,6 +119,7 @@ alloc_window(struct ompi_communicator_t *comm)
     OBJ_RETAIN(group);
     ompi_group_increment_proc_count(group);
     win->w_group = group;
+    win->w_flavor = flavor;
 
     return win;
 }
@@ -146,7 +171,7 @@ ompi_win_create(void *base, size_t size,
     int model;
     int ret;
 
-    win = alloc_window(comm);
+    win = alloc_window(comm, MPI_WIN_FLAVOR_CREATE);
     if (NULL == win) return OMPI_ERR_OUT_OF_RESOURCE;
 
     ret = ompi_osc_base_select(win, &base, size, disp_unit, comm, info, MPI_WIN_FLAVOR_CREATE, &model);
@@ -176,7 +201,7 @@ ompi_win_allocate(size_t size, int disp_unit, ompi_info_t *info,
     int ret;
     void *base;
 
-    win = alloc_window(comm);
+    win = alloc_window(comm, MPI_WIN_FLAVOR_ALLOCATE);
     if (NULL == win) return OMPI_ERR_OUT_OF_RESOURCE;
 
     ret = ompi_osc_base_select(win, &base, size, disp_unit, comm, info, MPI_WIN_FLAVOR_ALLOCATE, &model);
@@ -207,7 +232,7 @@ ompi_win_allocate_shared(size_t size, int disp_unit, ompi_info_t *info,
     int ret;
     void *base;
 
-    win = alloc_window(comm);
+    win = alloc_window(comm, MPI_WIN_FLAVOR_SHARED);
     if (NULL == win) return OMPI_ERR_OUT_OF_RESOURCE;
 
     ret = ompi_osc_base_select(win, &base, size, disp_unit, comm, info, MPI_WIN_FLAVOR_SHARED, &model);
@@ -236,7 +261,7 @@ ompi_win_create_dynamic(ompi_info_t *info, ompi_communicator_t *comm, ompi_win_t
     int model;
     int ret;
 
-    win = alloc_window(comm);
+    win = alloc_window(comm, MPI_WIN_FLAVOR_DYNAMIC);
     if (NULL == win) return OMPI_ERR_OUT_OF_RESOURCE;
 
     ret = ompi_osc_base_select(win, MPI_BOTTOM, 0, 1, comm, info, MPI_WIN_FLAVOR_DYNAMIC, &model);

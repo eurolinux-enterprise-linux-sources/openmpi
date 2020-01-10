@@ -2,6 +2,8 @@
 /*
  * Copyright (c) 2013      Los Alamos National Security, LLC. All rights
  *                         reserved.
+ * Copyright (c) 2014      Research Organization for Information Science
+ *                         and Technology (RIST). All rights reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -10,6 +12,7 @@
  */
 
 #include "ompi_config.h"
+#include "opal/util/sys_limits.h"
 
 #include "btl_scif.h"
 #include "btl_scif_frag.h"
@@ -120,6 +123,14 @@ static void *mca_btl_scif_connect_accept (void *arg)
             if (SCIF_POLLIN != pollepd.revents) {
                 break;
             }
+            if (mca_btl_scif_module.exiting) {
+                /* accept the connection so scif_connect() does not timeout */
+                struct scif_portID peer;
+                scif_epd_t newepd;
+                scif_accept(mca_btl_scif_module.scif_fd, &peer, &newepd, SCIF_ACCEPT_SYNC);
+                scif_close(newepd);
+                break;
+            }
 
             rc = mca_btl_scif_ep_connect_start_passive ();
             if (OMPI_SUCCESS != rc) {
@@ -217,7 +228,7 @@ mca_btl_scif_setup_mpools (mca_btl_scif_module_t *scif_module)
     rc = ompi_free_list_init_new (&scif_module->dma_frags,
                                   sizeof (mca_btl_scif_dma_frag_t), 64,
                                   OBJ_CLASS(mca_btl_scif_dma_frag_t),
-                                  128, getpagesize (),
+                                  128, opal_getpagesize (),
                                   mca_btl_scif_component.scif_free_list_num,
                                   mca_btl_scif_component.scif_free_list_max,
                                   mca_btl_scif_component.scif_free_list_inc,

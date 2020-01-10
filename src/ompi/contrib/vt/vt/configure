@@ -10645,7 +10645,7 @@ ia64-*-hpux*)
   rm -rf conftest*
   ;;
 
-x86_64-*kfreebsd*-gnu|x86_64-*linux*|ppc*-*linux*|powerpc*-*linux*| \
+x86_64-*kfreebsd*-gnu|x86_64-*linux*|powerpc*-*linux*| \
 s390*-*linux*|s390*-*tpf*|sparc*-*linux*)
   # Find out which ABI we are using.
   echo 'int i;' > conftest.$ac_ext
@@ -10663,7 +10663,10 @@ s390*-*linux*|s390*-*tpf*|sparc*-*linux*)
 	  x86_64-*linux*)
 	    LD="${LD-ld} -m elf_i386"
 	    ;;
-	  ppc64-*linux*|powerpc64-*linux*)
+	  powerpc64le-*linux*)
+	    LD="${LD-ld} -m elf32lppclinux"
+	    ;;
+	  powerpc64-*linux*)
 	    LD="${LD-ld} -m elf32ppclinux"
 	    ;;
 	  s390x-*linux*)
@@ -10682,7 +10685,10 @@ s390*-*linux*|s390*-*tpf*|sparc*-*linux*)
 	  x86_64-*linux*)
 	    LD="${LD-ld} -m elf_x86_64"
 	    ;;
-	  ppc*-*linux*|powerpc*-*linux*)
+	  powerpcle-*linux*)
+	    LD="${LD-ld} -m elf64lppc"
+	    ;;
+	  powerpc-*linux*)
 	    LD="${LD-ld} -m elf64ppc"
 	    ;;
 	  s390*-*linux*|s390*-*tpf*)
@@ -17017,9 +17023,10 @@ if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
     case ${prev}${p} in
 
     -L* | -R* | -l*)
-       # Some compilers place space between "-{L,R}" and the path.
-       # Remove the space.
+       # Some compilers place space between "-{L,-l,R}" and the path.
+       # Remove the spaces.
        if test $p = "-L" ||
+          test $p = "-l" ||
           test $p = "-R"; then
 	 prev=$p
 	 continue
@@ -18923,9 +18930,10 @@ if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
     case ${prev}${p} in
 
     -L* | -R* | -l*)
-       # Some compilers place space between "-{L,R}" and the path.
-       # Remove the space.
+       # Some compilers place space between "-{L,-l,R}" and the path.
+       # Remove the spaces.
        if test $p = "-L" ||
+          test $p = "-l" ||
           test $p = "-R"; then
 	 prev=$p
 	 continue
@@ -26983,6 +26991,39 @@ fi
 
 
 
+	# Extract version from Open64, do not use -dumpversion, as this does not
+	# uniquely identify the Open64 compiler
+	opencc=`$CC -E -dM -x c /dev/null 2>/dev/null | sed -n -e 's/#define __OPENCC__ // p'`
+	if test x"$opencc" != x"" ; then :
+
+		opencc_minor=`$CC -E -dM -x c /dev/null | sed -n -e 's/#define __OPENCC_MINOR__ // p'`
+		opencc_patchlevel=`$CC -E -dM -x c /dev/null | sed -n -e 's/#define __OPENCC_PATCHLEVEL__ // p'`
+		opencc_subpatchlevel=0
+		case $opencc_patchlevel in #(
+  "") :
+    opencc_patchlevel=0 ;; #(
+  *.*) :
+
+			opencc_subpatchlevel=${opencc_patchlevel##*.}
+			opencc_patchlevel=${opencc_patchlevel%.*}
+		 ;; #(
+  *) :
+     ;;
+esac
+		opencc_version=`expr $opencc "*" 1000 + $opencc_minor "*" 100 + $opencc_patchlevel "*" 10 + $opencc_subpatchlevel`
+
+cat >>confdefs.h <<_ACEOF
+#define VT_OPENCC_VERSION $opencc_version
+_ACEOF
+
+		{ opencc_minor=; unset opencc_minor;}
+		{ opencc_patchlevel=; unset opencc_patchlevel;}
+		{ opencc_subpatchlevel=; unset opencc_subpatchlevel;}
+		{ opencc_version=; unset opencc_version;}
+
+fi
+	{ opencc=; unset opencc;}
+
 					if test x"$force_threads_list" != x -a x"$omp_error" = "xyes"; then :
   threads_error="yes"; break
 else
@@ -28814,27 +28855,24 @@ fi
 
 		if test x"$cupti_error" = "xno"; then :
 
-			have_cupti="yes"
-
 			sav_CPPFLAGS=$CPPFLAGS
 			CPPFLAGS="$CPPFLAGS $CUPTIINCDIR $CUDATKINCDIR"
 
-			ac_fn_c_check_header_mongrel "$LINENO" "cupti_events.h" "ac_cv_header_cupti_events_h" "$ac_includes_default"
-if test "x$ac_cv_header_cupti_events_h" = xyes; then :
-
-				{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether CUDA runtime version >= 4.0" >&5
-$as_echo_n "checking whether CUDA runtime version >= 4.0... " >&6; }
-				cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+			{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether CUPTI API version >= 2 & <= 4" >&5
+$as_echo_n "checking whether CUPTI API version >= 2 & <= 4... " >&6; }
+			cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-#include "cuda_runtime_api.h"
+#include "cupti_version.h"
 int
 main ()
 {
 
-	#ifndef CUDART_VERSION
-	#  error "CUDART_VERSION not defined"
-	#elif CUDART_VERSION < 4000
-	#  error "CUDART_VERSION < 4000"
+	#ifndef CUPTI_API_VERSION
+	#  error "CUPTI_API_VERSION not defined"
+	#elif CUPTI_API_VERSION < 2
+	#  error "CUPTI_API_VERSION < 2"
+	#elif CUPTI_API_VERSION > 4
+	#  error "CUPTI_API_VERSION > 4"
 	#endif
 
   ;
@@ -28843,22 +28881,35 @@ main ()
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
 
-					{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+				{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
-					have_cupti_events="yes"
+				have_cupti="yes"
 
 else
 
-					{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+				{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
-					{ $as_echo "$as_me:${as_lineno-$LINENO}: error: CUDA runtime version could not be determined and/or is incompatible (< 4.0)
-	See \`config.log' for more details." >&5
-$as_echo "$as_me: error: CUDA runtime version could not be determined and/or is incompatible (< 4.0)
-	See \`config.log' for more details." >&6;}
+				{ $as_echo "$as_me:${as_lineno-$LINENO}: error: CUPTI API version could not be determined and/or is incompatible (< 2 o. > 4)
+See \`config.log' for more details." >&5
+$as_echo "$as_me: error: CUPTI API version could not be determined and/or is incompatible (< 2 o. > 4)
+See \`config.log' for more details." >&6;}
+				cupti_error="yes"
 
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
+			CPPFLAGS=$sav_CPPFLAGS
+
+fi
+
+		if test x"$cupti_error" = "xno"; then :
+
+			sav_CPPFLAGS=$CPPFLAGS
+			CPPFLAGS="$CPPFLAGS $CUPTIINCDIR $CUDATKINCDIR"
+
+			ac_fn_c_check_header_mongrel "$LINENO" "cupti_events.h" "ac_cv_header_cupti_events_h" "$ac_includes_default"
+if test "x$ac_cv_header_cupti_events_h" = xyes; then :
+  have_cupti_events="yes"
 else
 
 				{ $as_echo "$as_me:${as_lineno-$LINENO}: error: no cupti_events.h found" >&5
@@ -28887,6 +28938,7 @@ else
 $as_echo "$as_me: error: no cupti_activity.h found" >&6;}
 
 fi
+
 
 
 			CPPFLAGS=$sav_CPPFLAGS

@@ -15,6 +15,8 @@
 # Copyright (c) 2006-2007 Los Alamos National Security, LLC.  All rights
 #                         reserved. 
 # Copyright (c) 2009      Oak Ridge National Labs.  All rights reserved.
+# Copyright (c) 2014      Research Organization for Information Science
+#                         and Technology (RIST). All rights reserved.
 # $COPYRIGHT$
 # 
 # Additional copyrights may follow
@@ -23,12 +25,12 @@
 #
 
 AC_DEFUN([OMPI_SETUP_MPI_FORTRAN],[
-    OPAL_VAR_SCOPE_PUSH([ompi_fortran_happy])
-
     # Default to building nothing
     OMPI_BUILD_FORTRAN_MPIFH_BINDINGS=0
     OMPI_BUILD_FORTRAN_USEMPI_BINDINGS=0
     OMPI_BUILD_FORTRAN_USEMPIF08_BINDINGS=0
+
+    OMPI_FORTRAN_BUILD_SIZEOF=0
 
     OMPI_FORTRAN_USEMPI_DIR=
     OMPI_FORTRAN_USEMPI_LIB=
@@ -36,9 +38,14 @@ AC_DEFUN([OMPI_SETUP_MPI_FORTRAN],[
     OMPI_FORTRAN_USEMPIF08_DIR=
     OMPI_FORTRAN_USEMPIF08_LIB=
 
+    OMPI_FORTRAN_MAX_ARRAY_RANK=0
+
+    OMPI_FORTRAN_HAVE_INTERFACE=0
     OMPI_FORTRAN_HAVE_IGNORE_TKR=0
     OMPI_FORTRAN_HAVE_OPTIONAL_ARGS=0
     OMPI_FORTRAN_HAVE_BIND_C=0
+    OMPI_FORTRAN_HAVE_ISO_FORTRAN_ENV=0
+    OMPI_FORTRAN_HAVE_STORAGE_SIZE=0
     OMPI_FORTRAN_HAVE_ISO_C_BINDING=0
     OMPI_FORTRAN_HAVE_BIND_C_SUB=0
     OMPI_FORTRAN_HAVE_BIND_C_TYPE=0
@@ -204,30 +211,18 @@ AC_DEFUN([OMPI_SETUP_MPI_FORTRAN],[
     # a true value.  
     OMPI_FORTRAN_GET_VALUE_TRUE
     OMPI_FORTRAN_CHECK_LOGICAL_ARRAY
+
+    # Find out how many array ranks this compiler supports.
+    OMPI_FORTRAN_CHECK_MAX_ARRAY_RANK
     
     # How big should MPI_STATUS_SIZE be?  (i.e., the size of
     # MPI_STATUS, expressed in units of Fortran INTEGERs).  The C
     # equivalent of MPI_Status contains 4 C ints and a size_t.
-
-    # Per the thread starting here:
-    # http://www.open-mpi.org/community/lists/users/2013/10/22882.php,
-    # the size was computed wrong for a long time.  However, we can't
-    # change the size in the middle of the v1.6 series because it
-    # would break ABI.  Hence, we have to add an additional,
-    # non-default configure switch that allows users to intentionally
-    # break ABI if they want to.
-    AC_ARG_ENABLE([abi-breaking-fortran-status-i8-fix],
-        AC_HELP_STRING([--enable-abi-breaking-fortran-status-i8-fix],
-            [If the size of Fortran INTEGERs are larger than C ints, problems can occur with MPI_STATUS_SIZE.  Enabling this option fixes the issue, but breaks ABI with the rest of the v1.5/v1.6 series.  Note that if you use MPI_STATUS_IGNORE in your Fortran application and never examine an MPI_Status INTEGER array, you do not need this fix (default: disabled).]))
-    size=$OMPI_SIZEOF_FORTRAN_INTEGER
-    AS_IF([test "$enable_abi_breaking_fortran_status_i8_fix" = "yes"],
-          [size=$ac_cv_sizeof_int])
-
     OMPI_FORTRAN_STATUS_SIZE=0
     AC_MSG_CHECKING([for the value of MPI_STATUS_SIZE])
     bytes=`expr 4 \* $ac_cv_sizeof_int + $ac_cv_sizeof_size_t`
-    num_integers=`expr $bytes / $size`
-    sanity=`expr $num_integers \* $size`
+    num_integers=`expr $bytes / $ac_cv_sizeof_int`
+    sanity=`expr $num_integers \* $ac_cv_sizeof_int`
     AS_IF([test "$sanity" != "$bytes"],
           [AC_MSG_RESULT([unknown!])
            AC_MSG_WARN([WARNING: Size of C int: $ac_cv_sizeof_int])
@@ -262,48 +257,8 @@ AC_DEFUN([OMPI_SETUP_MPI_FORTRAN],[
     OMPI_FORTRAN_GET_KIND_VALUE([C_INT32_T], 9, [OMPI_FORTRAN_C_INT32_T_KIND])
     OMPI_FORTRAN_GET_KIND_VALUE([C_INT64_T], 18, [OMPI_FORTRAN_C_INT64_T_KIND])
 
-    # Get the kind value for Fortran MPI_INTEGER_KIND (corresponding
-    # to whatever is the same size as a F77 INTEGER -- for the
-    # most-likely-will-never-occur case where F77 INTEGER is smaller
-    # than an F90 INTEGER; see MPI-2 4.12.6.5.  As with OMPI
-    # FORTRAN_CHECK, use the official BIND(C) KIND names (see comment
-    # in fortran_check.m4).
-    if test $OMPI_SIZEOF_FORTRAN_INTEGER -eq 2; then
-        OMPI_MPI_INTEGER_KIND=$OMPI_FORTRAN_C_INT16_T_KIND
-    elif test $OMPI_SIZEOF_FORTRAN_INTEGER -eq 4; then
-        OMPI_MPI_INTEGER_KIND=$OMPI_FORTRAN_C_INT32_T_KIND
-    elif test $OMPI_SIZEOF_FORTRAN_INTEGER -eq 8; then
-        OMPI_MPI_INTEGER_KIND=$OMPI_FORTRAN_C_INT64_T_KIND
-    elif test $OMPI_SIZEOF_FORTRAN_INTEGER -eq 16; then
-        AC_MSG_ERROR([Cannot support Fortran MPI_INTEGER_KIND!])
-    fi
-    AC_SUBST(OMPI_MPI_INTEGER_KIND)
-
-    # Get the kind value for Fortran MPI_ADDRESS_KIND (corresponding
-    # to whatever is big enough to hold (void*)).
-    if test $ac_cv_sizeof_void_p = 2 ; then
-        OMPI_MPI_ADDRESS_KIND=$OMPI_FORTRAN_C_INT16_T_KIND
-    elif test $ac_cv_sizeof_void_p = 4 ; then
-        OMPI_MPI_ADDRESS_KIND=$OMPI_FORTRAN_C_INT32_T_KIND
-    elif test $ac_cv_sizeof_void_p = 8 ; then
-        OMPI_MPI_ADDRESS_KIND=$OMPI_FORTRAN_C_INT64_T_KIND
-    elif test $ac_cv_sizeof_void_p = 16 ; then
-        AC_MSG_ERROR([Cannot support Fortran MPI_ADDRESS_KIND!])
-    fi
-    AC_SUBST(OMPI_MPI_ADDRESS_KIND)
-    
-    # Get the kind value for Fortran MPI_OFFSET_KIND (corresponding to
-    # INTEGER*8).
-    OMPI_MPI_OFFSET_KIND=$OMPI_FORTRAN_C_INT64_T_KIND
-    AC_SUBST(OMPI_MPI_OFFSET_KIND)
-
-    # Get the kind value for Fortran MPI_COUNT_KIND (corresponding to 
-    # INTEGER*8) 
-    OMPI_MPI_COUNT_KIND=$OMPI_FORTRAN_C_INT64_T_KIND 
-    AC_SUBST(OMPI_MPI_COUNT_KIND) 
-
     #--------------------------------------------------------
-    # This is all we need for the Fortran mpif.h MPI bindings
+    # Fortran mpif.h MPI bindings
     #--------------------------------------------------------
 
     AC_MSG_CHECKING([if building Fortran mpif.h bindings])
@@ -311,7 +266,38 @@ AC_DEFUN([OMPI_SETUP_MPI_FORTRAN],[
           [AC_MSG_RESULT([yes])
            OMPI_BUILD_FORTRAN_MPIFH_BINDINGS=1],
           [AC_MSG_RESULT([no])])
-    
+
+    # "INTERFACE" is needed for MPI_SIZEOF
+    AS_IF([test $ompi_fortran_happy -eq 1],
+          [OMPI_FORTRAN_CHECK_INTERFACE(
+               [OMPI_FORTRAN_HAVE_INTERFACE=1],
+               [OMPI_FORTRAN_HAVE_INTERFACE=0])])
+    AC_SUBST(OMPI_FORTRAN_HAVE_INTERFACE)
+
+    # The iso_fortran_env module is needed for MPI_SIZEOF
+    AS_IF([test $ompi_fortran_happy -eq 1],
+          [OMPI_FORTRAN_CHECK_ISO_FORTRAN_ENV(
+               [OMPI_FORTRAN_HAVE_ISO_FORTRAN_ENV=1],
+               [OMPI_FORTRAN_HAVE_ISO_FORTRAN_ENV=0])])
+    AC_SUBST(OMPI_FORTRAN_HAVE_ISO_FORTRAN_ENV)
+
+    # Ensure that the fortran compiler supports STORAGE_SIZE for
+    # enough relevant types.
+    AS_IF([test $ompi_fortran_happy -eq 1],
+          [OMPI_FORTRAN_CHECK_STORAGE_SIZE(
+               [OMPI_FORTRAN_HAVE_STORAGE_SIZE=1],
+               [OMPI_FORTRAN_HAVE_STORAGE_SIZE=0])])
+    AC_SUBST(OMPI_FORTRAN_HAVE_STORAGE_SIZE)
+
+    # We need INTERFACE, ISO_FORTRAN_ENV, and STORAGE_SIZE() support
+    # to build MPI_SIZEOF support
+    AS_IF([test $OMPI_FORTRAN_HAVE_INTERFACE -eq 1 && \
+           test $OMPI_FORTRAN_HAVE_ISO_FORTRAN_ENV -eq 1 && \
+           test $OMPI_FORTRAN_HAVE_STORAGE_SIZE -eq 1],
+          [OMPI_FORTRAN_BUILD_SIZEOF=1],
+          [OMPI_FORTRAN_BUILD_SIZEOF=0])
+    AC_SUBST(OMPI_FORTRAN_BUILD_SIZEOF)
+
     #--------------------------------------------
     # Fortran use mpi or use mpi_f08 MPI bindings
     #--------------------------------------------
@@ -341,6 +327,13 @@ AC_DEFUN([OMPI_SETUP_MPI_FORTRAN],[
                   OMPI_FORTRAN_USEMPI_LIB=-lmpi_usempi])
           ])
 
+    OMPI_FORTRAN_HAVE_ISO_C_BINDING=0
+    AS_IF([test $OMPI_WANT_FORTRAN_USEMPI_BINDINGS -eq 1 && \
+           test $ompi_fortran_happy -eq 1],
+          [OMPI_FORTRAN_CHECK_ISO_C_BINDING(
+               [OMPI_FORTRAN_HAVE_ISO_C_BINDING=1],
+               [OMPI_FORTRAN_HAVE_ISO_C_BINDING=0])])
+
     AC_MSG_CHECKING([if building Fortran 'use mpi' bindings])
     AS_IF([test $OMPI_BUILD_FORTRAN_USEMPI_BINDINGS -eq 1],
           [AC_MSG_RESULT([yes])],
@@ -366,14 +359,11 @@ AC_DEFUN([OMPI_SETUP_MPI_FORTRAN],[
     # the necessary forms of BIND(C)
     OMPI_FORTRAN_HAVE_BIND_C=0
 
-    OMPI_FORTRAN_HAVE_ISO_C_BINDING=0
     AS_IF([test $OMPI_WANT_FORTRAN_USEMPIF08_BINDINGS -eq 1 -a \
            $OMPI_BUILD_FORTRAN_USEMPIF08_BINDINGS -eq 1],
           [ # If we don't have ISO C bindings, we won't build mpi_f08 at all
-           OMPI_FORTRAN_CHECK_ISO_C_BINDING(
-               [OMPI_FORTRAN_HAVE_ISO_C_BINDING=1],
-               [OMPI_FORTRAN_HAVE_ISO_C_BINDING=0
-                OMPI_BUILD_FORTRAN_USEMPIF08_BINDINGS=0])])
+           AS_IF([test "$OMPI_FORTRAN_HAVE_ISO_C_BINDING" -eq 0],
+                 [OMPI_BUILD_FORTRAN_USEMPIF08_BINDINGS=0])])
 
     OMPI_FORTRAN_HAVE_BIND_C_SUB=0
     AS_IF([test $OMPI_WANT_FORTRAN_USEMPIF08_BINDINGS -eq 1 -a \
@@ -417,6 +407,30 @@ AC_DEFUN([OMPI_SETUP_MPI_FORTRAN],[
                [OMPI_FORTRAN_HAVE_BIND_C_TYPE_NAME=0
                 OMPI_BUILD_FORTRAN_USEMPIF08_BINDINGS=0])])
 
+    # Per https://svn.open-mpi.org/trac/ompi/ticket/4590, if the
+    # Fortran compiler doesn't support PROCEDURE in the way we
+    # want/need, disable the mpi_f08 module.
+    OMPI_FORTRAN_HAVE_PROCEDURE=0
+    AS_IF([test $OMPI_WANT_FORTRAN_USEMPIF08_BINDINGS -eq 1 -a \
+           $OMPI_BUILD_FORTRAN_USEMPIF08_BINDINGS -eq 1],
+          [ # Does the compiler support "procedure"
+           OMPI_FORTRAN_CHECK_PROCEDURE(
+               [OMPI_FORTRAN_HAVE_PROCEDURE=1],
+               [OMPI_FORTRAN_HAVE_PROCEDURE=0
+                OMPI_BUILD_FORTRAN_USEMPIF08_BINDINGS=0])])
+
+    # Per https://github.com/open-mpi/ompi/issues/857, if the Fortran
+    # compiler doesn't properly support "USE ... ONLY" notation,
+    # disable the mpi_f08 module.
+    OMPI_FORTRAN_HAVE_USE_ONLY=0
+    AS_IF([test $OMPI_WANT_FORTRAN_USEMPIF08_BINDINGS -eq 1 -a \
+           $OMPI_BUILD_FORTRAN_USEMPIF08_BINDINGS -eq 1],
+          [ # Does the compiler support "USE ... ONLY"
+           OMPI_FORTRAN_CHECK_USE_ONLY(
+               [OMPI_FORTRAN_HAVE_USE_ONLY=1],
+               [OMPI_FORTRAN_HAVE_USE_ONLY=0
+                OMPI_BUILD_FORTRAN_USEMPIF08_BINDINGS=0])])
+
     OMPI_FORTRAN_HAVE_OPTIONAL_ARGS=0
     AS_IF([test $OMPI_WANT_FORTRAN_USEMPIF08_BINDINGS -eq 1 -a \
            $OMPI_BUILD_FORTRAN_USEMPIF08_BINDINGS -eq 1],
@@ -424,6 +438,16 @@ AC_DEFUN([OMPI_SETUP_MPI_FORTRAN],[
            OMPI_FORTRAN_CHECK_OPTIONAL_ARGS(
                [OMPI_FORTRAN_HAVE_OPTIONAL_ARGS=1],
                [OMPI_FORTRAN_HAVE_OPTIONAL_ARGS=0
+                OMPI_BUILD_FORTRAN_USEMPIF08_BINDINGS=0])])
+
+    OMPI_FORTRAN_HAVE_C_FUNLOC=0
+    AS_IF([test $OMPI_WANT_FORTRAN_USEMPIF08_BINDINGS -eq 1 -a \
+           $OMPI_BUILD_FORTRAN_USEMPIF08_BINDINGS -eq 1],
+          [ # Does the compiler supports c_funloc per
+            # TS 29113 subclause 8.1 ?
+           OMPI_FORTRAN_CHECK_C_FUNLOC(
+               [OMPI_FORTRAN_HAVE_C_FUNLOC=1],
+               [OMPI_FORTRAN_HAVE_C_FUNLOC=0
                 OMPI_BUILD_FORTRAN_USEMPIF08_BINDINGS=0])])
 
     OMPI_FORTRAN_HAVE_PRIVATE=0
@@ -457,30 +481,6 @@ AC_DEFUN([OMPI_SETUP_MPI_FORTRAN],[
            OMPI_FORTRAN_CHECK_ASYNCHRONOUS(
                [OMPI_FORTRAN_HAVE_ASYNCHRONOUS=1],
                [OMPI_FORTRAN_HAVE_ASYNCHRONOUS=0])])
-
-    OMPI_FORTRAN_HAVE_PROCEDURE=0
-    AS_IF([test $OMPI_WANT_FORTRAN_USEMPIF08_BINDINGS -eq 1 -a \
-           $OMPI_BUILD_FORTRAN_USEMPIF08_BINDINGS -eq 1],
-          [ # Does the compiler support "procedure"
-           OMPI_FORTRAN_CHECK_PROCEDURE(
-               [OMPI_FORTRAN_HAVE_PROCEDURE=1],
-               [OMPI_FORTRAN_HAVE_PROCEDURE=0])])
-
-    # Per https://svn.open-mpi.org/trac/ompi/ticket/4157, temporarily
-    # disqualify the fortran compiler if it exhibits the behavior
-    # described in that ticket.  Short version: OMPI does something
-    # non-Fortran that we don't have time to fix 1.7.4.  So we just
-    # disqualify Fortran compilers who actually enforce this issue,
-    # and we'll fix OMPI to be Fortran-compliant after 1.7.4
-    AS_IF([test $OMPI_WANT_FORTRAN_USEMPIF08_BINDINGS -eq 1 && \
-           test $OMPI_BUILD_FORTRAN_USEMPIF08_BINDINGS -eq 1 && \
-           test $OMPI_FORTRAN_HAVE_PROCEDURE -eq 1 && \
-           test $OMPI_FORTRAN_HAVE_ABSTRACT -eq 1],
-          [ # Check for ticket 4157
-           OMPI_FORTRAN_CHECK_TICKET_4157(
-               [],
-               [ # If we don't have this, don't build the mpi_f08 module
-                OMPI_BUILD_FORTRAN_USEMPIF08_BINDINGS=0])])
 
     OMPI_FORTRAN_F08_HANDLE_SIZE=4
     AS_IF([test $OMPI_WANT_FORTRAN_USEMPIF08_BINDINGS -eq 1 -a \
@@ -579,6 +579,25 @@ end type test_mpi_handle],
     AC_DEFINE_UNQUOTED(OMPI_FC_ABSOLUTE, ["$OMPI_FC_ABSOLUTE"],
                        [Absolutey path to the underlying Fortran compiler found by configure])
 
+    # These go into ompi/info/param.c
+    AC_DEFINE_UNQUOTED([OMPI_FORTRAN_BUILD_SIZEOF],
+                       [$OMPI_FORTRAN_BUILD_SIZEOF],
+                       [Whether the mpif.h interface supports the MPI_SIZEOF interface or not])
+    AC_DEFINE_UNQUOTED([OMPI_FORTRAN_HAVE_INTERFACE],
+                       [$OMPI_FORTRAN_HAVE_INTERFACE],
+                       [Whether the compiler supports INTERFACE or not])
+    AC_DEFINE_UNQUOTED([OMPI_FORTRAN_HAVE_ISO_FORTRAN_ENV],
+                       [$OMPI_FORTRAN_HAVE_ISO_FORTRAN_ENV],
+                       [Whether the compiler supports ISO_FORTRAN_ENV or not])
+    AC_DEFINE_UNQUOTED([OMPI_FORTRAN_HAVE_STORAGE_SIZE],
+                       [$OMPI_FORTRAN_HAVE_STORAGE_SIZE],
+                       [Whether the compiler supports STORAGE_SIZE on relevant types])
+
+    # This conditional is used to determine whether we compile the
+    # various .f90 files that contain MPI_SIZEOF implementations.
+    AM_CONDITIONAL([BUILD_FORTRAN_SIZEOF],
+        [test $OMPI_FORTRAN_BUILD_SIZEOF -eq 1])
+
     # There are 2 layers to the MPI mpif.h layer. The only extra thing
     # that determine mpif.h bindings is that fortran can be disabled
     # by user. In such cases, we need to not build the target at all.
@@ -650,6 +669,22 @@ end type test_mpi_handle],
                    [test $OMPI_BUILD_FORTRAN_USEMPI_BINDINGS -eq 1 -a \
                          $OMPI_FORTRAN_HAVE_IGNORE_TKR -eq 1])
 
+    # A dummy library is built for ABI reasons in v1.8.4 and beyond.
+    # See ompi/mpi/fortran/README-v1.8-ABI.txt for details.
+
+    # NOTE: we are checking the *C* compiler vendor, not the *Fortran*
+    # compiler vendor.  This is because we don't have a good way to
+    # test for the fortran compiler vendor. :-( However, it's probably
+    # "good enough" to check the C compiler vendor because it's
+    # actually safe to *always* build this dummy library when we're
+    # building the ignore-tkr mpi module; it just isn't *needed* to
+    # fix ABI issues unless we're gfortran >= 4.9 (which will only be
+    # true if we're building the ignore-tkr mpi module and the Fortran
+    # compiler is gfortran).  So it's imprecise, but harmless.
+    AM_CONDITIONAL(OMPI_BUILD_FORTRAN_DUMMY_MPI_MODULE_LIBRARY,
+                   [test $OMPI_FORTRAN_HAVE_IGNORE_TKR -eq 1 && \
+                    test "$ompi_c_vendor" = "gnu"])
+
     # -------------------
     # use mpi_f08 final setup
     # -------------------
@@ -697,6 +732,7 @@ end type test_mpi_handle],
     AC_DEFINE_UNQUOTED(OMPI_FORTRAN_HAVE_BIND_C,
                        [$OMPI_FORTRAN_HAVE_BIND_C],
                        [For ompi_info: Whether the compiler supports all forms of BIND(C) that we need])
+    AC_SUBST(OMPI_FORTRAN_HAVE_ISO_C_BINDING)
     AC_DEFINE_UNQUOTED(OMPI_FORTRAN_HAVE_ISO_C_BINDING,
                        [$OMPI_FORTRAN_HAVE_ISO_C_BINDING],
                        [For ompi_info: Whether the compiler supports ISO_C_BINDING or not])
@@ -745,6 +781,20 @@ end type test_mpi_handle],
     AC_DEFINE_UNQUOTED([OMPI_FORTRAN_HAVE_PROCEDURE], 
                        [$OMPI_FORTRAN_HAVE_PROCEDURE],
                        [For ompi/mpi/fortran/use-mpi-f08/blah.F90 and blah.h and ompi_info: whether the compiler supports the "procedure" keyword or not])
+
+    # For configure-fortran-output.h, various files in
+    # ompi/mpi/fortran/use-mpi-f08/*.F90 and *.h files (and ompi_info)
+    AC_SUBST([OMPI_FORTRAN_HAVE_USE_ONLY])
+    AC_DEFINE_UNQUOTED([OMPI_FORTRAN_HAVE_USE_ONLY],
+                       [$OMPI_FORTRAN_HAVE_USE_ONLY],
+                       [For ompi/mpi/fortran/use-mpi-f08/blah.F90 and blah.h and ompi_info: whether the compiler supports "USE ... ONLY" notation properly or not])
+
+    # For configure-fortran-output.h, various files in
+    # ompi/mpi/fortran/use-mpi-f08/*.F90 and *.h files (and ompi_info)
+    AC_SUBST([OMPI_FORTRAN_HAVE_C_FUNLOC])
+    AC_DEFINE_UNQUOTED([OMPI_FORTRAN_HAVE_C_FUNLOC], 
+                       [$OMPI_FORTRAN_HAVE_C_FUNLOC],
+                       [For ompi/mpi/fortran/use-mpi-f08/blah.F90 and blah.h and ompi_info: whether the compiler supports c_funloc or not])
 
     # For configure-fortran-output.h
     AC_SUBST(OMPI_FORTRAN_HAVE_BIND_C)

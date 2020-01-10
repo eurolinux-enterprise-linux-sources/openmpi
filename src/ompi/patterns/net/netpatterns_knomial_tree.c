@@ -1,7 +1,12 @@
+/* -*- Mode: C; c-basic-offset:4 ; indent-tabs-mode:nil -*- */
 /*
  * Copyright (c) 2009-2012 Mellanox Technologies.  All rights reserved.
  * Copyright (c) 2009-2012 Oak Ridge National Laboratory.  All rights reserved.
-* $COPYRIGHT$
+ * Copyright (c) 2014      Research Organization for Information Science
+ *                         and Technology (RIST). All rights reserved.
+ * Copyright (c) 2014      Los Alamos National Security, LLC. All rights
+ *                         reserved.
+ * $COPYRIGHT$
  *
  * Additional copyrights may follow
  *
@@ -496,6 +501,32 @@ Error:
     return OMPI_ERROR;
 }
 
+OMPI_DECLSPEC void netpatterns_cleanup_recursive_knomial_allgather_tree_node(
+        netpatterns_k_exchange_node_t *exchange_node)
+{
+    int i;
+
+    free(exchange_node->reindex_map);
+    free(exchange_node->inv_reindex_map);
+    if (exchange_node->n_extra_sources > 0) {
+        free(exchange_node->rank_extra_sources_array) ;
+        exchange_node->n_extra_sources = 0;
+        exchange_node->rank_extra_sources_array = NULL;
+    }
+    if (exchange_node->n_exchanges > 0) {
+        for (i=0; i < exchange_node->n_exchanges; i++) {
+            free(exchange_node->rank_exchanges[i]);
+            exchange_node->rank_exchanges[i] = NULL;
+        }
+        free(exchange_node->rank_exchanges);
+        exchange_node->rank_exchanges = NULL;
+        exchange_node->n_exchanges = 0;
+    }
+    for(i = 0; i < exchange_node->log_tree_order; i++){
+        free(exchange_node->payload_info[i]);
+    }
+    free(exchange_node->payload_info);
+}
 
 OMPI_DECLSPEC int netpatterns_setup_recursive_knomial_tree_node(
         int num_nodes, int node_rank, int tree_order,
@@ -635,21 +666,31 @@ OMPI_DECLSPEC int netpatterns_setup_recursive_knomial_tree_node(
 
 Error:
 
-    if (NULL != exchange_node->rank_extra_sources_array) {
-        free(exchange_node->rank_extra_sources_array);
-    }
-
-    if (NULL != exchange_node->rank_exchanges) {
-        for (i = 0; i < exchange_node->n_exchanges; i++) {
-            if (NULL != exchange_node->rank_exchanges[i]) {
-                free(exchange_node->rank_exchanges[i]);
-            }
-        }
-        free(exchange_node->rank_exchanges);
-    }
+    netpatterns_cleanup_recursive_knomial_tree_node (exchange_node);
 
     /* error return */
     return OMPI_ERROR;
+}
+
+OMPI_DECLSPEC void netpatterns_cleanup_recursive_knomial_tree_node(
+        netpatterns_k_exchange_node_t *exchange_node)
+{
+    int i;
+
+    if (exchange_node->n_extra_sources > 0) {
+        free(exchange_node->rank_extra_sources_array);
+        exchange_node->rank_extra_sources_array = NULL;
+        exchange_node->n_extra_sources = 0;
+    }
+    if (exchange_node->n_exchanges > 0) {
+        for (i=0 ; i<exchange_node->n_exchanges; i++) {
+            free(exchange_node->rank_exchanges[i]);
+            exchange_node->rank_exchanges[i] = NULL;
+        }
+        free(exchange_node->rank_exchanges);
+        exchange_node->rank_exchanges = NULL;
+        exchange_node->n_exchanges = 0;
+    }
 }
 
 #if 1 
@@ -794,7 +835,7 @@ Error:
     return OMPI_ERROR;
 }
 
-OMPI_DECLSPEC void netpatterns_free_recursive_doubling_tree_node(
+OMPI_DECLSPEC void netpatterns_cleanup_recursive_doubling_tree_node(
     netpatterns_pair_exchange_node_t *exchange_node)
 {
     NETPATTERNS_VERBOSE(("About to release rank_extra_sources_array and rank_exchanges"));

@@ -1,6 +1,8 @@
-.\" Copyright 2010 Cisco Systems, Inc.  All rights reserved.
+.\" -*- nroff -*-
+.\" Copyright (c) 2010-2015 Cisco Systems, Inc.  All rights reserved.
 .\" Copyright 2006-2008 Sun Microsystems, Inc.
 .\" Copyright (c) 1996 Thinking Machines Corporation
+.\" $COPYRIGHT$
 .TH MPI_Intercomm_merge 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
 .SH NAME
 \fBMPI_Intercomm_merge\fP \- Creates an intracommunicator from an intercommunicator.
@@ -11,7 +13,7 @@
 .nf
 #include <mpi.h>
 int MPI_Intercomm_merge(MPI_Comm \fIintercomm\fP, int\fI high\fP, 
-     MPI_Comm\fI *newintracomm\fP
+     MPI_Comm\fI *newintracomm\fP)
 
 .fi
 .SH Fortran Syntax

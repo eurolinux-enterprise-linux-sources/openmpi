@@ -2,6 +2,7 @@
 /*
  * Copyright (c) 2012-2013 Los Alamos National Security, LLC. All rights
  *                         reserved.
+ * Copyright (c) 2014 Cisco Systems, Inc.  All rights reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -19,7 +20,6 @@
 #include "ompi/mpi/tool/profile/defines.h"
 #endif
 
-static const char FUNC_NAME[] = "MPI_T_cvar_get_info";
 
 int MPI_T_cvar_get_info(int cvar_index, char *name, int *name_len, int *verbosity,
 			MPI_Datatype *datatype, MPI_T_enum *enumtype, char *desc,
@@ -37,7 +37,7 @@ int MPI_T_cvar_get_info(int cvar_index, char *name, int *name_len, int *verbosit
     do {
         rc = mca_base_var_get (cvar_index, &var);
         if (OPAL_SUCCESS != rc) {
-            rc = (OPAL_ERR_VALUE_OUT_OF_BOUNDS == rc) ? MPI_T_ERR_INVALID_INDEX :
+            rc = (OPAL_ERR_VALUE_OUT_OF_BOUNDS == rc || OPAL_ERR_NOT_FOUND == rc) ? MPI_T_ERR_INVALID_INDEX :
                 MPI_ERR_OTHER;
             break;
         }
@@ -62,6 +62,10 @@ int MPI_T_cvar_get_info(int cvar_index, char *name, int *name_len, int *verbosit
         /* XXX -- TODO -- All bindings are currently 0. Add support for variable binding. */
         if (NULL != bind) {
             *bind = var->mbv_bind;
+        }
+
+        if (NULL != verbosity) {
+            *verbosity = var->mbv_info_lvl;
         }
     } while (0);
 

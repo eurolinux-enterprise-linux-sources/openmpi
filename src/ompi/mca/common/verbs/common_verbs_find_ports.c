@@ -160,22 +160,6 @@ static bool want_this_port(char **include_list, char **exclude_list,
 
 /***********************************************************************/
 
-static const char *transport_name_to_str(enum ibv_transport_type transport_type)
-{
-    switch(transport_type) {
-    case IBV_TRANSPORT_IB:        return "IB";
-    case IBV_TRANSPORT_IWARP:     return "IWARP";
-#if HAVE_DECL_IBV_TRANSPORT_USNIC
-    case IBV_TRANSPORT_USNIC:     return "usNIC";
-#endif
-#if HAVE_DECL_IBV_TRANSPORT_USNIC_UDP
-    case IBV_TRANSPORT_USNIC_UDP: return "usNIC UDP";
-#endif
-    case IBV_TRANSPORT_UNKNOWN: 
-    default:                      return "unknown";
-    }
-}
-
 #if HAVE_DECL_IBV_LINK_LAYER_ETHERNET
 static const char *link_layer_to_str(int link_type)
 {
@@ -247,7 +231,44 @@ typedef union {
 #define USNIC_PORT_QUERY_MAGIC (0x43494e7375534355ULL)
 
 /*
- * usNIC devices will always return one of three
+ * Probe for the magic number to see if the userspace side of verbs is
+ * new enough to include UDP transport support.
+ *
+ * If the userspace side is too old to include UDP support, then it
+ * will fail the magic probe.  If somehow we eneded up with a "new"
+ * userspace (e.g., that supports UDP) and an "old" kernel module
+ * (e.g., that does not support UDP), then the userspace will fail the
+ * ABI check with the kernel module and we won't get this far at all.
+ *
+ * NB: it will be complicated if we ever need to extend this scheme
+ * (e.g., if we support something other than UDP someday), because the
+ * real way to know what the actual transport is will be to call a
+ * usnic verbs extension, and that code is all currently over in the
+ * usnic BTL, which we can't call from here.
+ */
+static int usnic_magic_probe(struct ibv_context *context)
+{
+    int rc;
+    port_query_u u;
+
+    rc = ibv_query_port(context, 42, &u.attr);
+    /* See comment in btl_usnic_ext.c about why we have to check
+       for rc==0 *and* the magic number. */
+    if (0 == rc && USNIC_PORT_QUERY_MAGIC == u.qpt.magic) {
+        /* We only support version 1 of the lookup function in
+           this particular version of Open MPI */
+        if (1 == u.qpt.lookup_version) {
+            return USNIC_UDP;
+        } else {
+            return USNIC_UNKNOWN;
+        }
+    } else {
+        return USNIC_L2;
+    }
+}
+
+/*
+ * usNIC devices will always return one of these
  * device->transport_type values:
  *
  * 1. TRANSPORT_IWARP: for older kernels (e.g., on systems such as
@@ -257,47 +278,27 @@ typedef union {
  * transport is usNIC/L2 or usNIC/UDP -- you have to do an additional
  * probe to figure it out.
  *
- * 2. TRANSPORT_USNIC: should probably never be returned on a customer
- * system.  In this case, the transport is guaranteed to be usNIC/L2.
+ * 2. TRANSPORT_USNIC: for some systems that updated to include the
+ * RDMA_TRANSPORT_USNIC constant, but not the RDMA_TRANSPORT_USNIC_UDP
+ * constant, with the drivers downloaded from cisco.com (e.g., RHEL
+ * 7.0).  This is just like the TRANSPORT_IWARP case: we have to do an
+ * additional probe to figure out whether the transport is usNIC/L2 or
+ * usNIC/UDP.
  *
  * 3. TRANSPORT_USNIC_UDP: on systems with new kernels and new
  * libibverbs.  In this case, the transport is guaranteed to be
  * usNIC/UDP.
-*/
+ *
+ * 4. TRANSPORT_UNKNOWN: on systems with a new kernel but an old
+ * libibverbs (i.e., kernel understands/returns TRANSPORT_USNIC*
+ * values, but libibverbs doesn't understant the TRANSPORT_USNIC*
+ * constants, and therefore returns TRANSPORT_UNKNOWN).
+ */
 static int usnic_transport(struct ibv_device *device,
                            struct ibv_context *context)
 {
     if (!device_is_usnic(device)) {
         return USNIC_UNKNOWN;
-    }
-
-    /* If we got a transport type of IWARP, see if the magic query
-       exists.  If it does, the transport type is UDP.  If it does
-       not, the transport type is L2.
-
-       NB: it will be complicated if we ever need to extend this
-       scheme (e.g., if we support something other than UDP someday),
-       because the real way to know what the actual transport is will
-       be to call a usnic verbs extension, and that code is all
-       currently over in the usnic BTL, which we can't call from
-       here. */
-    if (IBV_TRANSPORT_IWARP == device->transport_type) {
-        int rc;
-        port_query_u u;
-        rc = ibv_query_port(context, 42, &u.attr);
-        /* See comment in btl_usnic_ext.c about why we have to check
-           for rc==0 *and* the magic number. */
-        if (0 == rc && USNIC_PORT_QUERY_MAGIC == u.qpt.magic) {
-            /* We only support version 1 of the lookup function in
-               this particular version of Open MPI */
-            if (1 == u.qpt.lookup_version) {
-                return USNIC_UDP;
-            } else {
-                return USNIC_UNKNOWN;
-            }
-        } else {
-            return USNIC_L2;
-        }
     }
 
 #if HAVE_DECL_IBV_TRANSPORT_USNIC_UDP
@@ -308,17 +309,9 @@ static int usnic_transport(struct ibv_device *device,
     }
 #endif
 
-#if HAVE_DECL_IBV_TRANSPORT_USNIC
-    /* If we got the transport type of USNIC, then it's definitely
-       the L2 transport. */
-    if (IBV_TRANSPORT_USNIC == device->transport_type) {
-        return USNIC_L2;
-    }
-#endif
-
-    /* Should never get here -- usnic devices should *always* return
-       one of the 3 above values */
-    return USNIC_UNKNOWN;
+    /* All other cases require a secondary check to figure out whether
+       the transport is L2 or UDP */
+    return usnic_magic_probe(context);
 }
 
 /***********************************************************************/

@@ -12,9 +12,6 @@
 #define OSHMEM_CONSTANTS_H
 
 #include "orte/constants.h"
-#if defined(OSHMEM_PROFILING) && (OSHMEM_PROFILING == 1)
-#include "oshmem/shmem/c/profile/defines.h"
-#endif
 #include "oshmem/include/shmem.h"
 
 
@@ -87,6 +84,8 @@ enum {
   SHMEM_LONG,
   SHMEM_ULONG,
   SHMEM_LLONG,
+  SHMEM_INT32_T,
+  SHMEM_INT64_T,
   SHMEM_ULLONG,
   SHMEM_FLOAT,
   SHMEM_DOUBLE,

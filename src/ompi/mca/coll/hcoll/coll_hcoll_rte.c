@@ -4,6 +4,8 @@
  * Copyright (c) 2013      The University of Tennessee and The University
  *                         of Tennessee Research Foundation.  All rights
  *                         reserved.
+ * Copyright (c) 2015      Research Organization for Information Science
+ *                         and Technology (RIST). All rights reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -36,9 +38,9 @@
 #include "ompi/mca/pml/pml.h"
 
 
-#include "hcoll_dte.h"
-#include "hcoll_api.h"
-#include "hcoll_constants.h"
+#include "hcoll/api/hcoll_dte.h"
+#include "hcoll/api/hcoll_api.h"
+#include "hcoll/api/hcoll_constants.h"
 /*
  * Local functions
  */
@@ -130,7 +132,7 @@ void hcoll_rte_fns_setup(void)
                 0, 0,
                 /* NOTE: hack - need to parametrize this */
                 10,
-                50,
+                -1,
                 10,
                 /* No Mpool */
                 NULL,
@@ -172,10 +174,8 @@ static int recv_nb(struct dte_data_representation_t data,
     }
     if (HCOL_DTE_IS_INLINE(data)){
         /*do inline nb recv*/
-        int rc;
         size_t size;
         ompi_request_t *ompi_req;
-        ompi_free_list_item_t *item;
 
         if (!buffer && !HCOL_DTE_IS_ZERO(data)) {
             fprintf(stderr, "***Error in hcolrte_rml_recv_nb: buffer pointer is NULL"
@@ -243,10 +243,8 @@ static int send_nb( dte_data_representation_t data,
     }
     if (HCOL_DTE_IS_INLINE(data)){
         /*do inline nb recv*/
-        int rc;
         size_t size;
         ompi_request_t *ompi_req;
-        ompi_free_list_item_t *item;
         if (!buffer && !HCOL_DTE_IS_ZERO(data)) {
             fprintf(stderr, "***Error in hcolrte_rml_send_nb: buffer pointer is NULL"
                     " for non DTE_ZERO INLINE data representation\n");

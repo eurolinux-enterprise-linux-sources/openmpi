@@ -3,6 +3,7 @@
 .\" Copyright 2010 Cisco Systems, Inc.  All rights reserved.
 .\" Copyright 2006-2008 Sun Microsystems, Inc.
 .\" Copyright (c) 1996 Thinking Machines Corporation
+.\" $COPYRIGHT$
 .TH MPI_Reduce_scatter_block 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
 .SH NAME
 \fBMPI_Reduce_scatter_block, MPI_Ireduce_scatter_block\fP \- Combines values and scatters the results in blocks.
@@ -68,7 +69,7 @@ Fortran only: Error status (integer).
 .ft R
 
 MPI_Reduce_scatter_block first does an element-wise reduction on vector of \fIcount\fP\
- =\ n * \fIrevcount\fP elements in the send buffer defined by \fIsendbuf\fP, \fIcount\fP, and
+ =\ n * \fIrecvcount\fP elements in the send buffer defined by \fIsendbuf\fP, \fIcount\fP, and
 \fIdatatype\fP, using the operation \fIop\fP, where n is the number of
 processes in the group of \fIcomm\fP. Next, the resulting vector of results is split into n disjoint
 segments, where n is the number of processes in the group. Each segments contains \fIrecvcount\fP

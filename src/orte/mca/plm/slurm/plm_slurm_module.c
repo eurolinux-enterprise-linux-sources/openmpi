@@ -9,7 +9,7 @@
  *                         University of Stuttgart.  All rights reserved.
  * Copyright (c) 2004-2005 The Regents of the University of California.
  *                         All rights reserved.
- * Copyright (c) 2006-2007 Cisco Systems, Inc.  All rights reserved.
+ * Copyright (c) 2006-2014 Cisco Systems, Inc.  All rights reserved.
  * Copyright (c) 2007-2012 Los Alamos National Security, LLC.  All rights
  *                         reserved. 
  * Copyright (c) 2014      Intel Corporation.  All rights reserved.
@@ -52,6 +52,7 @@
 #include <fcntl.h>
 #endif
 
+#include "opal/mca/base/base.h"
 #include "opal/mca/installdirs/installdirs.h"
 #include "opal/util/argv.h"
 #include "opal/util/output.h"
@@ -399,6 +400,9 @@ static void launch_daemons(int fd, short args, void *cbdata)
         }
     }
 
+    /* protect the args in case someone has a script wrapper around srun */
+    mca_base_cmd_line_wrap_args(argv);
+
     /* setup environment */
     env = opal_argv_copy(orte_launch_environ);
 
@@ -537,6 +541,7 @@ static void srun_wait_cb(pid_t pid, int status, void* cbdata){
         OPAL_OUTPUT_VERBOSE((1, orte_plm_base_framework.framework_output,
                              "%s plm:slurm: daemon failed during launch",
                              ORTE_NAME_PRINT(ORTE_PROC_MY_NAME)));
+        /* notify the error manager */
         ORTE_ACTIVATE_JOB_STATE(jdata, ORTE_JOB_STATE_FAILED_TO_START);
     } else {
         /* if this is after launch, then we need to abort only if the status
@@ -630,25 +635,22 @@ static int plm_slurm_start_proc(int argc, char **argv, char **env,
             free(newenv);
         }
 
-        fd = open("/dev/null", O_CREAT|O_WRONLY|O_TRUNC, 0666);
-        if(fd > 0) {
+        fd = open("/dev/null", O_CREAT|O_RDWR|O_TRUNC, 0666);
+        if (fd >= 0) {
             dup2(fd, 0);
-        }
+            /* When not in debug mode and --debug-daemons was not passed,
+             * tie stdout/stderr to dev null so we don't see messages from orted
+             * EXCEPT if the user has requested that we leave sessions attached
+             */
+            if (0 > opal_output_get_verbosity(orte_plm_base_framework.framework_output) &&
+                !orte_debug_daemons_flag && !orte_leave_session_attached) {
+                dup2(fd,1);
+                dup2(fd,2);
+            }
 
-        /* When not in debug mode and --debug-daemons was not passed,
-         * tie stdout/stderr to dev null so we don't see messages from orted
-         * EXCEPT if the user has requested that we leave sessions attached
-         */
-        if (0 >= opal_output_get_verbosity(orte_plm_base_framework.framework_output) &&
-            !orte_debug_daemons_flag && !orte_leave_session_attached) {
-            if (fd >= 0) {
-                if (fd != 1) {
-                    dup2(fd,1);
-                } else if (fd != 2) {
-                    dup2(fd,2);
-                } else {
-                    close(fd);
-                }
+            /* Don't leave the extra fd to /dev/null open */
+            if (fd > 2) {
+                close(fd);
             }
         }
 
@@ -665,8 +667,8 @@ static int plm_slurm_start_proc(int argc, char **argv, char **env,
         exit(1);
     } else {  /* parent */
         /* just in case, make sure that the srun process is not in our
-        process group any more.  Stevens says always do this on both
-        sides of the fork... */
+           process group any more.  Stevens says always do this on both
+           sides of the fork... */
         setpgid(srun_pid, srun_pid);
         
         /* if this is the primary launch - i.e., not a comm_spawn of a

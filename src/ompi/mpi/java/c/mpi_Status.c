@@ -1,4 +1,26 @@
 /*
+ * Copyright (c) 2004-2007 The Trustees of Indiana University and Indiana
+ *                         University Research and Technology
+ *                         Corporation.  All rights reserved.
+ * Copyright (c) 2004-2005 The University of Tennessee and The University
+ *                         of Tennessee Research Foundation.  All rights
+ *                         reserved.
+ * Copyright (c) 2004-2005 High Performance Computing Center Stuttgart, 
+ *                         University of Stuttgart.  All rights reserved.
+ * Copyright (c) 2004-2005 The Regents of the University of California.
+ *                         All rights reserved.
+ * $COPYRIGHT$
+ * 
+ * Additional copyrights may follow
+ * 
+ * $HEADER$
+ */
+/*
+ * This file is almost a complete re-write for Open MPI compared to the
+ * original mpiJava package. Its license and copyright are listed below.
+ * See <path to ompi/mpi/java/README> for more information.
+ */
+/*
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
     You may obtain a copy of the License at
@@ -44,6 +66,11 @@ static void getStatus(MPI_Status *status, jint source, jint tag,
     status->_ucount    = ucount;
 }
 
+JNIEXPORT void JNICALL Java_mpi_Status_init(JNIEnv *env, jclass clazz)
+{
+    ompi_java.StatusData = (*env)->GetFieldID(env, clazz, "data", "[J");
+}
+
 JNIEXPORT jint JNICALL Java_mpi_Status_getCount(
         JNIEnv *env, jobject jthis, jint source, jint tag,
         jint error, jint cancelled, jlong ucount, jlong jType)
@@ -82,11 +109,22 @@ JNIEXPORT jint JNICALL Java_mpi_Status_getElements(
     return count;
 }
 
-jlongArray ompi_java_status_new(JNIEnv *env, MPI_Status *status)
+jobject ompi_java_status_new(JNIEnv *env, MPI_Status *status)
 {
     jlongArray jData = (*env)->NewLongArray(env, 6);
     ompi_java_status_set(env, jData, status);
-    return jData;
+    jobject jStatus = (*env)->AllocObject(env, ompi_java.StatusClass);
+    (*env)->SetObjectField(env, jStatus, ompi_java.StatusData, jData);
+    return jStatus;
+}
+
+jobject ompi_java_status_newIndex(JNIEnv *env, MPI_Status *status, int index)
+{
+    jlongArray jData = (*env)->NewLongArray(env, 6);
+    ompi_java_status_setIndex(env, jData, status, index);
+    jobject jStatus = (*env)->AllocObject(env, ompi_java.StatusClass);
+    (*env)->SetObjectField(env, jStatus, ompi_java.StatusData, jData);
+    return jStatus;
 }
 
 void ompi_java_status_set(JNIEnv *env, jlongArray jData, MPI_Status *status)

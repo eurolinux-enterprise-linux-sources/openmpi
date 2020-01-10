@@ -15,8 +15,8 @@
 @SET_MAKE@
 
 #HOOKS1SOURCES = \
-#	$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_raw.h \
-#	$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_raw.cc
+#	hooks/vt_unify_hooks_raw.h \
+#	hooks/vt_unify_hooks_raw.cc
 #HOOKS1CXXFLAGS = -DVT_UNIFY_HOOKS_RAW
 #HOOKS1INCLUDE =
 #HOOKS1LIBRARY =
@@ -61,7 +61,8 @@ build_triplet = @build@
 host_triplet = @host@
 @AMBUILDBINARIES_TRUE@bin_PROGRAMS = vtunify-mpi$(EXEEXT)
 DIST_COMMON = $(srcdir)/../Makefile.common $(srcdir)/Makefile.am \
-	$(srcdir)/Makefile.in $(top_srcdir)/config/depcomp
+	$(srcdir)/Makefile.in $(top_srcdir)/config/depcomp \
+	$(top_srcdir)/tools/vtunify/Makefile.hooks
 subdir = tools/vtunify/mpi
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/config/m4/libtool.m4 \
@@ -164,64 +165,33 @@ am__DEPENDENCIES_3 = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 am__DEPENDENCIES_6 = $(top_builddir)/util/libvt_util.la \
 	$(am__DEPENDENCIES_3) $(am__DEPENDENCIES_4) \
 	$(am__DEPENDENCIES_5)
-am__libvt_mpi_unify_la_SOURCES_DIST = $(VTUNIFYSRCDIR)/vt_unify.h \
-	$(VTUNIFYSRCDIR)/vt_unify_config.h \
-	$(VTUNIFYSRCDIR)/vt_unify_defs.h \
-	$(VTUNIFYSRCDIR)/vt_unify_defs_recs.h \
-	$(VTUNIFYSRCDIR)/vt_unify_esync.h \
-	$(VTUNIFYSRCDIR)/vt_unify_events_stats.h \
-	$(VTUNIFYSRCDIR)/vt_unify_handlers.h \
-	$(VTUNIFYSRCDIR)/vt_unify_hooks.h \
-	$(VTUNIFYSRCDIR)/vt_unify_lvector.hh \
-	$(VTUNIFYSRCDIR)/vt_unify_markers.h \
-	$(VTUNIFYSRCDIR)/vt_unify_sync.h \
-	$(VTUNIFYSRCDIR)/vt_unify_tkfac.h \
-	$(VTUNIFYSRCDIR)/vt_unify_tkfac_scope.h \
-	$(VTUNIFYSRCDIR)/vt_unify_tkfac_scope.hh \
-	$(VTUNIFYSRCDIR)/vt_unify_usrcom.h \
-	$(VTUNIFYSRCDIR)/vt_unify.cc $(VTUNIFYSRCDIR)/vt_unify_defs.cc \
-	$(VTUNIFYSRCDIR)/vt_unify_defs_recs.cc \
-	$(VTUNIFYSRCDIR)/vt_unify_esync.cc \
-	$(VTUNIFYSRCDIR)/vt_unify_events_stats.cc \
-	$(VTUNIFYSRCDIR)/vt_unify_handlers.cc \
-	$(VTUNIFYSRCDIR)/vt_unify_hooks.cc \
-	$(VTUNIFYSRCDIR)/vt_unify_markers.cc \
-	$(VTUNIFYSRCDIR)/vt_unify_sync.cc \
-	$(VTUNIFYSRCDIR)/vt_unify_tkfac.cc \
-	$(VTUNIFYSRCDIR)/vt_unify_usrcom.cc \
-	$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_base.h \
-	$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_base.cc \
-	$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_aevents.h \
-	$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_aevents.cc \
-	$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_margins.h \
-	$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_margins.cc \
-	$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_msgmatch_snaps.h \
-	$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_msgmatch_snaps.cc \
-	$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_prof.h \
-	$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_prof.cc vt_unify_lib.h \
-	vt_unify_mpi.h
-@AMBUILDETIMESYNC_TRUE@am__objects_1 =  \
+am__objects_1 =
+am_libvt_mpi_unify_la_OBJECTS = $(am__objects_1)
+@AMBUILDETIMESYNC_TRUE@am__objects_2 =  \
 @AMBUILDETIMESYNC_TRUE@	libvt_mpi_unify_la-vt_unify_esync.lo
-am__objects_2 = libvt_mpi_unify_la-vt_unify_hooks_aevents.lo
-am__objects_3 = libvt_mpi_unify_la-vt_unify_hooks_margins.lo
-am__objects_4 = libvt_mpi_unify_la-vt_unify_hooks_msgmatch_snaps.lo
-am__objects_5 = libvt_mpi_unify_la-vt_unify_hooks_prof.lo
-am__objects_6 = libvt_mpi_unify_la-vt_unify_hooks_base.lo \
-	$(am__objects_2) $(am__objects_3) $(am__objects_4) \
-	$(am__objects_5)
-am__objects_7 = libvt_mpi_unify_la-vt_unify.lo \
+am__dirstamp = $(am__leading_dot)dirstamp
+am__objects_3 = hooks/libvt_mpi_unify_la-vt_unify_hooks_aevents.lo
+am__objects_4 = hooks/libvt_mpi_unify_la-vt_unify_hooks_margins.lo
+am__objects_5 =  \
+	hooks/libvt_mpi_unify_la-vt_unify_hooks_msgmatch_snaps.lo
+am__objects_6 = hooks/libvt_mpi_unify_la-vt_unify_hooks_prof.lo
+am__objects_7 = hooks/libvt_mpi_unify_la-vt_unify_hooks_base.lo \
+	$(am__objects_3) $(am__objects_4) $(am__objects_5) \
+	$(am__objects_6)
+am__objects_8 = libvt_mpi_unify_la-vt_unify.lo \
 	libvt_mpi_unify_la-vt_unify_defs.lo \
-	libvt_mpi_unify_la-vt_unify_defs_recs.lo $(am__objects_1) \
+	libvt_mpi_unify_la-vt_unify_defs_recs.lo $(am__objects_2) \
 	libvt_mpi_unify_la-vt_unify_events_stats.lo \
 	libvt_mpi_unify_la-vt_unify_handlers.lo \
 	libvt_mpi_unify_la-vt_unify_hooks.lo \
 	libvt_mpi_unify_la-vt_unify_markers.lo \
 	libvt_mpi_unify_la-vt_unify_sync.lo \
 	libvt_mpi_unify_la-vt_unify_tkfac.lo \
-	libvt_mpi_unify_la-vt_unify_usrcom.lo $(am__objects_6)
-am__objects_8 = $(am__objects_7)
-am_libvt_mpi_unify_la_OBJECTS = $(am__objects_8)
-libvt_mpi_unify_la_OBJECTS = $(am_libvt_mpi_unify_la_OBJECTS)
+	libvt_mpi_unify_la-vt_unify_usrcom.lo $(am__objects_7)
+am__objects_9 = $(am__objects_8)
+nodist_libvt_mpi_unify_la_OBJECTS = $(am__objects_9)
+libvt_mpi_unify_la_OBJECTS = $(am_libvt_mpi_unify_la_OBJECTS) \
+	$(nodist_libvt_mpi_unify_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
@@ -233,63 +203,30 @@ libvt_mpi_unify_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX \
 @AMBUILDMPIUNIFYLIB_TRUE@am_libvt_mpi_unify_la_rpath = -rpath \
 @AMBUILDMPIUNIFYLIB_TRUE@	$(libdir)
 PROGRAMS = $(bin_PROGRAMS)
-am__vtunify_mpi_SOURCES_DIST = $(VTUNIFYSRCDIR)/vt_unify.h \
-	$(VTUNIFYSRCDIR)/vt_unify_config.h \
-	$(VTUNIFYSRCDIR)/vt_unify_defs.h \
-	$(VTUNIFYSRCDIR)/vt_unify_defs_recs.h \
-	$(VTUNIFYSRCDIR)/vt_unify_esync.h \
-	$(VTUNIFYSRCDIR)/vt_unify_events_stats.h \
-	$(VTUNIFYSRCDIR)/vt_unify_handlers.h \
-	$(VTUNIFYSRCDIR)/vt_unify_hooks.h \
-	$(VTUNIFYSRCDIR)/vt_unify_lvector.hh \
-	$(VTUNIFYSRCDIR)/vt_unify_markers.h \
-	$(VTUNIFYSRCDIR)/vt_unify_sync.h \
-	$(VTUNIFYSRCDIR)/vt_unify_tkfac.h \
-	$(VTUNIFYSRCDIR)/vt_unify_tkfac_scope.h \
-	$(VTUNIFYSRCDIR)/vt_unify_tkfac_scope.hh \
-	$(VTUNIFYSRCDIR)/vt_unify_usrcom.h \
-	$(VTUNIFYSRCDIR)/vt_unify.cc $(VTUNIFYSRCDIR)/vt_unify_defs.cc \
-	$(VTUNIFYSRCDIR)/vt_unify_defs_recs.cc \
-	$(VTUNIFYSRCDIR)/vt_unify_esync.cc \
-	$(VTUNIFYSRCDIR)/vt_unify_events_stats.cc \
-	$(VTUNIFYSRCDIR)/vt_unify_handlers.cc \
-	$(VTUNIFYSRCDIR)/vt_unify_hooks.cc \
-	$(VTUNIFYSRCDIR)/vt_unify_markers.cc \
-	$(VTUNIFYSRCDIR)/vt_unify_sync.cc \
-	$(VTUNIFYSRCDIR)/vt_unify_tkfac.cc \
-	$(VTUNIFYSRCDIR)/vt_unify_usrcom.cc \
-	$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_base.h \
-	$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_base.cc \
-	$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_aevents.h \
-	$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_aevents.cc \
-	$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_margins.h \
-	$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_margins.cc \
-	$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_msgmatch_snaps.h \
-	$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_msgmatch_snaps.cc \
-	$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_prof.h \
-	$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_prof.cc vt_unify_lib.h \
-	vt_unify_mpi.h
-@AMBUILDETIMESYNC_TRUE@am__objects_9 =  \
+am_vtunify_mpi_OBJECTS =
+@AMBUILDETIMESYNC_TRUE@am__objects_10 =  \
 @AMBUILDETIMESYNC_TRUE@	vtunify_mpi-vt_unify_esync.$(OBJEXT)
-am__objects_10 = vtunify_mpi-vt_unify_hooks_aevents.$(OBJEXT)
-am__objects_11 = vtunify_mpi-vt_unify_hooks_margins.$(OBJEXT)
-am__objects_12 = vtunify_mpi-vt_unify_hooks_msgmatch_snaps.$(OBJEXT)
-am__objects_13 = vtunify_mpi-vt_unify_hooks_prof.$(OBJEXT)
-am__objects_14 = vtunify_mpi-vt_unify_hooks_base.$(OBJEXT) \
-	$(am__objects_10) $(am__objects_11) $(am__objects_12) \
-	$(am__objects_13)
-am__objects_15 = vtunify_mpi-vt_unify.$(OBJEXT) \
+am__objects_11 = hooks/vtunify_mpi-vt_unify_hooks_aevents.$(OBJEXT)
+am__objects_12 = hooks/vtunify_mpi-vt_unify_hooks_margins.$(OBJEXT)
+am__objects_13 =  \
+	hooks/vtunify_mpi-vt_unify_hooks_msgmatch_snaps.$(OBJEXT)
+am__objects_14 = hooks/vtunify_mpi-vt_unify_hooks_prof.$(OBJEXT)
+am__objects_15 = hooks/vtunify_mpi-vt_unify_hooks_base.$(OBJEXT) \
+	$(am__objects_11) $(am__objects_12) $(am__objects_13) \
+	$(am__objects_14)
+am__objects_16 = vtunify_mpi-vt_unify.$(OBJEXT) \
 	vtunify_mpi-vt_unify_defs.$(OBJEXT) \
-	vtunify_mpi-vt_unify_defs_recs.$(OBJEXT) $(am__objects_9) \
+	vtunify_mpi-vt_unify_defs_recs.$(OBJEXT) $(am__objects_10) \
 	vtunify_mpi-vt_unify_events_stats.$(OBJEXT) \
 	vtunify_mpi-vt_unify_handlers.$(OBJEXT) \
 	vtunify_mpi-vt_unify_hooks.$(OBJEXT) \
 	vtunify_mpi-vt_unify_markers.$(OBJEXT) \
 	vtunify_mpi-vt_unify_sync.$(OBJEXT) \
 	vtunify_mpi-vt_unify_tkfac.$(OBJEXT) \
-	vtunify_mpi-vt_unify_usrcom.$(OBJEXT) $(am__objects_14)
-am_vtunify_mpi_OBJECTS = $(am__objects_15)
-vtunify_mpi_OBJECTS = $(am_vtunify_mpi_OBJECTS)
+	vtunify_mpi-vt_unify_usrcom.$(OBJEXT) $(am__objects_15)
+nodist_vtunify_mpi_OBJECTS = $(am__objects_16)
+vtunify_mpi_OBJECTS = $(am_vtunify_mpi_OBJECTS) \
+	$(nodist_vtunify_mpi_OBJECTS)
 vtunify_mpi_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(vtunify_mpi_CXXFLAGS) \
 	$(CXXFLAGS) $(vtunify_mpi_LDFLAGS) $(LDFLAGS) -o $@
@@ -345,9 +282,10 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(libvt_mpi_unify_la_SOURCES) $(vtunify_mpi_SOURCES)
-DIST_SOURCES = $(am__libvt_mpi_unify_la_SOURCES_DIST) \
-	$(am__vtunify_mpi_SOURCES_DIST)
+SOURCES = $(libvt_mpi_unify_la_SOURCES) \
+	$(nodist_libvt_mpi_unify_la_SOURCES) $(vtunify_mpi_SOURCES) \
+	$(nodist_vtunify_mpi_SOURCES)
+DIST_SOURCES = $(libvt_mpi_unify_la_SOURCES) $(vtunify_mpi_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -689,27 +627,27 @@ top_srcdir = @top_srcdir@
 top_vt_builddir = @top_vt_builddir@
 top_vt_srcdir = @top_vt_srcdir@
 unimci_config_cmd = @unimci_config_cmd@
+AUTOMAKE_OPTIONS = subdir-objects
 @AMBUILDMPIUNIFYLIB_TRUE@lib_LTLIBRARIES = libvt-mpi-unify.la
-VTUNIFYSRCDIR = $(srcdir)/..
 HOOKS2SOURCES = \
-	$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_aevents.h \
-	$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_aevents.cc
+	hooks/vt_unify_hooks_aevents.h \
+	hooks/vt_unify_hooks_aevents.cc
 
 HOOKS2CXXFLAGS = -DVT_UNIFY_HOOKS_AEVENTS
 HOOKS2INCLUDE = 
 HOOKS2LIBRARY = 
 HOOKS2DEPENDENCIES = 
 HOOKS3SOURCES = \
-        $(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_margins.h \
-        $(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_margins.cc
+	hooks/vt_unify_hooks_margins.h \
+	hooks/vt_unify_hooks_margins.cc
 
 HOOKS3CXXFLAGS = -DVT_UNIFY_HOOKS_MARGINS
 HOOKS3INCLUDE = 
 HOOKS3LIBRARY = 
 HOOKS3DEPENDENCIES = 
 HOOKS4SOURCES = \
-	$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_msgmatch_snaps.h \
-	$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_msgmatch_snaps.cc
+	hooks/vt_unify_hooks_msgmatch_snaps.h \
+	hooks/vt_unify_hooks_msgmatch_snaps.cc
 
 HOOKS4CXXFLAGS = -DVT_UNIFY_HOOKS_MSGMATCH_SNAPS
 @AMEXTERNOTF_FALSE@HOOKS4INCLUDE = -I$(top_srcdir)/extlib/otf/otfauxlib
@@ -719,8 +657,8 @@ HOOKS4CXXFLAGS = -DVT_UNIFY_HOOKS_MSGMATCH_SNAPS
 @AMEXTERNOTF_FALSE@HOOKS4DEPENDENCIES = $(HOOKS2LIBRARY)
 @AMEXTERNOTF_TRUE@HOOKS4DEPENDENCIES = 
 HOOKS5SOURCES = \
-	$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_prof.h \
-	$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_prof.cc
+	hooks/vt_unify_hooks_prof.h \
+	hooks/vt_unify_hooks_prof.cc
 
 HOOKS5CXXFLAGS = -DVT_UNIFY_HOOKS_PROF
 HOOKS5INCLUDE = 
@@ -728,8 +666,8 @@ HOOKS5LIBRARY =
 HOOKS5DEPENDENCIES = 
 
 #HOOKS6SOURCES = \
-#       $(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_tdb.h \
-#       $(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_tdb.cc
+#	hooks/vt_unify_hooks_tdb.h \
+#	hooks/vt_unify_hooks_tdb.cc
 #HOOKS6CXXFLAGS = -DVT_UNIFY_HOOKS_TDB
 #HOOKS6INCLUDE =
 #HOOKS6LIBRARY =
@@ -741,8 +679,8 @@ HOOKS5DEPENDENCIES =
 #HOOKS7LIBRARY =
 #HOOKS7DEPENDENCIES =
 HOOKSSOURCES = \
-	$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_base.h \
-	$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_base.cc \
+	hooks/vt_unify_hooks_base.h \
+	hooks/vt_unify_hooks_base.cc \
 	$(HOOKS1SOURCES) $(HOOKS2SOURCES) $(HOOKS3SOURCES) $(HOOKS4SOURCES) $(HOOKS5SOURCES) $(HOOKS6SOURCES)
 
 HOOKSCXXFLAGS = $(HOOKS1CXXFLAGS) $(HOOKS2CXXFLAGS) $(HOOKS3CXXFLAGS) $(HOOKS4CXXFLAGS) $(HOOKS5CXXFLAGS) $(HOOKS6CXXFLAGS)
@@ -750,7 +688,7 @@ HOOKSINCLUDE = $(HOOKS1INCLUDE) $(HOOKS2INCLUDE) $(HOOKS3INCLUDE) $(HOOKS4INCLUD
 HOOKSLIBRARY = $(HOOKS1LIBRARY) $(HOOKS2LIBRARY) $(HOOKS3LIBRARY) $(HOOKS4LIBRARY) $(HOOKS5LIBRARY) $(HOOKS6LIBRARY) $(HOOKS7LIBRARY)
 HOOKSDEPENDENCIES = $(HOOKS1DEPENDENCIES) $(HOOKS2DEPENDENCIES) $(HOOKS3DEPENDENCIES) $(HOOKS4DEPENDENCIES) $(HOOKS5DEPENDENCIES) $(HOOKS6DEPENDENCIES) $(HOOKS7DEPENDENCIES)
 @AMBUILDETIMESYNC_FALSE@ETIMESYNCSOURCES = 
-@AMBUILDETIMESYNC_TRUE@ETIMESYNCSOURCES = $(VTUNIFYSRCDIR)/vt_unify_esync.cc
+@AMBUILDETIMESYNC_TRUE@ETIMESYNCSOURCES = vt_unify_esync.cc
 @AMBUILDETIMESYNC_FALSE@ETIMESYNCCXXFLAGS = 
 @AMBUILDETIMESYNC_TRUE@ETIMESYNCCXXFLAGS = -DVT_ETIMESYNC
 @AMBUILDETIMESYNC_FALSE@ETIMESYNCINCLUDE = 
@@ -763,34 +701,34 @@ HOOKSDEPENDENCIES = $(HOOKS1DEPENDENCIES) $(HOOKS2DEPENDENCIES) $(HOOKS3DEPENDEN
 @AMEXTERNOTF_TRUE@OTFLIBRARY = $(OTFLIBDIR) $(OTFLIB)
 @AMEXTERNOTF_FALSE@OTFDEPENDENCIES = $(OTFLIBRARY)
 @AMEXTERNOTF_TRUE@OTFDEPENDENCIES = 
-AM_CPPFLAGS = -I$(VTUNIFYSRCDIR) $(OTFINCLUDE) $(HOOKSINCLUDE) $(ETIMESYNCINCLUDE) -I$(top_srcdir)/include -I$(top_builddir)/include -I$(top_srcdir)/vtlib
+AM_CPPFLAGS = $(OTFINCLUDE) $(HOOKSINCLUDE) $(ETIMESYNCINCLUDE) -I$(top_srcdir)/tools/vtunify -I$(top_srcdir)/tools/vtunify/hooks -I$(top_srcdir)/include -I$(top_builddir)/include -I$(top_srcdir)/vtlib
 COMMONSOURCES = \
-	$(VTUNIFYSRCDIR)/vt_unify.h \
-	$(VTUNIFYSRCDIR)/vt_unify_config.h \
-	$(VTUNIFYSRCDIR)/vt_unify_defs.h \
-	$(VTUNIFYSRCDIR)/vt_unify_defs_recs.h \
-	$(VTUNIFYSRCDIR)/vt_unify_esync.h \
-	$(VTUNIFYSRCDIR)/vt_unify_events_stats.h \
-	$(VTUNIFYSRCDIR)/vt_unify_handlers.h \
-	$(VTUNIFYSRCDIR)/vt_unify_hooks.h \
-	$(VTUNIFYSRCDIR)/vt_unify_lvector.hh \
-	$(VTUNIFYSRCDIR)/vt_unify_markers.h \
-	$(VTUNIFYSRCDIR)/vt_unify_sync.h \
-	$(VTUNIFYSRCDIR)/vt_unify_tkfac.h \
-	$(VTUNIFYSRCDIR)/vt_unify_tkfac_scope.h \
-	$(VTUNIFYSRCDIR)/vt_unify_tkfac_scope.hh \
-	$(VTUNIFYSRCDIR)/vt_unify_usrcom.h \
-	$(VTUNIFYSRCDIR)/vt_unify.cc \
-	$(VTUNIFYSRCDIR)/vt_unify_defs.cc \
-	$(VTUNIFYSRCDIR)/vt_unify_defs_recs.cc \
+	vt_unify.h \
+	vt_unify_config.h \
+	vt_unify_defs.h \
+	vt_unify_defs_recs.h \
+	vt_unify_esync.h \
+	vt_unify_events_stats.h \
+	vt_unify_handlers.h \
+	vt_unify_hooks.h \
+	vt_unify_lvector.hh \
+	vt_unify_markers.h \
+	vt_unify_sync.h \
+	vt_unify_tkfac.h \
+	vt_unify_tkfac_scope.h \
+	vt_unify_tkfac_scope.hh \
+	vt_unify_usrcom.h \
+	vt_unify.cc \
+	vt_unify_defs.cc \
+	vt_unify_defs_recs.cc \
 	$(ETIMESYNCSOURCES) \
-	$(VTUNIFYSRCDIR)/vt_unify_events_stats.cc \
-	$(VTUNIFYSRCDIR)/vt_unify_handlers.cc \
-	$(VTUNIFYSRCDIR)/vt_unify_hooks.cc \
-	$(VTUNIFYSRCDIR)/vt_unify_markers.cc \
-	$(VTUNIFYSRCDIR)/vt_unify_sync.cc \
-	$(VTUNIFYSRCDIR)/vt_unify_tkfac.cc \
-	$(VTUNIFYSRCDIR)/vt_unify_usrcom.cc \
+	vt_unify_events_stats.cc \
+	vt_unify_handlers.cc \
+	vt_unify_hooks.cc \
+	vt_unify_markers.cc \
+	vt_unify_sync.cc \
+	vt_unify_tkfac.cc \
+	vt_unify_usrcom.cc \
 	$(HOOKSSOURCES)
 
 @AMHAVEOMP_FALSE@COMMONCXXFLAGS = $(HOOKSCXXFLAGS) $(ETIMESYNCCXXFLAGS)
@@ -809,9 +747,11 @@ vtunify_mpi_CFLAGS = -DVT_MPI $(MPICFLAGS) $(MPIINCDIR)
 vtunify_mpi_CXXFLAGS = $(COMMONCXXFLAGS) -DVT_MPI $(MPICXXFLAGS) $(MPIINCDIR)
 vtunify_mpi_LDFLAGS = $(COMMONLDFLAGS) $(MPICXXFLAGS)
 vtunify_mpi_SOURCES = \
-	$(COMMONSOURCES) \
 	vt_unify_lib.h \
 	vt_unify_mpi.h
+
+nodist_vtunify_mpi_SOURCES = \
+	$(COMMONSOURCES)
 
 vtunify_mpi_LDADD = \
 	$(COMMONLDADD) \
@@ -824,13 +764,15 @@ libvt_mpi_unify_la_CFLAGS = -DVT_LIB $(vtunify_mpi_CFLAGS)
 libvt_mpi_unify_la_CXXFLAGS = -DVT_LIB -DVT_MPI $(HOOKSCXXFLAGS) $(ETIMESYNCCXXFLAGS) $(MPICXXFLAGS) $(MPIINCDIR)
 libvt_mpi_unify_la_LDFLAGS = $(MPICXXFLAGS)
 libvt_mpi_unify_la_SOURCES = $(vtunify_mpi_SOURCES)
+nodist_libvt_mpi_unify_la_SOURCES = $(nodist_vtunify_mpi_SOURCES)
 libvt_mpi_unify_la_LIBADD = $(COMMONLDADD) $(MPILIBDIR) $(PMPILIB)
 libvt_mpi_unify_la_DEPENDENCIES = $(vtunify_mpi_DEPENDENCIES)
+CLEANFILES = $(COMMONSOURCES)
 all: all-am
 
 .SUFFIXES:
 .SUFFIXES: .cc .lo .o .obj
-$(srcdir)/Makefile.in:  $(srcdir)/Makefile.am $(srcdir)/../Makefile.common $(am__configure_deps)
+$(srcdir)/Makefile.in:  $(srcdir)/Makefile.am $(srcdir)/../Makefile.common $(top_srcdir)/tools/vtunify/Makefile.hooks $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
 	    *$$dep*) \
@@ -851,7 +793,7 @@ Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	    echo ' cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__depfiles_maybe)'; \
 	    cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__depfiles_maybe);; \
 	esac;
-$(srcdir)/../Makefile.common:
+$(srcdir)/../Makefile.common $(top_srcdir)/tools/vtunify/Makefile.hooks:
 
 $(top_builddir)/config.status: $(top_srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
@@ -895,6 +837,22 @@ clean-libLTLIBRARIES:
 	  echo rm -f $${locs}; \
 	  rm -f $${locs}; \
 	}
+hooks/$(am__dirstamp):
+	@$(MKDIR_P) hooks
+	@: > hooks/$(am__dirstamp)
+hooks/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) hooks/$(DEPDIR)
+	@: > hooks/$(DEPDIR)/$(am__dirstamp)
+hooks/libvt_mpi_unify_la-vt_unify_hooks_base.lo:  \
+	hooks/$(am__dirstamp) hooks/$(DEPDIR)/$(am__dirstamp)
+hooks/libvt_mpi_unify_la-vt_unify_hooks_aevents.lo:  \
+	hooks/$(am__dirstamp) hooks/$(DEPDIR)/$(am__dirstamp)
+hooks/libvt_mpi_unify_la-vt_unify_hooks_margins.lo:  \
+	hooks/$(am__dirstamp) hooks/$(DEPDIR)/$(am__dirstamp)
+hooks/libvt_mpi_unify_la-vt_unify_hooks_msgmatch_snaps.lo:  \
+	hooks/$(am__dirstamp) hooks/$(DEPDIR)/$(am__dirstamp)
+hooks/libvt_mpi_unify_la-vt_unify_hooks_prof.lo:  \
+	hooks/$(am__dirstamp) hooks/$(DEPDIR)/$(am__dirstamp)
 libvt-mpi-unify.la: $(libvt_mpi_unify_la_OBJECTS) $(libvt_mpi_unify_la_DEPENDENCIES) $(EXTRA_libvt_mpi_unify_la_DEPENDENCIES) 
 	$(AM_V_CXXLD)$(libvt_mpi_unify_la_LINK) $(am_libvt_mpi_unify_la_rpath) $(libvt_mpi_unify_la_OBJECTS) $(libvt_mpi_unify_la_LIBADD) $(LIBS)
 install-binPROGRAMS: $(bin_PROGRAMS)
@@ -943,12 +901,24 @@ clean-binPROGRAMS:
 	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
 	echo " rm -f" $$list; \
 	rm -f $$list
+hooks/vtunify_mpi-vt_unify_hooks_base.$(OBJEXT):  \
+	hooks/$(am__dirstamp) hooks/$(DEPDIR)/$(am__dirstamp)
+hooks/vtunify_mpi-vt_unify_hooks_aevents.$(OBJEXT):  \
+	hooks/$(am__dirstamp) hooks/$(DEPDIR)/$(am__dirstamp)
+hooks/vtunify_mpi-vt_unify_hooks_margins.$(OBJEXT):  \
+	hooks/$(am__dirstamp) hooks/$(DEPDIR)/$(am__dirstamp)
+hooks/vtunify_mpi-vt_unify_hooks_msgmatch_snaps.$(OBJEXT):  \
+	hooks/$(am__dirstamp) hooks/$(DEPDIR)/$(am__dirstamp)
+hooks/vtunify_mpi-vt_unify_hooks_prof.$(OBJEXT):  \
+	hooks/$(am__dirstamp) hooks/$(DEPDIR)/$(am__dirstamp)
 vtunify-mpi$(EXEEXT): $(vtunify_mpi_OBJECTS) $(vtunify_mpi_DEPENDENCIES) $(EXTRA_vtunify_mpi_DEPENDENCIES) 
 	@rm -f vtunify-mpi$(EXEEXT)
 	$(AM_V_CXXLD)$(vtunify_mpi_LINK) $(vtunify_mpi_OBJECTS) $(vtunify_mpi_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
+	-rm -f hooks/*.$(OBJEXT)
+	-rm -f hooks/*.lo
 
 distclean-compile:
 	-rm -f *.tab.c
@@ -960,11 +930,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libvt_mpi_unify_la-vt_unify_events_stats.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libvt_mpi_unify_la-vt_unify_handlers.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libvt_mpi_unify_la-vt_unify_hooks.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libvt_mpi_unify_la-vt_unify_hooks_aevents.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libvt_mpi_unify_la-vt_unify_hooks_base.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libvt_mpi_unify_la-vt_unify_hooks_margins.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libvt_mpi_unify_la-vt_unify_hooks_msgmatch_snaps.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libvt_mpi_unify_la-vt_unify_hooks_prof.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libvt_mpi_unify_la-vt_unify_markers.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libvt_mpi_unify_la-vt_unify_sync.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libvt_mpi_unify_la-vt_unify_tkfac.Plo@am__quote@
@@ -976,378 +941,387 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vtunify_mpi-vt_unify_events_stats.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vtunify_mpi-vt_unify_handlers.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vtunify_mpi-vt_unify_hooks.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vtunify_mpi-vt_unify_hooks_aevents.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vtunify_mpi-vt_unify_hooks_base.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vtunify_mpi-vt_unify_hooks_margins.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vtunify_mpi-vt_unify_hooks_msgmatch_snaps.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vtunify_mpi-vt_unify_hooks_prof.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vtunify_mpi-vt_unify_markers.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vtunify_mpi-vt_unify_sync.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vtunify_mpi-vt_unify_tkfac.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vtunify_mpi-vt_unify_usrcom.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@hooks/$(DEPDIR)/libvt_mpi_unify_la-vt_unify_hooks_aevents.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@hooks/$(DEPDIR)/libvt_mpi_unify_la-vt_unify_hooks_base.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@hooks/$(DEPDIR)/libvt_mpi_unify_la-vt_unify_hooks_margins.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@hooks/$(DEPDIR)/libvt_mpi_unify_la-vt_unify_hooks_msgmatch_snaps.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@hooks/$(DEPDIR)/libvt_mpi_unify_la-vt_unify_hooks_prof.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@hooks/$(DEPDIR)/vtunify_mpi-vt_unify_hooks_aevents.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@hooks/$(DEPDIR)/vtunify_mpi-vt_unify_hooks_base.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@hooks/$(DEPDIR)/vtunify_mpi-vt_unify_hooks_margins.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@hooks/$(DEPDIR)/vtunify_mpi-vt_unify_hooks_msgmatch_snaps.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@hooks/$(DEPDIR)/vtunify_mpi-vt_unify_hooks_prof.Po@am__quote@
 
 .cc.o:
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
+@am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
+@am__fastdepCXX_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXXCOMPILE) -c -o $@ $<
 
 .cc.obj:
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ `$(CYGPATH_W) '$<'`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.obj$$||'`;\
+@am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ `$(CYGPATH_W) '$<'` &&\
+@am__fastdepCXX_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
 
 .cc.lo:
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LTCXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Plo
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.lo$$||'`;\
+@am__fastdepCXX_TRUE@	$(LTCXXCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
+@am__fastdepCXX_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Plo
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LTCXXCOMPILE) -c -o $@ $<
 
-libvt_mpi_unify_la-vt_unify.lo: $(VTUNIFYSRCDIR)/vt_unify.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -MT libvt_mpi_unify_la-vt_unify.lo -MD -MP -MF $(DEPDIR)/libvt_mpi_unify_la-vt_unify.Tpo -c -o libvt_mpi_unify_la-vt_unify.lo `test -f '$(VTUNIFYSRCDIR)/vt_unify.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/vt_unify.cc
+libvt_mpi_unify_la-vt_unify.lo: vt_unify.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -MT libvt_mpi_unify_la-vt_unify.lo -MD -MP -MF $(DEPDIR)/libvt_mpi_unify_la-vt_unify.Tpo -c -o libvt_mpi_unify_la-vt_unify.lo `test -f 'vt_unify.cc' || echo '$(srcdir)/'`vt_unify.cc
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libvt_mpi_unify_la-vt_unify.Tpo $(DEPDIR)/libvt_mpi_unify_la-vt_unify.Plo
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTUNIFYSRCDIR)/vt_unify.cc' object='libvt_mpi_unify_la-vt_unify.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='vt_unify.cc' object='libvt_mpi_unify_la-vt_unify.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -c -o libvt_mpi_unify_la-vt_unify.lo `test -f '$(VTUNIFYSRCDIR)/vt_unify.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/vt_unify.cc
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -c -o libvt_mpi_unify_la-vt_unify.lo `test -f 'vt_unify.cc' || echo '$(srcdir)/'`vt_unify.cc
 
-libvt_mpi_unify_la-vt_unify_defs.lo: $(VTUNIFYSRCDIR)/vt_unify_defs.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -MT libvt_mpi_unify_la-vt_unify_defs.lo -MD -MP -MF $(DEPDIR)/libvt_mpi_unify_la-vt_unify_defs.Tpo -c -o libvt_mpi_unify_la-vt_unify_defs.lo `test -f '$(VTUNIFYSRCDIR)/vt_unify_defs.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/vt_unify_defs.cc
+libvt_mpi_unify_la-vt_unify_defs.lo: vt_unify_defs.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -MT libvt_mpi_unify_la-vt_unify_defs.lo -MD -MP -MF $(DEPDIR)/libvt_mpi_unify_la-vt_unify_defs.Tpo -c -o libvt_mpi_unify_la-vt_unify_defs.lo `test -f 'vt_unify_defs.cc' || echo '$(srcdir)/'`vt_unify_defs.cc
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libvt_mpi_unify_la-vt_unify_defs.Tpo $(DEPDIR)/libvt_mpi_unify_la-vt_unify_defs.Plo
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTUNIFYSRCDIR)/vt_unify_defs.cc' object='libvt_mpi_unify_la-vt_unify_defs.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='vt_unify_defs.cc' object='libvt_mpi_unify_la-vt_unify_defs.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -c -o libvt_mpi_unify_la-vt_unify_defs.lo `test -f '$(VTUNIFYSRCDIR)/vt_unify_defs.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/vt_unify_defs.cc
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -c -o libvt_mpi_unify_la-vt_unify_defs.lo `test -f 'vt_unify_defs.cc' || echo '$(srcdir)/'`vt_unify_defs.cc
 
-libvt_mpi_unify_la-vt_unify_defs_recs.lo: $(VTUNIFYSRCDIR)/vt_unify_defs_recs.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -MT libvt_mpi_unify_la-vt_unify_defs_recs.lo -MD -MP -MF $(DEPDIR)/libvt_mpi_unify_la-vt_unify_defs_recs.Tpo -c -o libvt_mpi_unify_la-vt_unify_defs_recs.lo `test -f '$(VTUNIFYSRCDIR)/vt_unify_defs_recs.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/vt_unify_defs_recs.cc
+libvt_mpi_unify_la-vt_unify_defs_recs.lo: vt_unify_defs_recs.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -MT libvt_mpi_unify_la-vt_unify_defs_recs.lo -MD -MP -MF $(DEPDIR)/libvt_mpi_unify_la-vt_unify_defs_recs.Tpo -c -o libvt_mpi_unify_la-vt_unify_defs_recs.lo `test -f 'vt_unify_defs_recs.cc' || echo '$(srcdir)/'`vt_unify_defs_recs.cc
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libvt_mpi_unify_la-vt_unify_defs_recs.Tpo $(DEPDIR)/libvt_mpi_unify_la-vt_unify_defs_recs.Plo
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTUNIFYSRCDIR)/vt_unify_defs_recs.cc' object='libvt_mpi_unify_la-vt_unify_defs_recs.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='vt_unify_defs_recs.cc' object='libvt_mpi_unify_la-vt_unify_defs_recs.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -c -o libvt_mpi_unify_la-vt_unify_defs_recs.lo `test -f '$(VTUNIFYSRCDIR)/vt_unify_defs_recs.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/vt_unify_defs_recs.cc
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -c -o libvt_mpi_unify_la-vt_unify_defs_recs.lo `test -f 'vt_unify_defs_recs.cc' || echo '$(srcdir)/'`vt_unify_defs_recs.cc
 
-libvt_mpi_unify_la-vt_unify_esync.lo: $(VTUNIFYSRCDIR)/vt_unify_esync.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -MT libvt_mpi_unify_la-vt_unify_esync.lo -MD -MP -MF $(DEPDIR)/libvt_mpi_unify_la-vt_unify_esync.Tpo -c -o libvt_mpi_unify_la-vt_unify_esync.lo `test -f '$(VTUNIFYSRCDIR)/vt_unify_esync.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/vt_unify_esync.cc
+libvt_mpi_unify_la-vt_unify_esync.lo: vt_unify_esync.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -MT libvt_mpi_unify_la-vt_unify_esync.lo -MD -MP -MF $(DEPDIR)/libvt_mpi_unify_la-vt_unify_esync.Tpo -c -o libvt_mpi_unify_la-vt_unify_esync.lo `test -f 'vt_unify_esync.cc' || echo '$(srcdir)/'`vt_unify_esync.cc
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libvt_mpi_unify_la-vt_unify_esync.Tpo $(DEPDIR)/libvt_mpi_unify_la-vt_unify_esync.Plo
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTUNIFYSRCDIR)/vt_unify_esync.cc' object='libvt_mpi_unify_la-vt_unify_esync.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='vt_unify_esync.cc' object='libvt_mpi_unify_la-vt_unify_esync.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -c -o libvt_mpi_unify_la-vt_unify_esync.lo `test -f '$(VTUNIFYSRCDIR)/vt_unify_esync.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/vt_unify_esync.cc
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -c -o libvt_mpi_unify_la-vt_unify_esync.lo `test -f 'vt_unify_esync.cc' || echo '$(srcdir)/'`vt_unify_esync.cc
 
-libvt_mpi_unify_la-vt_unify_events_stats.lo: $(VTUNIFYSRCDIR)/vt_unify_events_stats.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -MT libvt_mpi_unify_la-vt_unify_events_stats.lo -MD -MP -MF $(DEPDIR)/libvt_mpi_unify_la-vt_unify_events_stats.Tpo -c -o libvt_mpi_unify_la-vt_unify_events_stats.lo `test -f '$(VTUNIFYSRCDIR)/vt_unify_events_stats.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/vt_unify_events_stats.cc
+libvt_mpi_unify_la-vt_unify_events_stats.lo: vt_unify_events_stats.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -MT libvt_mpi_unify_la-vt_unify_events_stats.lo -MD -MP -MF $(DEPDIR)/libvt_mpi_unify_la-vt_unify_events_stats.Tpo -c -o libvt_mpi_unify_la-vt_unify_events_stats.lo `test -f 'vt_unify_events_stats.cc' || echo '$(srcdir)/'`vt_unify_events_stats.cc
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libvt_mpi_unify_la-vt_unify_events_stats.Tpo $(DEPDIR)/libvt_mpi_unify_la-vt_unify_events_stats.Plo
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTUNIFYSRCDIR)/vt_unify_events_stats.cc' object='libvt_mpi_unify_la-vt_unify_events_stats.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='vt_unify_events_stats.cc' object='libvt_mpi_unify_la-vt_unify_events_stats.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -c -o libvt_mpi_unify_la-vt_unify_events_stats.lo `test -f '$(VTUNIFYSRCDIR)/vt_unify_events_stats.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/vt_unify_events_stats.cc
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -c -o libvt_mpi_unify_la-vt_unify_events_stats.lo `test -f 'vt_unify_events_stats.cc' || echo '$(srcdir)/'`vt_unify_events_stats.cc
 
-libvt_mpi_unify_la-vt_unify_handlers.lo: $(VTUNIFYSRCDIR)/vt_unify_handlers.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -MT libvt_mpi_unify_la-vt_unify_handlers.lo -MD -MP -MF $(DEPDIR)/libvt_mpi_unify_la-vt_unify_handlers.Tpo -c -o libvt_mpi_unify_la-vt_unify_handlers.lo `test -f '$(VTUNIFYSRCDIR)/vt_unify_handlers.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/vt_unify_handlers.cc
+libvt_mpi_unify_la-vt_unify_handlers.lo: vt_unify_handlers.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -MT libvt_mpi_unify_la-vt_unify_handlers.lo -MD -MP -MF $(DEPDIR)/libvt_mpi_unify_la-vt_unify_handlers.Tpo -c -o libvt_mpi_unify_la-vt_unify_handlers.lo `test -f 'vt_unify_handlers.cc' || echo '$(srcdir)/'`vt_unify_handlers.cc
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libvt_mpi_unify_la-vt_unify_handlers.Tpo $(DEPDIR)/libvt_mpi_unify_la-vt_unify_handlers.Plo
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTUNIFYSRCDIR)/vt_unify_handlers.cc' object='libvt_mpi_unify_la-vt_unify_handlers.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='vt_unify_handlers.cc' object='libvt_mpi_unify_la-vt_unify_handlers.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -c -o libvt_mpi_unify_la-vt_unify_handlers.lo `test -f '$(VTUNIFYSRCDIR)/vt_unify_handlers.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/vt_unify_handlers.cc
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -c -o libvt_mpi_unify_la-vt_unify_handlers.lo `test -f 'vt_unify_handlers.cc' || echo '$(srcdir)/'`vt_unify_handlers.cc
 
-libvt_mpi_unify_la-vt_unify_hooks.lo: $(VTUNIFYSRCDIR)/vt_unify_hooks.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -MT libvt_mpi_unify_la-vt_unify_hooks.lo -MD -MP -MF $(DEPDIR)/libvt_mpi_unify_la-vt_unify_hooks.Tpo -c -o libvt_mpi_unify_la-vt_unify_hooks.lo `test -f '$(VTUNIFYSRCDIR)/vt_unify_hooks.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/vt_unify_hooks.cc
+libvt_mpi_unify_la-vt_unify_hooks.lo: vt_unify_hooks.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -MT libvt_mpi_unify_la-vt_unify_hooks.lo -MD -MP -MF $(DEPDIR)/libvt_mpi_unify_la-vt_unify_hooks.Tpo -c -o libvt_mpi_unify_la-vt_unify_hooks.lo `test -f 'vt_unify_hooks.cc' || echo '$(srcdir)/'`vt_unify_hooks.cc
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libvt_mpi_unify_la-vt_unify_hooks.Tpo $(DEPDIR)/libvt_mpi_unify_la-vt_unify_hooks.Plo
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTUNIFYSRCDIR)/vt_unify_hooks.cc' object='libvt_mpi_unify_la-vt_unify_hooks.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='vt_unify_hooks.cc' object='libvt_mpi_unify_la-vt_unify_hooks.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -c -o libvt_mpi_unify_la-vt_unify_hooks.lo `test -f '$(VTUNIFYSRCDIR)/vt_unify_hooks.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/vt_unify_hooks.cc
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -c -o libvt_mpi_unify_la-vt_unify_hooks.lo `test -f 'vt_unify_hooks.cc' || echo '$(srcdir)/'`vt_unify_hooks.cc
 
-libvt_mpi_unify_la-vt_unify_markers.lo: $(VTUNIFYSRCDIR)/vt_unify_markers.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -MT libvt_mpi_unify_la-vt_unify_markers.lo -MD -MP -MF $(DEPDIR)/libvt_mpi_unify_la-vt_unify_markers.Tpo -c -o libvt_mpi_unify_la-vt_unify_markers.lo `test -f '$(VTUNIFYSRCDIR)/vt_unify_markers.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/vt_unify_markers.cc
+libvt_mpi_unify_la-vt_unify_markers.lo: vt_unify_markers.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -MT libvt_mpi_unify_la-vt_unify_markers.lo -MD -MP -MF $(DEPDIR)/libvt_mpi_unify_la-vt_unify_markers.Tpo -c -o libvt_mpi_unify_la-vt_unify_markers.lo `test -f 'vt_unify_markers.cc' || echo '$(srcdir)/'`vt_unify_markers.cc
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libvt_mpi_unify_la-vt_unify_markers.Tpo $(DEPDIR)/libvt_mpi_unify_la-vt_unify_markers.Plo
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTUNIFYSRCDIR)/vt_unify_markers.cc' object='libvt_mpi_unify_la-vt_unify_markers.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='vt_unify_markers.cc' object='libvt_mpi_unify_la-vt_unify_markers.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -c -o libvt_mpi_unify_la-vt_unify_markers.lo `test -f '$(VTUNIFYSRCDIR)/vt_unify_markers.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/vt_unify_markers.cc
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -c -o libvt_mpi_unify_la-vt_unify_markers.lo `test -f 'vt_unify_markers.cc' || echo '$(srcdir)/'`vt_unify_markers.cc
 
-libvt_mpi_unify_la-vt_unify_sync.lo: $(VTUNIFYSRCDIR)/vt_unify_sync.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -MT libvt_mpi_unify_la-vt_unify_sync.lo -MD -MP -MF $(DEPDIR)/libvt_mpi_unify_la-vt_unify_sync.Tpo -c -o libvt_mpi_unify_la-vt_unify_sync.lo `test -f '$(VTUNIFYSRCDIR)/vt_unify_sync.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/vt_unify_sync.cc
+libvt_mpi_unify_la-vt_unify_sync.lo: vt_unify_sync.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -MT libvt_mpi_unify_la-vt_unify_sync.lo -MD -MP -MF $(DEPDIR)/libvt_mpi_unify_la-vt_unify_sync.Tpo -c -o libvt_mpi_unify_la-vt_unify_sync.lo `test -f 'vt_unify_sync.cc' || echo '$(srcdir)/'`vt_unify_sync.cc
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libvt_mpi_unify_la-vt_unify_sync.Tpo $(DEPDIR)/libvt_mpi_unify_la-vt_unify_sync.Plo
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTUNIFYSRCDIR)/vt_unify_sync.cc' object='libvt_mpi_unify_la-vt_unify_sync.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='vt_unify_sync.cc' object='libvt_mpi_unify_la-vt_unify_sync.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -c -o libvt_mpi_unify_la-vt_unify_sync.lo `test -f '$(VTUNIFYSRCDIR)/vt_unify_sync.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/vt_unify_sync.cc
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -c -o libvt_mpi_unify_la-vt_unify_sync.lo `test -f 'vt_unify_sync.cc' || echo '$(srcdir)/'`vt_unify_sync.cc
 
-libvt_mpi_unify_la-vt_unify_tkfac.lo: $(VTUNIFYSRCDIR)/vt_unify_tkfac.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -MT libvt_mpi_unify_la-vt_unify_tkfac.lo -MD -MP -MF $(DEPDIR)/libvt_mpi_unify_la-vt_unify_tkfac.Tpo -c -o libvt_mpi_unify_la-vt_unify_tkfac.lo `test -f '$(VTUNIFYSRCDIR)/vt_unify_tkfac.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/vt_unify_tkfac.cc
+libvt_mpi_unify_la-vt_unify_tkfac.lo: vt_unify_tkfac.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -MT libvt_mpi_unify_la-vt_unify_tkfac.lo -MD -MP -MF $(DEPDIR)/libvt_mpi_unify_la-vt_unify_tkfac.Tpo -c -o libvt_mpi_unify_la-vt_unify_tkfac.lo `test -f 'vt_unify_tkfac.cc' || echo '$(srcdir)/'`vt_unify_tkfac.cc
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libvt_mpi_unify_la-vt_unify_tkfac.Tpo $(DEPDIR)/libvt_mpi_unify_la-vt_unify_tkfac.Plo
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTUNIFYSRCDIR)/vt_unify_tkfac.cc' object='libvt_mpi_unify_la-vt_unify_tkfac.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='vt_unify_tkfac.cc' object='libvt_mpi_unify_la-vt_unify_tkfac.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -c -o libvt_mpi_unify_la-vt_unify_tkfac.lo `test -f '$(VTUNIFYSRCDIR)/vt_unify_tkfac.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/vt_unify_tkfac.cc
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -c -o libvt_mpi_unify_la-vt_unify_tkfac.lo `test -f 'vt_unify_tkfac.cc' || echo '$(srcdir)/'`vt_unify_tkfac.cc
 
-libvt_mpi_unify_la-vt_unify_usrcom.lo: $(VTUNIFYSRCDIR)/vt_unify_usrcom.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -MT libvt_mpi_unify_la-vt_unify_usrcom.lo -MD -MP -MF $(DEPDIR)/libvt_mpi_unify_la-vt_unify_usrcom.Tpo -c -o libvt_mpi_unify_la-vt_unify_usrcom.lo `test -f '$(VTUNIFYSRCDIR)/vt_unify_usrcom.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/vt_unify_usrcom.cc
+libvt_mpi_unify_la-vt_unify_usrcom.lo: vt_unify_usrcom.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -MT libvt_mpi_unify_la-vt_unify_usrcom.lo -MD -MP -MF $(DEPDIR)/libvt_mpi_unify_la-vt_unify_usrcom.Tpo -c -o libvt_mpi_unify_la-vt_unify_usrcom.lo `test -f 'vt_unify_usrcom.cc' || echo '$(srcdir)/'`vt_unify_usrcom.cc
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libvt_mpi_unify_la-vt_unify_usrcom.Tpo $(DEPDIR)/libvt_mpi_unify_la-vt_unify_usrcom.Plo
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTUNIFYSRCDIR)/vt_unify_usrcom.cc' object='libvt_mpi_unify_la-vt_unify_usrcom.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='vt_unify_usrcom.cc' object='libvt_mpi_unify_la-vt_unify_usrcom.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -c -o libvt_mpi_unify_la-vt_unify_usrcom.lo `test -f '$(VTUNIFYSRCDIR)/vt_unify_usrcom.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/vt_unify_usrcom.cc
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -c -o libvt_mpi_unify_la-vt_unify_usrcom.lo `test -f 'vt_unify_usrcom.cc' || echo '$(srcdir)/'`vt_unify_usrcom.cc
 
-libvt_mpi_unify_la-vt_unify_hooks_base.lo: $(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_base.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -MT libvt_mpi_unify_la-vt_unify_hooks_base.lo -MD -MP -MF $(DEPDIR)/libvt_mpi_unify_la-vt_unify_hooks_base.Tpo -c -o libvt_mpi_unify_la-vt_unify_hooks_base.lo `test -f '$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_base.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_base.cc
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libvt_mpi_unify_la-vt_unify_hooks_base.Tpo $(DEPDIR)/libvt_mpi_unify_la-vt_unify_hooks_base.Plo
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_base.cc' object='libvt_mpi_unify_la-vt_unify_hooks_base.lo' libtool=yes @AMDEPBACKSLASH@
+hooks/libvt_mpi_unify_la-vt_unify_hooks_base.lo: hooks/vt_unify_hooks_base.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -MT hooks/libvt_mpi_unify_la-vt_unify_hooks_base.lo -MD -MP -MF hooks/$(DEPDIR)/libvt_mpi_unify_la-vt_unify_hooks_base.Tpo -c -o hooks/libvt_mpi_unify_la-vt_unify_hooks_base.lo `test -f 'hooks/vt_unify_hooks_base.cc' || echo '$(srcdir)/'`hooks/vt_unify_hooks_base.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) hooks/$(DEPDIR)/libvt_mpi_unify_la-vt_unify_hooks_base.Tpo hooks/$(DEPDIR)/libvt_mpi_unify_la-vt_unify_hooks_base.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='hooks/vt_unify_hooks_base.cc' object='hooks/libvt_mpi_unify_la-vt_unify_hooks_base.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -c -o libvt_mpi_unify_la-vt_unify_hooks_base.lo `test -f '$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_base.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_base.cc
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -c -o hooks/libvt_mpi_unify_la-vt_unify_hooks_base.lo `test -f 'hooks/vt_unify_hooks_base.cc' || echo '$(srcdir)/'`hooks/vt_unify_hooks_base.cc
 
-libvt_mpi_unify_la-vt_unify_hooks_aevents.lo: $(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_aevents.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -MT libvt_mpi_unify_la-vt_unify_hooks_aevents.lo -MD -MP -MF $(DEPDIR)/libvt_mpi_unify_la-vt_unify_hooks_aevents.Tpo -c -o libvt_mpi_unify_la-vt_unify_hooks_aevents.lo `test -f '$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_aevents.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_aevents.cc
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libvt_mpi_unify_la-vt_unify_hooks_aevents.Tpo $(DEPDIR)/libvt_mpi_unify_la-vt_unify_hooks_aevents.Plo
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_aevents.cc' object='libvt_mpi_unify_la-vt_unify_hooks_aevents.lo' libtool=yes @AMDEPBACKSLASH@
+hooks/libvt_mpi_unify_la-vt_unify_hooks_aevents.lo: hooks/vt_unify_hooks_aevents.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -MT hooks/libvt_mpi_unify_la-vt_unify_hooks_aevents.lo -MD -MP -MF hooks/$(DEPDIR)/libvt_mpi_unify_la-vt_unify_hooks_aevents.Tpo -c -o hooks/libvt_mpi_unify_la-vt_unify_hooks_aevents.lo `test -f 'hooks/vt_unify_hooks_aevents.cc' || echo '$(srcdir)/'`hooks/vt_unify_hooks_aevents.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) hooks/$(DEPDIR)/libvt_mpi_unify_la-vt_unify_hooks_aevents.Tpo hooks/$(DEPDIR)/libvt_mpi_unify_la-vt_unify_hooks_aevents.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='hooks/vt_unify_hooks_aevents.cc' object='hooks/libvt_mpi_unify_la-vt_unify_hooks_aevents.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -c -o libvt_mpi_unify_la-vt_unify_hooks_aevents.lo `test -f '$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_aevents.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_aevents.cc
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -c -o hooks/libvt_mpi_unify_la-vt_unify_hooks_aevents.lo `test -f 'hooks/vt_unify_hooks_aevents.cc' || echo '$(srcdir)/'`hooks/vt_unify_hooks_aevents.cc
 
-libvt_mpi_unify_la-vt_unify_hooks_margins.lo: $(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_margins.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -MT libvt_mpi_unify_la-vt_unify_hooks_margins.lo -MD -MP -MF $(DEPDIR)/libvt_mpi_unify_la-vt_unify_hooks_margins.Tpo -c -o libvt_mpi_unify_la-vt_unify_hooks_margins.lo `test -f '$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_margins.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_margins.cc
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libvt_mpi_unify_la-vt_unify_hooks_margins.Tpo $(DEPDIR)/libvt_mpi_unify_la-vt_unify_hooks_margins.Plo
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_margins.cc' object='libvt_mpi_unify_la-vt_unify_hooks_margins.lo' libtool=yes @AMDEPBACKSLASH@
+hooks/libvt_mpi_unify_la-vt_unify_hooks_margins.lo: hooks/vt_unify_hooks_margins.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -MT hooks/libvt_mpi_unify_la-vt_unify_hooks_margins.lo -MD -MP -MF hooks/$(DEPDIR)/libvt_mpi_unify_la-vt_unify_hooks_margins.Tpo -c -o hooks/libvt_mpi_unify_la-vt_unify_hooks_margins.lo `test -f 'hooks/vt_unify_hooks_margins.cc' || echo '$(srcdir)/'`hooks/vt_unify_hooks_margins.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) hooks/$(DEPDIR)/libvt_mpi_unify_la-vt_unify_hooks_margins.Tpo hooks/$(DEPDIR)/libvt_mpi_unify_la-vt_unify_hooks_margins.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='hooks/vt_unify_hooks_margins.cc' object='hooks/libvt_mpi_unify_la-vt_unify_hooks_margins.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -c -o libvt_mpi_unify_la-vt_unify_hooks_margins.lo `test -f '$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_margins.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_margins.cc
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -c -o hooks/libvt_mpi_unify_la-vt_unify_hooks_margins.lo `test -f 'hooks/vt_unify_hooks_margins.cc' || echo '$(srcdir)/'`hooks/vt_unify_hooks_margins.cc
 
-libvt_mpi_unify_la-vt_unify_hooks_msgmatch_snaps.lo: $(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_msgmatch_snaps.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -MT libvt_mpi_unify_la-vt_unify_hooks_msgmatch_snaps.lo -MD -MP -MF $(DEPDIR)/libvt_mpi_unify_la-vt_unify_hooks_msgmatch_snaps.Tpo -c -o libvt_mpi_unify_la-vt_unify_hooks_msgmatch_snaps.lo `test -f '$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_msgmatch_snaps.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_msgmatch_snaps.cc
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libvt_mpi_unify_la-vt_unify_hooks_msgmatch_snaps.Tpo $(DEPDIR)/libvt_mpi_unify_la-vt_unify_hooks_msgmatch_snaps.Plo
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_msgmatch_snaps.cc' object='libvt_mpi_unify_la-vt_unify_hooks_msgmatch_snaps.lo' libtool=yes @AMDEPBACKSLASH@
+hooks/libvt_mpi_unify_la-vt_unify_hooks_msgmatch_snaps.lo: hooks/vt_unify_hooks_msgmatch_snaps.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -MT hooks/libvt_mpi_unify_la-vt_unify_hooks_msgmatch_snaps.lo -MD -MP -MF hooks/$(DEPDIR)/libvt_mpi_unify_la-vt_unify_hooks_msgmatch_snaps.Tpo -c -o hooks/libvt_mpi_unify_la-vt_unify_hooks_msgmatch_snaps.lo `test -f 'hooks/vt_unify_hooks_msgmatch_snaps.cc' || echo '$(srcdir)/'`hooks/vt_unify_hooks_msgmatch_snaps.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) hooks/$(DEPDIR)/libvt_mpi_unify_la-vt_unify_hooks_msgmatch_snaps.Tpo hooks/$(DEPDIR)/libvt_mpi_unify_la-vt_unify_hooks_msgmatch_snaps.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='hooks/vt_unify_hooks_msgmatch_snaps.cc' object='hooks/libvt_mpi_unify_la-vt_unify_hooks_msgmatch_snaps.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -c -o libvt_mpi_unify_la-vt_unify_hooks_msgmatch_snaps.lo `test -f '$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_msgmatch_snaps.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_msgmatch_snaps.cc
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -c -o hooks/libvt_mpi_unify_la-vt_unify_hooks_msgmatch_snaps.lo `test -f 'hooks/vt_unify_hooks_msgmatch_snaps.cc' || echo '$(srcdir)/'`hooks/vt_unify_hooks_msgmatch_snaps.cc
 
-libvt_mpi_unify_la-vt_unify_hooks_prof.lo: $(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_prof.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -MT libvt_mpi_unify_la-vt_unify_hooks_prof.lo -MD -MP -MF $(DEPDIR)/libvt_mpi_unify_la-vt_unify_hooks_prof.Tpo -c -o libvt_mpi_unify_la-vt_unify_hooks_prof.lo `test -f '$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_prof.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_prof.cc
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libvt_mpi_unify_la-vt_unify_hooks_prof.Tpo $(DEPDIR)/libvt_mpi_unify_la-vt_unify_hooks_prof.Plo
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_prof.cc' object='libvt_mpi_unify_la-vt_unify_hooks_prof.lo' libtool=yes @AMDEPBACKSLASH@
+hooks/libvt_mpi_unify_la-vt_unify_hooks_prof.lo: hooks/vt_unify_hooks_prof.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -MT hooks/libvt_mpi_unify_la-vt_unify_hooks_prof.lo -MD -MP -MF hooks/$(DEPDIR)/libvt_mpi_unify_la-vt_unify_hooks_prof.Tpo -c -o hooks/libvt_mpi_unify_la-vt_unify_hooks_prof.lo `test -f 'hooks/vt_unify_hooks_prof.cc' || echo '$(srcdir)/'`hooks/vt_unify_hooks_prof.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) hooks/$(DEPDIR)/libvt_mpi_unify_la-vt_unify_hooks_prof.Tpo hooks/$(DEPDIR)/libvt_mpi_unify_la-vt_unify_hooks_prof.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='hooks/vt_unify_hooks_prof.cc' object='hooks/libvt_mpi_unify_la-vt_unify_hooks_prof.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -c -o libvt_mpi_unify_la-vt_unify_hooks_prof.lo `test -f '$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_prof.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_prof.cc
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_unify_la_CXXFLAGS) $(CXXFLAGS) -c -o hooks/libvt_mpi_unify_la-vt_unify_hooks_prof.lo `test -f 'hooks/vt_unify_hooks_prof.cc' || echo '$(srcdir)/'`hooks/vt_unify_hooks_prof.cc
 
-vtunify_mpi-vt_unify.o: $(VTUNIFYSRCDIR)/vt_unify.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtunify_mpi-vt_unify.o -MD -MP -MF $(DEPDIR)/vtunify_mpi-vt_unify.Tpo -c -o vtunify_mpi-vt_unify.o `test -f '$(VTUNIFYSRCDIR)/vt_unify.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/vt_unify.cc
+vtunify_mpi-vt_unify.o: vt_unify.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtunify_mpi-vt_unify.o -MD -MP -MF $(DEPDIR)/vtunify_mpi-vt_unify.Tpo -c -o vtunify_mpi-vt_unify.o `test -f 'vt_unify.cc' || echo '$(srcdir)/'`vt_unify.cc
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/vtunify_mpi-vt_unify.Tpo $(DEPDIR)/vtunify_mpi-vt_unify.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTUNIFYSRCDIR)/vt_unify.cc' object='vtunify_mpi-vt_unify.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='vt_unify.cc' object='vtunify_mpi-vt_unify.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtunify_mpi-vt_unify.o `test -f '$(VTUNIFYSRCDIR)/vt_unify.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/vt_unify.cc
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtunify_mpi-vt_unify.o `test -f 'vt_unify.cc' || echo '$(srcdir)/'`vt_unify.cc
 
-vtunify_mpi-vt_unify.obj: $(VTUNIFYSRCDIR)/vt_unify.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtunify_mpi-vt_unify.obj -MD -MP -MF $(DEPDIR)/vtunify_mpi-vt_unify.Tpo -c -o vtunify_mpi-vt_unify.obj `if test -f '$(VTUNIFYSRCDIR)/vt_unify.cc'; then $(CYGPATH_W) '$(VTUNIFYSRCDIR)/vt_unify.cc'; else $(CYGPATH_W) '$(srcdir)/$(VTUNIFYSRCDIR)/vt_unify.cc'; fi`
+vtunify_mpi-vt_unify.obj: vt_unify.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtunify_mpi-vt_unify.obj -MD -MP -MF $(DEPDIR)/vtunify_mpi-vt_unify.Tpo -c -o vtunify_mpi-vt_unify.obj `if test -f 'vt_unify.cc'; then $(CYGPATH_W) 'vt_unify.cc'; else $(CYGPATH_W) '$(srcdir)/vt_unify.cc'; fi`
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/vtunify_mpi-vt_unify.Tpo $(DEPDIR)/vtunify_mpi-vt_unify.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTUNIFYSRCDIR)/vt_unify.cc' object='vtunify_mpi-vt_unify.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='vt_unify.cc' object='vtunify_mpi-vt_unify.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtunify_mpi-vt_unify.obj `if test -f '$(VTUNIFYSRCDIR)/vt_unify.cc'; then $(CYGPATH_W) '$(VTUNIFYSRCDIR)/vt_unify.cc'; else $(CYGPATH_W) '$(srcdir)/$(VTUNIFYSRCDIR)/vt_unify.cc'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtunify_mpi-vt_unify.obj `if test -f 'vt_unify.cc'; then $(CYGPATH_W) 'vt_unify.cc'; else $(CYGPATH_W) '$(srcdir)/vt_unify.cc'; fi`
 
-vtunify_mpi-vt_unify_defs.o: $(VTUNIFYSRCDIR)/vt_unify_defs.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtunify_mpi-vt_unify_defs.o -MD -MP -MF $(DEPDIR)/vtunify_mpi-vt_unify_defs.Tpo -c -o vtunify_mpi-vt_unify_defs.o `test -f '$(VTUNIFYSRCDIR)/vt_unify_defs.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/vt_unify_defs.cc
+vtunify_mpi-vt_unify_defs.o: vt_unify_defs.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtunify_mpi-vt_unify_defs.o -MD -MP -MF $(DEPDIR)/vtunify_mpi-vt_unify_defs.Tpo -c -o vtunify_mpi-vt_unify_defs.o `test -f 'vt_unify_defs.cc' || echo '$(srcdir)/'`vt_unify_defs.cc
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/vtunify_mpi-vt_unify_defs.Tpo $(DEPDIR)/vtunify_mpi-vt_unify_defs.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTUNIFYSRCDIR)/vt_unify_defs.cc' object='vtunify_mpi-vt_unify_defs.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='vt_unify_defs.cc' object='vtunify_mpi-vt_unify_defs.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtunify_mpi-vt_unify_defs.o `test -f '$(VTUNIFYSRCDIR)/vt_unify_defs.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/vt_unify_defs.cc
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtunify_mpi-vt_unify_defs.o `test -f 'vt_unify_defs.cc' || echo '$(srcdir)/'`vt_unify_defs.cc
 
-vtunify_mpi-vt_unify_defs.obj: $(VTUNIFYSRCDIR)/vt_unify_defs.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtunify_mpi-vt_unify_defs.obj -MD -MP -MF $(DEPDIR)/vtunify_mpi-vt_unify_defs.Tpo -c -o vtunify_mpi-vt_unify_defs.obj `if test -f '$(VTUNIFYSRCDIR)/vt_unify_defs.cc'; then $(CYGPATH_W) '$(VTUNIFYSRCDIR)/vt_unify_defs.cc'; else $(CYGPATH_W) '$(srcdir)/$(VTUNIFYSRCDIR)/vt_unify_defs.cc'; fi`
+vtunify_mpi-vt_unify_defs.obj: vt_unify_defs.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtunify_mpi-vt_unify_defs.obj -MD -MP -MF $(DEPDIR)/vtunify_mpi-vt_unify_defs.Tpo -c -o vtunify_mpi-vt_unify_defs.obj `if test -f 'vt_unify_defs.cc'; then $(CYGPATH_W) 'vt_unify_defs.cc'; else $(CYGPATH_W) '$(srcdir)/vt_unify_defs.cc'; fi`
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/vtunify_mpi-vt_unify_defs.Tpo $(DEPDIR)/vtunify_mpi-vt_unify_defs.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTUNIFYSRCDIR)/vt_unify_defs.cc' object='vtunify_mpi-vt_unify_defs.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='vt_unify_defs.cc' object='vtunify_mpi-vt_unify_defs.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtunify_mpi-vt_unify_defs.obj `if test -f '$(VTUNIFYSRCDIR)/vt_unify_defs.cc'; then $(CYGPATH_W) '$(VTUNIFYSRCDIR)/vt_unify_defs.cc'; else $(CYGPATH_W) '$(srcdir)/$(VTUNIFYSRCDIR)/vt_unify_defs.cc'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtunify_mpi-vt_unify_defs.obj `if test -f 'vt_unify_defs.cc'; then $(CYGPATH_W) 'vt_unify_defs.cc'; else $(CYGPATH_W) '$(srcdir)/vt_unify_defs.cc'; fi`
 
-vtunify_mpi-vt_unify_defs_recs.o: $(VTUNIFYSRCDIR)/vt_unify_defs_recs.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtunify_mpi-vt_unify_defs_recs.o -MD -MP -MF $(DEPDIR)/vtunify_mpi-vt_unify_defs_recs.Tpo -c -o vtunify_mpi-vt_unify_defs_recs.o `test -f '$(VTUNIFYSRCDIR)/vt_unify_defs_recs.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/vt_unify_defs_recs.cc
+vtunify_mpi-vt_unify_defs_recs.o: vt_unify_defs_recs.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtunify_mpi-vt_unify_defs_recs.o -MD -MP -MF $(DEPDIR)/vtunify_mpi-vt_unify_defs_recs.Tpo -c -o vtunify_mpi-vt_unify_defs_recs.o `test -f 'vt_unify_defs_recs.cc' || echo '$(srcdir)/'`vt_unify_defs_recs.cc
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/vtunify_mpi-vt_unify_defs_recs.Tpo $(DEPDIR)/vtunify_mpi-vt_unify_defs_recs.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTUNIFYSRCDIR)/vt_unify_defs_recs.cc' object='vtunify_mpi-vt_unify_defs_recs.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='vt_unify_defs_recs.cc' object='vtunify_mpi-vt_unify_defs_recs.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtunify_mpi-vt_unify_defs_recs.o `test -f '$(VTUNIFYSRCDIR)/vt_unify_defs_recs.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/vt_unify_defs_recs.cc
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtunify_mpi-vt_unify_defs_recs.o `test -f 'vt_unify_defs_recs.cc' || echo '$(srcdir)/'`vt_unify_defs_recs.cc
 
-vtunify_mpi-vt_unify_defs_recs.obj: $(VTUNIFYSRCDIR)/vt_unify_defs_recs.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtunify_mpi-vt_unify_defs_recs.obj -MD -MP -MF $(DEPDIR)/vtunify_mpi-vt_unify_defs_recs.Tpo -c -o vtunify_mpi-vt_unify_defs_recs.obj `if test -f '$(VTUNIFYSRCDIR)/vt_unify_defs_recs.cc'; then $(CYGPATH_W) '$(VTUNIFYSRCDIR)/vt_unify_defs_recs.cc'; else $(CYGPATH_W) '$(srcdir)/$(VTUNIFYSRCDIR)/vt_unify_defs_recs.cc'; fi`
+vtunify_mpi-vt_unify_defs_recs.obj: vt_unify_defs_recs.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtunify_mpi-vt_unify_defs_recs.obj -MD -MP -MF $(DEPDIR)/vtunify_mpi-vt_unify_defs_recs.Tpo -c -o vtunify_mpi-vt_unify_defs_recs.obj `if test -f 'vt_unify_defs_recs.cc'; then $(CYGPATH_W) 'vt_unify_defs_recs.cc'; else $(CYGPATH_W) '$(srcdir)/vt_unify_defs_recs.cc'; fi`
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/vtunify_mpi-vt_unify_defs_recs.Tpo $(DEPDIR)/vtunify_mpi-vt_unify_defs_recs.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTUNIFYSRCDIR)/vt_unify_defs_recs.cc' object='vtunify_mpi-vt_unify_defs_recs.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='vt_unify_defs_recs.cc' object='vtunify_mpi-vt_unify_defs_recs.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtunify_mpi-vt_unify_defs_recs.obj `if test -f '$(VTUNIFYSRCDIR)/vt_unify_defs_recs.cc'; then $(CYGPATH_W) '$(VTUNIFYSRCDIR)/vt_unify_defs_recs.cc'; else $(CYGPATH_W) '$(srcdir)/$(VTUNIFYSRCDIR)/vt_unify_defs_recs.cc'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtunify_mpi-vt_unify_defs_recs.obj `if test -f 'vt_unify_defs_recs.cc'; then $(CYGPATH_W) 'vt_unify_defs_recs.cc'; else $(CYGPATH_W) '$(srcdir)/vt_unify_defs_recs.cc'; fi`
 
-vtunify_mpi-vt_unify_esync.o: $(VTUNIFYSRCDIR)/vt_unify_esync.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtunify_mpi-vt_unify_esync.o -MD -MP -MF $(DEPDIR)/vtunify_mpi-vt_unify_esync.Tpo -c -o vtunify_mpi-vt_unify_esync.o `test -f '$(VTUNIFYSRCDIR)/vt_unify_esync.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/vt_unify_esync.cc
+vtunify_mpi-vt_unify_esync.o: vt_unify_esync.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtunify_mpi-vt_unify_esync.o -MD -MP -MF $(DEPDIR)/vtunify_mpi-vt_unify_esync.Tpo -c -o vtunify_mpi-vt_unify_esync.o `test -f 'vt_unify_esync.cc' || echo '$(srcdir)/'`vt_unify_esync.cc
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/vtunify_mpi-vt_unify_esync.Tpo $(DEPDIR)/vtunify_mpi-vt_unify_esync.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTUNIFYSRCDIR)/vt_unify_esync.cc' object='vtunify_mpi-vt_unify_esync.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='vt_unify_esync.cc' object='vtunify_mpi-vt_unify_esync.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtunify_mpi-vt_unify_esync.o `test -f '$(VTUNIFYSRCDIR)/vt_unify_esync.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/vt_unify_esync.cc
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtunify_mpi-vt_unify_esync.o `test -f 'vt_unify_esync.cc' || echo '$(srcdir)/'`vt_unify_esync.cc
 
-vtunify_mpi-vt_unify_esync.obj: $(VTUNIFYSRCDIR)/vt_unify_esync.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtunify_mpi-vt_unify_esync.obj -MD -MP -MF $(DEPDIR)/vtunify_mpi-vt_unify_esync.Tpo -c -o vtunify_mpi-vt_unify_esync.obj `if test -f '$(VTUNIFYSRCDIR)/vt_unify_esync.cc'; then $(CYGPATH_W) '$(VTUNIFYSRCDIR)/vt_unify_esync.cc'; else $(CYGPATH_W) '$(srcdir)/$(VTUNIFYSRCDIR)/vt_unify_esync.cc'; fi`
+vtunify_mpi-vt_unify_esync.obj: vt_unify_esync.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtunify_mpi-vt_unify_esync.obj -MD -MP -MF $(DEPDIR)/vtunify_mpi-vt_unify_esync.Tpo -c -o vtunify_mpi-vt_unify_esync.obj `if test -f 'vt_unify_esync.cc'; then $(CYGPATH_W) 'vt_unify_esync.cc'; else $(CYGPATH_W) '$(srcdir)/vt_unify_esync.cc'; fi`
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/vtunify_mpi-vt_unify_esync.Tpo $(DEPDIR)/vtunify_mpi-vt_unify_esync.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTUNIFYSRCDIR)/vt_unify_esync.cc' object='vtunify_mpi-vt_unify_esync.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='vt_unify_esync.cc' object='vtunify_mpi-vt_unify_esync.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtunify_mpi-vt_unify_esync.obj `if test -f '$(VTUNIFYSRCDIR)/vt_unify_esync.cc'; then $(CYGPATH_W) '$(VTUNIFYSRCDIR)/vt_unify_esync.cc'; else $(CYGPATH_W) '$(srcdir)/$(VTUNIFYSRCDIR)/vt_unify_esync.cc'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtunify_mpi-vt_unify_esync.obj `if test -f 'vt_unify_esync.cc'; then $(CYGPATH_W) 'vt_unify_esync.cc'; else $(CYGPATH_W) '$(srcdir)/vt_unify_esync.cc'; fi`
 
-vtunify_mpi-vt_unify_events_stats.o: $(VTUNIFYSRCDIR)/vt_unify_events_stats.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtunify_mpi-vt_unify_events_stats.o -MD -MP -MF $(DEPDIR)/vtunify_mpi-vt_unify_events_stats.Tpo -c -o vtunify_mpi-vt_unify_events_stats.o `test -f '$(VTUNIFYSRCDIR)/vt_unify_events_stats.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/vt_unify_events_stats.cc
+vtunify_mpi-vt_unify_events_stats.o: vt_unify_events_stats.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtunify_mpi-vt_unify_events_stats.o -MD -MP -MF $(DEPDIR)/vtunify_mpi-vt_unify_events_stats.Tpo -c -o vtunify_mpi-vt_unify_events_stats.o `test -f 'vt_unify_events_stats.cc' || echo '$(srcdir)/'`vt_unify_events_stats.cc
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/vtunify_mpi-vt_unify_events_stats.Tpo $(DEPDIR)/vtunify_mpi-vt_unify_events_stats.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTUNIFYSRCDIR)/vt_unify_events_stats.cc' object='vtunify_mpi-vt_unify_events_stats.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='vt_unify_events_stats.cc' object='vtunify_mpi-vt_unify_events_stats.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtunify_mpi-vt_unify_events_stats.o `test -f '$(VTUNIFYSRCDIR)/vt_unify_events_stats.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/vt_unify_events_stats.cc
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtunify_mpi-vt_unify_events_stats.o `test -f 'vt_unify_events_stats.cc' || echo '$(srcdir)/'`vt_unify_events_stats.cc
 
-vtunify_mpi-vt_unify_events_stats.obj: $(VTUNIFYSRCDIR)/vt_unify_events_stats.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtunify_mpi-vt_unify_events_stats.obj -MD -MP -MF $(DEPDIR)/vtunify_mpi-vt_unify_events_stats.Tpo -c -o vtunify_mpi-vt_unify_events_stats.obj `if test -f '$(VTUNIFYSRCDIR)/vt_unify_events_stats.cc'; then $(CYGPATH_W) '$(VTUNIFYSRCDIR)/vt_unify_events_stats.cc'; else $(CYGPATH_W) '$(srcdir)/$(VTUNIFYSRCDIR)/vt_unify_events_stats.cc'; fi`
+vtunify_mpi-vt_unify_events_stats.obj: vt_unify_events_stats.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtunify_mpi-vt_unify_events_stats.obj -MD -MP -MF $(DEPDIR)/vtunify_mpi-vt_unify_events_stats.Tpo -c -o vtunify_mpi-vt_unify_events_stats.obj `if test -f 'vt_unify_events_stats.cc'; then $(CYGPATH_W) 'vt_unify_events_stats.cc'; else $(CYGPATH_W) '$(srcdir)/vt_unify_events_stats.cc'; fi`
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/vtunify_mpi-vt_unify_events_stats.Tpo $(DEPDIR)/vtunify_mpi-vt_unify_events_stats.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTUNIFYSRCDIR)/vt_unify_events_stats.cc' object='vtunify_mpi-vt_unify_events_stats.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='vt_unify_events_stats.cc' object='vtunify_mpi-vt_unify_events_stats.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtunify_mpi-vt_unify_events_stats.obj `if test -f '$(VTUNIFYSRCDIR)/vt_unify_events_stats.cc'; then $(CYGPATH_W) '$(VTUNIFYSRCDIR)/vt_unify_events_stats.cc'; else $(CYGPATH_W) '$(srcdir)/$(VTUNIFYSRCDIR)/vt_unify_events_stats.cc'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtunify_mpi-vt_unify_events_stats.obj `if test -f 'vt_unify_events_stats.cc'; then $(CYGPATH_W) 'vt_unify_events_stats.cc'; else $(CYGPATH_W) '$(srcdir)/vt_unify_events_stats.cc'; fi`
 
-vtunify_mpi-vt_unify_handlers.o: $(VTUNIFYSRCDIR)/vt_unify_handlers.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtunify_mpi-vt_unify_handlers.o -MD -MP -MF $(DEPDIR)/vtunify_mpi-vt_unify_handlers.Tpo -c -o vtunify_mpi-vt_unify_handlers.o `test -f '$(VTUNIFYSRCDIR)/vt_unify_handlers.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/vt_unify_handlers.cc
+vtunify_mpi-vt_unify_handlers.o: vt_unify_handlers.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtunify_mpi-vt_unify_handlers.o -MD -MP -MF $(DEPDIR)/vtunify_mpi-vt_unify_handlers.Tpo -c -o vtunify_mpi-vt_unify_handlers.o `test -f 'vt_unify_handlers.cc' || echo '$(srcdir)/'`vt_unify_handlers.cc
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/vtunify_mpi-vt_unify_handlers.Tpo $(DEPDIR)/vtunify_mpi-vt_unify_handlers.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTUNIFYSRCDIR)/vt_unify_handlers.cc' object='vtunify_mpi-vt_unify_handlers.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='vt_unify_handlers.cc' object='vtunify_mpi-vt_unify_handlers.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtunify_mpi-vt_unify_handlers.o `test -f '$(VTUNIFYSRCDIR)/vt_unify_handlers.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/vt_unify_handlers.cc
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtunify_mpi-vt_unify_handlers.o `test -f 'vt_unify_handlers.cc' || echo '$(srcdir)/'`vt_unify_handlers.cc
 
-vtunify_mpi-vt_unify_handlers.obj: $(VTUNIFYSRCDIR)/vt_unify_handlers.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtunify_mpi-vt_unify_handlers.obj -MD -MP -MF $(DEPDIR)/vtunify_mpi-vt_unify_handlers.Tpo -c -o vtunify_mpi-vt_unify_handlers.obj `if test -f '$(VTUNIFYSRCDIR)/vt_unify_handlers.cc'; then $(CYGPATH_W) '$(VTUNIFYSRCDIR)/vt_unify_handlers.cc'; else $(CYGPATH_W) '$(srcdir)/$(VTUNIFYSRCDIR)/vt_unify_handlers.cc'; fi`
+vtunify_mpi-vt_unify_handlers.obj: vt_unify_handlers.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtunify_mpi-vt_unify_handlers.obj -MD -MP -MF $(DEPDIR)/vtunify_mpi-vt_unify_handlers.Tpo -c -o vtunify_mpi-vt_unify_handlers.obj `if test -f 'vt_unify_handlers.cc'; then $(CYGPATH_W) 'vt_unify_handlers.cc'; else $(CYGPATH_W) '$(srcdir)/vt_unify_handlers.cc'; fi`
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/vtunify_mpi-vt_unify_handlers.Tpo $(DEPDIR)/vtunify_mpi-vt_unify_handlers.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTUNIFYSRCDIR)/vt_unify_handlers.cc' object='vtunify_mpi-vt_unify_handlers.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='vt_unify_handlers.cc' object='vtunify_mpi-vt_unify_handlers.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtunify_mpi-vt_unify_handlers.obj `if test -f '$(VTUNIFYSRCDIR)/vt_unify_handlers.cc'; then $(CYGPATH_W) '$(VTUNIFYSRCDIR)/vt_unify_handlers.cc'; else $(CYGPATH_W) '$(srcdir)/$(VTUNIFYSRCDIR)/vt_unify_handlers.cc'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtunify_mpi-vt_unify_handlers.obj `if test -f 'vt_unify_handlers.cc'; then $(CYGPATH_W) 'vt_unify_handlers.cc'; else $(CYGPATH_W) '$(srcdir)/vt_unify_handlers.cc'; fi`
 
-vtunify_mpi-vt_unify_hooks.o: $(VTUNIFYSRCDIR)/vt_unify_hooks.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtunify_mpi-vt_unify_hooks.o -MD -MP -MF $(DEPDIR)/vtunify_mpi-vt_unify_hooks.Tpo -c -o vtunify_mpi-vt_unify_hooks.o `test -f '$(VTUNIFYSRCDIR)/vt_unify_hooks.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/vt_unify_hooks.cc
+vtunify_mpi-vt_unify_hooks.o: vt_unify_hooks.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtunify_mpi-vt_unify_hooks.o -MD -MP -MF $(DEPDIR)/vtunify_mpi-vt_unify_hooks.Tpo -c -o vtunify_mpi-vt_unify_hooks.o `test -f 'vt_unify_hooks.cc' || echo '$(srcdir)/'`vt_unify_hooks.cc
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/vtunify_mpi-vt_unify_hooks.Tpo $(DEPDIR)/vtunify_mpi-vt_unify_hooks.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTUNIFYSRCDIR)/vt_unify_hooks.cc' object='vtunify_mpi-vt_unify_hooks.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='vt_unify_hooks.cc' object='vtunify_mpi-vt_unify_hooks.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtunify_mpi-vt_unify_hooks.o `test -f '$(VTUNIFYSRCDIR)/vt_unify_hooks.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/vt_unify_hooks.cc
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtunify_mpi-vt_unify_hooks.o `test -f 'vt_unify_hooks.cc' || echo '$(srcdir)/'`vt_unify_hooks.cc
 
-vtunify_mpi-vt_unify_hooks.obj: $(VTUNIFYSRCDIR)/vt_unify_hooks.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtunify_mpi-vt_unify_hooks.obj -MD -MP -MF $(DEPDIR)/vtunify_mpi-vt_unify_hooks.Tpo -c -o vtunify_mpi-vt_unify_hooks.obj `if test -f '$(VTUNIFYSRCDIR)/vt_unify_hooks.cc'; then $(CYGPATH_W) '$(VTUNIFYSRCDIR)/vt_unify_hooks.cc'; else $(CYGPATH_W) '$(srcdir)/$(VTUNIFYSRCDIR)/vt_unify_hooks.cc'; fi`
+vtunify_mpi-vt_unify_hooks.obj: vt_unify_hooks.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtunify_mpi-vt_unify_hooks.obj -MD -MP -MF $(DEPDIR)/vtunify_mpi-vt_unify_hooks.Tpo -c -o vtunify_mpi-vt_unify_hooks.obj `if test -f 'vt_unify_hooks.cc'; then $(CYGPATH_W) 'vt_unify_hooks.cc'; else $(CYGPATH_W) '$(srcdir)/vt_unify_hooks.cc'; fi`
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/vtunify_mpi-vt_unify_hooks.Tpo $(DEPDIR)/vtunify_mpi-vt_unify_hooks.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTUNIFYSRCDIR)/vt_unify_hooks.cc' object='vtunify_mpi-vt_unify_hooks.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='vt_unify_hooks.cc' object='vtunify_mpi-vt_unify_hooks.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtunify_mpi-vt_unify_hooks.obj `if test -f '$(VTUNIFYSRCDIR)/vt_unify_hooks.cc'; then $(CYGPATH_W) '$(VTUNIFYSRCDIR)/vt_unify_hooks.cc'; else $(CYGPATH_W) '$(srcdir)/$(VTUNIFYSRCDIR)/vt_unify_hooks.cc'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtunify_mpi-vt_unify_hooks.obj `if test -f 'vt_unify_hooks.cc'; then $(CYGPATH_W) 'vt_unify_hooks.cc'; else $(CYGPATH_W) '$(srcdir)/vt_unify_hooks.cc'; fi`
 
-vtunify_mpi-vt_unify_markers.o: $(VTUNIFYSRCDIR)/vt_unify_markers.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtunify_mpi-vt_unify_markers.o -MD -MP -MF $(DEPDIR)/vtunify_mpi-vt_unify_markers.Tpo -c -o vtunify_mpi-vt_unify_markers.o `test -f '$(VTUNIFYSRCDIR)/vt_unify_markers.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/vt_unify_markers.cc
+vtunify_mpi-vt_unify_markers.o: vt_unify_markers.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtunify_mpi-vt_unify_markers.o -MD -MP -MF $(DEPDIR)/vtunify_mpi-vt_unify_markers.Tpo -c -o vtunify_mpi-vt_unify_markers.o `test -f 'vt_unify_markers.cc' || echo '$(srcdir)/'`vt_unify_markers.cc
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/vtunify_mpi-vt_unify_markers.Tpo $(DEPDIR)/vtunify_mpi-vt_unify_markers.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTUNIFYSRCDIR)/vt_unify_markers.cc' object='vtunify_mpi-vt_unify_markers.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='vt_unify_markers.cc' object='vtunify_mpi-vt_unify_markers.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtunify_mpi-vt_unify_markers.o `test -f '$(VTUNIFYSRCDIR)/vt_unify_markers.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/vt_unify_markers.cc
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtunify_mpi-vt_unify_markers.o `test -f 'vt_unify_markers.cc' || echo '$(srcdir)/'`vt_unify_markers.cc
 
-vtunify_mpi-vt_unify_markers.obj: $(VTUNIFYSRCDIR)/vt_unify_markers.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtunify_mpi-vt_unify_markers.obj -MD -MP -MF $(DEPDIR)/vtunify_mpi-vt_unify_markers.Tpo -c -o vtunify_mpi-vt_unify_markers.obj `if test -f '$(VTUNIFYSRCDIR)/vt_unify_markers.cc'; then $(CYGPATH_W) '$(VTUNIFYSRCDIR)/vt_unify_markers.cc'; else $(CYGPATH_W) '$(srcdir)/$(VTUNIFYSRCDIR)/vt_unify_markers.cc'; fi`
+vtunify_mpi-vt_unify_markers.obj: vt_unify_markers.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtunify_mpi-vt_unify_markers.obj -MD -MP -MF $(DEPDIR)/vtunify_mpi-vt_unify_markers.Tpo -c -o vtunify_mpi-vt_unify_markers.obj `if test -f 'vt_unify_markers.cc'; then $(CYGPATH_W) 'vt_unify_markers.cc'; else $(CYGPATH_W) '$(srcdir)/vt_unify_markers.cc'; fi`
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/vtunify_mpi-vt_unify_markers.Tpo $(DEPDIR)/vtunify_mpi-vt_unify_markers.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTUNIFYSRCDIR)/vt_unify_markers.cc' object='vtunify_mpi-vt_unify_markers.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='vt_unify_markers.cc' object='vtunify_mpi-vt_unify_markers.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtunify_mpi-vt_unify_markers.obj `if test -f '$(VTUNIFYSRCDIR)/vt_unify_markers.cc'; then $(CYGPATH_W) '$(VTUNIFYSRCDIR)/vt_unify_markers.cc'; else $(CYGPATH_W) '$(srcdir)/$(VTUNIFYSRCDIR)/vt_unify_markers.cc'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtunify_mpi-vt_unify_markers.obj `if test -f 'vt_unify_markers.cc'; then $(CYGPATH_W) 'vt_unify_markers.cc'; else $(CYGPATH_W) '$(srcdir)/vt_unify_markers.cc'; fi`
 
-vtunify_mpi-vt_unify_sync.o: $(VTUNIFYSRCDIR)/vt_unify_sync.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtunify_mpi-vt_unify_sync.o -MD -MP -MF $(DEPDIR)/vtunify_mpi-vt_unify_sync.Tpo -c -o vtunify_mpi-vt_unify_sync.o `test -f '$(VTUNIFYSRCDIR)/vt_unify_sync.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/vt_unify_sync.cc
+vtunify_mpi-vt_unify_sync.o: vt_unify_sync.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtunify_mpi-vt_unify_sync.o -MD -MP -MF $(DEPDIR)/vtunify_mpi-vt_unify_sync.Tpo -c -o vtunify_mpi-vt_unify_sync.o `test -f 'vt_unify_sync.cc' || echo '$(srcdir)/'`vt_unify_sync.cc
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/vtunify_mpi-vt_unify_sync.Tpo $(DEPDIR)/vtunify_mpi-vt_unify_sync.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTUNIFYSRCDIR)/vt_unify_sync.cc' object='vtunify_mpi-vt_unify_sync.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='vt_unify_sync.cc' object='vtunify_mpi-vt_unify_sync.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtunify_mpi-vt_unify_sync.o `test -f '$(VTUNIFYSRCDIR)/vt_unify_sync.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/vt_unify_sync.cc
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtunify_mpi-vt_unify_sync.o `test -f 'vt_unify_sync.cc' || echo '$(srcdir)/'`vt_unify_sync.cc
 
-vtunify_mpi-vt_unify_sync.obj: $(VTUNIFYSRCDIR)/vt_unify_sync.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtunify_mpi-vt_unify_sync.obj -MD -MP -MF $(DEPDIR)/vtunify_mpi-vt_unify_sync.Tpo -c -o vtunify_mpi-vt_unify_sync.obj `if test -f '$(VTUNIFYSRCDIR)/vt_unify_sync.cc'; then $(CYGPATH_W) '$(VTUNIFYSRCDIR)/vt_unify_sync.cc'; else $(CYGPATH_W) '$(srcdir)/$(VTUNIFYSRCDIR)/vt_unify_sync.cc'; fi`
+vtunify_mpi-vt_unify_sync.obj: vt_unify_sync.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtunify_mpi-vt_unify_sync.obj -MD -MP -MF $(DEPDIR)/vtunify_mpi-vt_unify_sync.Tpo -c -o vtunify_mpi-vt_unify_sync.obj `if test -f 'vt_unify_sync.cc'; then $(CYGPATH_W) 'vt_unify_sync.cc'; else $(CYGPATH_W) '$(srcdir)/vt_unify_sync.cc'; fi`
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/vtunify_mpi-vt_unify_sync.Tpo $(DEPDIR)/vtunify_mpi-vt_unify_sync.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTUNIFYSRCDIR)/vt_unify_sync.cc' object='vtunify_mpi-vt_unify_sync.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='vt_unify_sync.cc' object='vtunify_mpi-vt_unify_sync.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtunify_mpi-vt_unify_sync.obj `if test -f '$(VTUNIFYSRCDIR)/vt_unify_sync.cc'; then $(CYGPATH_W) '$(VTUNIFYSRCDIR)/vt_unify_sync.cc'; else $(CYGPATH_W) '$(srcdir)/$(VTUNIFYSRCDIR)/vt_unify_sync.cc'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtunify_mpi-vt_unify_sync.obj `if test -f 'vt_unify_sync.cc'; then $(CYGPATH_W) 'vt_unify_sync.cc'; else $(CYGPATH_W) '$(srcdir)/vt_unify_sync.cc'; fi`
 
-vtunify_mpi-vt_unify_tkfac.o: $(VTUNIFYSRCDIR)/vt_unify_tkfac.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtunify_mpi-vt_unify_tkfac.o -MD -MP -MF $(DEPDIR)/vtunify_mpi-vt_unify_tkfac.Tpo -c -o vtunify_mpi-vt_unify_tkfac.o `test -f '$(VTUNIFYSRCDIR)/vt_unify_tkfac.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/vt_unify_tkfac.cc
+vtunify_mpi-vt_unify_tkfac.o: vt_unify_tkfac.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtunify_mpi-vt_unify_tkfac.o -MD -MP -MF $(DEPDIR)/vtunify_mpi-vt_unify_tkfac.Tpo -c -o vtunify_mpi-vt_unify_tkfac.o `test -f 'vt_unify_tkfac.cc' || echo '$(srcdir)/'`vt_unify_tkfac.cc
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/vtunify_mpi-vt_unify_tkfac.Tpo $(DEPDIR)/vtunify_mpi-vt_unify_tkfac.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTUNIFYSRCDIR)/vt_unify_tkfac.cc' object='vtunify_mpi-vt_unify_tkfac.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='vt_unify_tkfac.cc' object='vtunify_mpi-vt_unify_tkfac.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtunify_mpi-vt_unify_tkfac.o `test -f '$(VTUNIFYSRCDIR)/vt_unify_tkfac.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/vt_unify_tkfac.cc
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtunify_mpi-vt_unify_tkfac.o `test -f 'vt_unify_tkfac.cc' || echo '$(srcdir)/'`vt_unify_tkfac.cc
 
-vtunify_mpi-vt_unify_tkfac.obj: $(VTUNIFYSRCDIR)/vt_unify_tkfac.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtunify_mpi-vt_unify_tkfac.obj -MD -MP -MF $(DEPDIR)/vtunify_mpi-vt_unify_tkfac.Tpo -c -o vtunify_mpi-vt_unify_tkfac.obj `if test -f '$(VTUNIFYSRCDIR)/vt_unify_tkfac.cc'; then $(CYGPATH_W) '$(VTUNIFYSRCDIR)/vt_unify_tkfac.cc'; else $(CYGPATH_W) '$(srcdir)/$(VTUNIFYSRCDIR)/vt_unify_tkfac.cc'; fi`
+vtunify_mpi-vt_unify_tkfac.obj: vt_unify_tkfac.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtunify_mpi-vt_unify_tkfac.obj -MD -MP -MF $(DEPDIR)/vtunify_mpi-vt_unify_tkfac.Tpo -c -o vtunify_mpi-vt_unify_tkfac.obj `if test -f 'vt_unify_tkfac.cc'; then $(CYGPATH_W) 'vt_unify_tkfac.cc'; else $(CYGPATH_W) '$(srcdir)/vt_unify_tkfac.cc'; fi`
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/vtunify_mpi-vt_unify_tkfac.Tpo $(DEPDIR)/vtunify_mpi-vt_unify_tkfac.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTUNIFYSRCDIR)/vt_unify_tkfac.cc' object='vtunify_mpi-vt_unify_tkfac.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='vt_unify_tkfac.cc' object='vtunify_mpi-vt_unify_tkfac.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtunify_mpi-vt_unify_tkfac.obj `if test -f '$(VTUNIFYSRCDIR)/vt_unify_tkfac.cc'; then $(CYGPATH_W) '$(VTUNIFYSRCDIR)/vt_unify_tkfac.cc'; else $(CYGPATH_W) '$(srcdir)/$(VTUNIFYSRCDIR)/vt_unify_tkfac.cc'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtunify_mpi-vt_unify_tkfac.obj `if test -f 'vt_unify_tkfac.cc'; then $(CYGPATH_W) 'vt_unify_tkfac.cc'; else $(CYGPATH_W) '$(srcdir)/vt_unify_tkfac.cc'; fi`
 
-vtunify_mpi-vt_unify_usrcom.o: $(VTUNIFYSRCDIR)/vt_unify_usrcom.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtunify_mpi-vt_unify_usrcom.o -MD -MP -MF $(DEPDIR)/vtunify_mpi-vt_unify_usrcom.Tpo -c -o vtunify_mpi-vt_unify_usrcom.o `test -f '$(VTUNIFYSRCDIR)/vt_unify_usrcom.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/vt_unify_usrcom.cc
+vtunify_mpi-vt_unify_usrcom.o: vt_unify_usrcom.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtunify_mpi-vt_unify_usrcom.o -MD -MP -MF $(DEPDIR)/vtunify_mpi-vt_unify_usrcom.Tpo -c -o vtunify_mpi-vt_unify_usrcom.o `test -f 'vt_unify_usrcom.cc' || echo '$(srcdir)/'`vt_unify_usrcom.cc
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/vtunify_mpi-vt_unify_usrcom.Tpo $(DEPDIR)/vtunify_mpi-vt_unify_usrcom.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTUNIFYSRCDIR)/vt_unify_usrcom.cc' object='vtunify_mpi-vt_unify_usrcom.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='vt_unify_usrcom.cc' object='vtunify_mpi-vt_unify_usrcom.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtunify_mpi-vt_unify_usrcom.o `test -f '$(VTUNIFYSRCDIR)/vt_unify_usrcom.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/vt_unify_usrcom.cc
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtunify_mpi-vt_unify_usrcom.o `test -f 'vt_unify_usrcom.cc' || echo '$(srcdir)/'`vt_unify_usrcom.cc
 
-vtunify_mpi-vt_unify_usrcom.obj: $(VTUNIFYSRCDIR)/vt_unify_usrcom.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtunify_mpi-vt_unify_usrcom.obj -MD -MP -MF $(DEPDIR)/vtunify_mpi-vt_unify_usrcom.Tpo -c -o vtunify_mpi-vt_unify_usrcom.obj `if test -f '$(VTUNIFYSRCDIR)/vt_unify_usrcom.cc'; then $(CYGPATH_W) '$(VTUNIFYSRCDIR)/vt_unify_usrcom.cc'; else $(CYGPATH_W) '$(srcdir)/$(VTUNIFYSRCDIR)/vt_unify_usrcom.cc'; fi`
+vtunify_mpi-vt_unify_usrcom.obj: vt_unify_usrcom.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtunify_mpi-vt_unify_usrcom.obj -MD -MP -MF $(DEPDIR)/vtunify_mpi-vt_unify_usrcom.Tpo -c -o vtunify_mpi-vt_unify_usrcom.obj `if test -f 'vt_unify_usrcom.cc'; then $(CYGPATH_W) 'vt_unify_usrcom.cc'; else $(CYGPATH_W) '$(srcdir)/vt_unify_usrcom.cc'; fi`
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/vtunify_mpi-vt_unify_usrcom.Tpo $(DEPDIR)/vtunify_mpi-vt_unify_usrcom.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTUNIFYSRCDIR)/vt_unify_usrcom.cc' object='vtunify_mpi-vt_unify_usrcom.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='vt_unify_usrcom.cc' object='vtunify_mpi-vt_unify_usrcom.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtunify_mpi-vt_unify_usrcom.obj `if test -f '$(VTUNIFYSRCDIR)/vt_unify_usrcom.cc'; then $(CYGPATH_W) '$(VTUNIFYSRCDIR)/vt_unify_usrcom.cc'; else $(CYGPATH_W) '$(srcdir)/$(VTUNIFYSRCDIR)/vt_unify_usrcom.cc'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtunify_mpi-vt_unify_usrcom.obj `if test -f 'vt_unify_usrcom.cc'; then $(CYGPATH_W) 'vt_unify_usrcom.cc'; else $(CYGPATH_W) '$(srcdir)/vt_unify_usrcom.cc'; fi`
 
-vtunify_mpi-vt_unify_hooks_base.o: $(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_base.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtunify_mpi-vt_unify_hooks_base.o -MD -MP -MF $(DEPDIR)/vtunify_mpi-vt_unify_hooks_base.Tpo -c -o vtunify_mpi-vt_unify_hooks_base.o `test -f '$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_base.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_base.cc
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/vtunify_mpi-vt_unify_hooks_base.Tpo $(DEPDIR)/vtunify_mpi-vt_unify_hooks_base.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_base.cc' object='vtunify_mpi-vt_unify_hooks_base.o' libtool=no @AMDEPBACKSLASH@
+hooks/vtunify_mpi-vt_unify_hooks_base.o: hooks/vt_unify_hooks_base.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT hooks/vtunify_mpi-vt_unify_hooks_base.o -MD -MP -MF hooks/$(DEPDIR)/vtunify_mpi-vt_unify_hooks_base.Tpo -c -o hooks/vtunify_mpi-vt_unify_hooks_base.o `test -f 'hooks/vt_unify_hooks_base.cc' || echo '$(srcdir)/'`hooks/vt_unify_hooks_base.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) hooks/$(DEPDIR)/vtunify_mpi-vt_unify_hooks_base.Tpo hooks/$(DEPDIR)/vtunify_mpi-vt_unify_hooks_base.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='hooks/vt_unify_hooks_base.cc' object='hooks/vtunify_mpi-vt_unify_hooks_base.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtunify_mpi-vt_unify_hooks_base.o `test -f '$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_base.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_base.cc
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o hooks/vtunify_mpi-vt_unify_hooks_base.o `test -f 'hooks/vt_unify_hooks_base.cc' || echo '$(srcdir)/'`hooks/vt_unify_hooks_base.cc
 
-vtunify_mpi-vt_unify_hooks_base.obj: $(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_base.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtunify_mpi-vt_unify_hooks_base.obj -MD -MP -MF $(DEPDIR)/vtunify_mpi-vt_unify_hooks_base.Tpo -c -o vtunify_mpi-vt_unify_hooks_base.obj `if test -f '$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_base.cc'; then $(CYGPATH_W) '$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_base.cc'; else $(CYGPATH_W) '$(srcdir)/$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_base.cc'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/vtunify_mpi-vt_unify_hooks_base.Tpo $(DEPDIR)/vtunify_mpi-vt_unify_hooks_base.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_base.cc' object='vtunify_mpi-vt_unify_hooks_base.obj' libtool=no @AMDEPBACKSLASH@
+hooks/vtunify_mpi-vt_unify_hooks_base.obj: hooks/vt_unify_hooks_base.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT hooks/vtunify_mpi-vt_unify_hooks_base.obj -MD -MP -MF hooks/$(DEPDIR)/vtunify_mpi-vt_unify_hooks_base.Tpo -c -o hooks/vtunify_mpi-vt_unify_hooks_base.obj `if test -f 'hooks/vt_unify_hooks_base.cc'; then $(CYGPATH_W) 'hooks/vt_unify_hooks_base.cc'; else $(CYGPATH_W) '$(srcdir)/hooks/vt_unify_hooks_base.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) hooks/$(DEPDIR)/vtunify_mpi-vt_unify_hooks_base.Tpo hooks/$(DEPDIR)/vtunify_mpi-vt_unify_hooks_base.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='hooks/vt_unify_hooks_base.cc' object='hooks/vtunify_mpi-vt_unify_hooks_base.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtunify_mpi-vt_unify_hooks_base.obj `if test -f '$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_base.cc'; then $(CYGPATH_W) '$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_base.cc'; else $(CYGPATH_W) '$(srcdir)/$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_base.cc'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o hooks/vtunify_mpi-vt_unify_hooks_base.obj `if test -f 'hooks/vt_unify_hooks_base.cc'; then $(CYGPATH_W) 'hooks/vt_unify_hooks_base.cc'; else $(CYGPATH_W) '$(srcdir)/hooks/vt_unify_hooks_base.cc'; fi`
 
-vtunify_mpi-vt_unify_hooks_aevents.o: $(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_aevents.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtunify_mpi-vt_unify_hooks_aevents.o -MD -MP -MF $(DEPDIR)/vtunify_mpi-vt_unify_hooks_aevents.Tpo -c -o vtunify_mpi-vt_unify_hooks_aevents.o `test -f '$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_aevents.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_aevents.cc
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/vtunify_mpi-vt_unify_hooks_aevents.Tpo $(DEPDIR)/vtunify_mpi-vt_unify_hooks_aevents.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_aevents.cc' object='vtunify_mpi-vt_unify_hooks_aevents.o' libtool=no @AMDEPBACKSLASH@
+hooks/vtunify_mpi-vt_unify_hooks_aevents.o: hooks/vt_unify_hooks_aevents.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT hooks/vtunify_mpi-vt_unify_hooks_aevents.o -MD -MP -MF hooks/$(DEPDIR)/vtunify_mpi-vt_unify_hooks_aevents.Tpo -c -o hooks/vtunify_mpi-vt_unify_hooks_aevents.o `test -f 'hooks/vt_unify_hooks_aevents.cc' || echo '$(srcdir)/'`hooks/vt_unify_hooks_aevents.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) hooks/$(DEPDIR)/vtunify_mpi-vt_unify_hooks_aevents.Tpo hooks/$(DEPDIR)/vtunify_mpi-vt_unify_hooks_aevents.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='hooks/vt_unify_hooks_aevents.cc' object='hooks/vtunify_mpi-vt_unify_hooks_aevents.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtunify_mpi-vt_unify_hooks_aevents.o `test -f '$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_aevents.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_aevents.cc
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o hooks/vtunify_mpi-vt_unify_hooks_aevents.o `test -f 'hooks/vt_unify_hooks_aevents.cc' || echo '$(srcdir)/'`hooks/vt_unify_hooks_aevents.cc
 
-vtunify_mpi-vt_unify_hooks_aevents.obj: $(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_aevents.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtunify_mpi-vt_unify_hooks_aevents.obj -MD -MP -MF $(DEPDIR)/vtunify_mpi-vt_unify_hooks_aevents.Tpo -c -o vtunify_mpi-vt_unify_hooks_aevents.obj `if test -f '$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_aevents.cc'; then $(CYGPATH_W) '$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_aevents.cc'; else $(CYGPATH_W) '$(srcdir)/$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_aevents.cc'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/vtunify_mpi-vt_unify_hooks_aevents.Tpo $(DEPDIR)/vtunify_mpi-vt_unify_hooks_aevents.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_aevents.cc' object='vtunify_mpi-vt_unify_hooks_aevents.obj' libtool=no @AMDEPBACKSLASH@
+hooks/vtunify_mpi-vt_unify_hooks_aevents.obj: hooks/vt_unify_hooks_aevents.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT hooks/vtunify_mpi-vt_unify_hooks_aevents.obj -MD -MP -MF hooks/$(DEPDIR)/vtunify_mpi-vt_unify_hooks_aevents.Tpo -c -o hooks/vtunify_mpi-vt_unify_hooks_aevents.obj `if test -f 'hooks/vt_unify_hooks_aevents.cc'; then $(CYGPATH_W) 'hooks/vt_unify_hooks_aevents.cc'; else $(CYGPATH_W) '$(srcdir)/hooks/vt_unify_hooks_aevents.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) hooks/$(DEPDIR)/vtunify_mpi-vt_unify_hooks_aevents.Tpo hooks/$(DEPDIR)/vtunify_mpi-vt_unify_hooks_aevents.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='hooks/vt_unify_hooks_aevents.cc' object='hooks/vtunify_mpi-vt_unify_hooks_aevents.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtunify_mpi-vt_unify_hooks_aevents.obj `if test -f '$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_aevents.cc'; then $(CYGPATH_W) '$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_aevents.cc'; else $(CYGPATH_W) '$(srcdir)/$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_aevents.cc'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o hooks/vtunify_mpi-vt_unify_hooks_aevents.obj `if test -f 'hooks/vt_unify_hooks_aevents.cc'; then $(CYGPATH_W) 'hooks/vt_unify_hooks_aevents.cc'; else $(CYGPATH_W) '$(srcdir)/hooks/vt_unify_hooks_aevents.cc'; fi`
 
-vtunify_mpi-vt_unify_hooks_margins.o: $(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_margins.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtunify_mpi-vt_unify_hooks_margins.o -MD -MP -MF $(DEPDIR)/vtunify_mpi-vt_unify_hooks_margins.Tpo -c -o vtunify_mpi-vt_unify_hooks_margins.o `test -f '$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_margins.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_margins.cc
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/vtunify_mpi-vt_unify_hooks_margins.Tpo $(DEPDIR)/vtunify_mpi-vt_unify_hooks_margins.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_margins.cc' object='vtunify_mpi-vt_unify_hooks_margins.o' libtool=no @AMDEPBACKSLASH@
+hooks/vtunify_mpi-vt_unify_hooks_margins.o: hooks/vt_unify_hooks_margins.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT hooks/vtunify_mpi-vt_unify_hooks_margins.o -MD -MP -MF hooks/$(DEPDIR)/vtunify_mpi-vt_unify_hooks_margins.Tpo -c -o hooks/vtunify_mpi-vt_unify_hooks_margins.o `test -f 'hooks/vt_unify_hooks_margins.cc' || echo '$(srcdir)/'`hooks/vt_unify_hooks_margins.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) hooks/$(DEPDIR)/vtunify_mpi-vt_unify_hooks_margins.Tpo hooks/$(DEPDIR)/vtunify_mpi-vt_unify_hooks_margins.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='hooks/vt_unify_hooks_margins.cc' object='hooks/vtunify_mpi-vt_unify_hooks_margins.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtunify_mpi-vt_unify_hooks_margins.o `test -f '$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_margins.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_margins.cc
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o hooks/vtunify_mpi-vt_unify_hooks_margins.o `test -f 'hooks/vt_unify_hooks_margins.cc' || echo '$(srcdir)/'`hooks/vt_unify_hooks_margins.cc
 
-vtunify_mpi-vt_unify_hooks_margins.obj: $(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_margins.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtunify_mpi-vt_unify_hooks_margins.obj -MD -MP -MF $(DEPDIR)/vtunify_mpi-vt_unify_hooks_margins.Tpo -c -o vtunify_mpi-vt_unify_hooks_margins.obj `if test -f '$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_margins.cc'; then $(CYGPATH_W) '$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_margins.cc'; else $(CYGPATH_W) '$(srcdir)/$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_margins.cc'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/vtunify_mpi-vt_unify_hooks_margins.Tpo $(DEPDIR)/vtunify_mpi-vt_unify_hooks_margins.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_margins.cc' object='vtunify_mpi-vt_unify_hooks_margins.obj' libtool=no @AMDEPBACKSLASH@
+hooks/vtunify_mpi-vt_unify_hooks_margins.obj: hooks/vt_unify_hooks_margins.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT hooks/vtunify_mpi-vt_unify_hooks_margins.obj -MD -MP -MF hooks/$(DEPDIR)/vtunify_mpi-vt_unify_hooks_margins.Tpo -c -o hooks/vtunify_mpi-vt_unify_hooks_margins.obj `if test -f 'hooks/vt_unify_hooks_margins.cc'; then $(CYGPATH_W) 'hooks/vt_unify_hooks_margins.cc'; else $(CYGPATH_W) '$(srcdir)/hooks/vt_unify_hooks_margins.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) hooks/$(DEPDIR)/vtunify_mpi-vt_unify_hooks_margins.Tpo hooks/$(DEPDIR)/vtunify_mpi-vt_unify_hooks_margins.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='hooks/vt_unify_hooks_margins.cc' object='hooks/vtunify_mpi-vt_unify_hooks_margins.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtunify_mpi-vt_unify_hooks_margins.obj `if test -f '$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_margins.cc'; then $(CYGPATH_W) '$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_margins.cc'; else $(CYGPATH_W) '$(srcdir)/$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_margins.cc'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o hooks/vtunify_mpi-vt_unify_hooks_margins.obj `if test -f 'hooks/vt_unify_hooks_margins.cc'; then $(CYGPATH_W) 'hooks/vt_unify_hooks_margins.cc'; else $(CYGPATH_W) '$(srcdir)/hooks/vt_unify_hooks_margins.cc'; fi`
 
-vtunify_mpi-vt_unify_hooks_msgmatch_snaps.o: $(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_msgmatch_snaps.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtunify_mpi-vt_unify_hooks_msgmatch_snaps.o -MD -MP -MF $(DEPDIR)/vtunify_mpi-vt_unify_hooks_msgmatch_snaps.Tpo -c -o vtunify_mpi-vt_unify_hooks_msgmatch_snaps.o `test -f '$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_msgmatch_snaps.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_msgmatch_snaps.cc
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/vtunify_mpi-vt_unify_hooks_msgmatch_snaps.Tpo $(DEPDIR)/vtunify_mpi-vt_unify_hooks_msgmatch_snaps.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_msgmatch_snaps.cc' object='vtunify_mpi-vt_unify_hooks_msgmatch_snaps.o' libtool=no @AMDEPBACKSLASH@
+hooks/vtunify_mpi-vt_unify_hooks_msgmatch_snaps.o: hooks/vt_unify_hooks_msgmatch_snaps.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT hooks/vtunify_mpi-vt_unify_hooks_msgmatch_snaps.o -MD -MP -MF hooks/$(DEPDIR)/vtunify_mpi-vt_unify_hooks_msgmatch_snaps.Tpo -c -o hooks/vtunify_mpi-vt_unify_hooks_msgmatch_snaps.o `test -f 'hooks/vt_unify_hooks_msgmatch_snaps.cc' || echo '$(srcdir)/'`hooks/vt_unify_hooks_msgmatch_snaps.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) hooks/$(DEPDIR)/vtunify_mpi-vt_unify_hooks_msgmatch_snaps.Tpo hooks/$(DEPDIR)/vtunify_mpi-vt_unify_hooks_msgmatch_snaps.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='hooks/vt_unify_hooks_msgmatch_snaps.cc' object='hooks/vtunify_mpi-vt_unify_hooks_msgmatch_snaps.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtunify_mpi-vt_unify_hooks_msgmatch_snaps.o `test -f '$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_msgmatch_snaps.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_msgmatch_snaps.cc
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o hooks/vtunify_mpi-vt_unify_hooks_msgmatch_snaps.o `test -f 'hooks/vt_unify_hooks_msgmatch_snaps.cc' || echo '$(srcdir)/'`hooks/vt_unify_hooks_msgmatch_snaps.cc
 
-vtunify_mpi-vt_unify_hooks_msgmatch_snaps.obj: $(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_msgmatch_snaps.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtunify_mpi-vt_unify_hooks_msgmatch_snaps.obj -MD -MP -MF $(DEPDIR)/vtunify_mpi-vt_unify_hooks_msgmatch_snaps.Tpo -c -o vtunify_mpi-vt_unify_hooks_msgmatch_snaps.obj `if test -f '$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_msgmatch_snaps.cc'; then $(CYGPATH_W) '$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_msgmatch_snaps.cc'; else $(CYGPATH_W) '$(srcdir)/$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_msgmatch_snaps.cc'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/vtunify_mpi-vt_unify_hooks_msgmatch_snaps.Tpo $(DEPDIR)/vtunify_mpi-vt_unify_hooks_msgmatch_snaps.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_msgmatch_snaps.cc' object='vtunify_mpi-vt_unify_hooks_msgmatch_snaps.obj' libtool=no @AMDEPBACKSLASH@
+hooks/vtunify_mpi-vt_unify_hooks_msgmatch_snaps.obj: hooks/vt_unify_hooks_msgmatch_snaps.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT hooks/vtunify_mpi-vt_unify_hooks_msgmatch_snaps.obj -MD -MP -MF hooks/$(DEPDIR)/vtunify_mpi-vt_unify_hooks_msgmatch_snaps.Tpo -c -o hooks/vtunify_mpi-vt_unify_hooks_msgmatch_snaps.obj `if test -f 'hooks/vt_unify_hooks_msgmatch_snaps.cc'; then $(CYGPATH_W) 'hooks/vt_unify_hooks_msgmatch_snaps.cc'; else $(CYGPATH_W) '$(srcdir)/hooks/vt_unify_hooks_msgmatch_snaps.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) hooks/$(DEPDIR)/vtunify_mpi-vt_unify_hooks_msgmatch_snaps.Tpo hooks/$(DEPDIR)/vtunify_mpi-vt_unify_hooks_msgmatch_snaps.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='hooks/vt_unify_hooks_msgmatch_snaps.cc' object='hooks/vtunify_mpi-vt_unify_hooks_msgmatch_snaps.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtunify_mpi-vt_unify_hooks_msgmatch_snaps.obj `if test -f '$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_msgmatch_snaps.cc'; then $(CYGPATH_W) '$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_msgmatch_snaps.cc'; else $(CYGPATH_W) '$(srcdir)/$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_msgmatch_snaps.cc'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o hooks/vtunify_mpi-vt_unify_hooks_msgmatch_snaps.obj `if test -f 'hooks/vt_unify_hooks_msgmatch_snaps.cc'; then $(CYGPATH_W) 'hooks/vt_unify_hooks_msgmatch_snaps.cc'; else $(CYGPATH_W) '$(srcdir)/hooks/vt_unify_hooks_msgmatch_snaps.cc'; fi`
 
-vtunify_mpi-vt_unify_hooks_prof.o: $(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_prof.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtunify_mpi-vt_unify_hooks_prof.o -MD -MP -MF $(DEPDIR)/vtunify_mpi-vt_unify_hooks_prof.Tpo -c -o vtunify_mpi-vt_unify_hooks_prof.o `test -f '$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_prof.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_prof.cc
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/vtunify_mpi-vt_unify_hooks_prof.Tpo $(DEPDIR)/vtunify_mpi-vt_unify_hooks_prof.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_prof.cc' object='vtunify_mpi-vt_unify_hooks_prof.o' libtool=no @AMDEPBACKSLASH@
+hooks/vtunify_mpi-vt_unify_hooks_prof.o: hooks/vt_unify_hooks_prof.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT hooks/vtunify_mpi-vt_unify_hooks_prof.o -MD -MP -MF hooks/$(DEPDIR)/vtunify_mpi-vt_unify_hooks_prof.Tpo -c -o hooks/vtunify_mpi-vt_unify_hooks_prof.o `test -f 'hooks/vt_unify_hooks_prof.cc' || echo '$(srcdir)/'`hooks/vt_unify_hooks_prof.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) hooks/$(DEPDIR)/vtunify_mpi-vt_unify_hooks_prof.Tpo hooks/$(DEPDIR)/vtunify_mpi-vt_unify_hooks_prof.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='hooks/vt_unify_hooks_prof.cc' object='hooks/vtunify_mpi-vt_unify_hooks_prof.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtunify_mpi-vt_unify_hooks_prof.o `test -f '$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_prof.cc' || echo '$(srcdir)/'`$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_prof.cc
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o hooks/vtunify_mpi-vt_unify_hooks_prof.o `test -f 'hooks/vt_unify_hooks_prof.cc' || echo '$(srcdir)/'`hooks/vt_unify_hooks_prof.cc
 
-vtunify_mpi-vt_unify_hooks_prof.obj: $(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_prof.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtunify_mpi-vt_unify_hooks_prof.obj -MD -MP -MF $(DEPDIR)/vtunify_mpi-vt_unify_hooks_prof.Tpo -c -o vtunify_mpi-vt_unify_hooks_prof.obj `if test -f '$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_prof.cc'; then $(CYGPATH_W) '$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_prof.cc'; else $(CYGPATH_W) '$(srcdir)/$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_prof.cc'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/vtunify_mpi-vt_unify_hooks_prof.Tpo $(DEPDIR)/vtunify_mpi-vt_unify_hooks_prof.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_prof.cc' object='vtunify_mpi-vt_unify_hooks_prof.obj' libtool=no @AMDEPBACKSLASH@
+hooks/vtunify_mpi-vt_unify_hooks_prof.obj: hooks/vt_unify_hooks_prof.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -MT hooks/vtunify_mpi-vt_unify_hooks_prof.obj -MD -MP -MF hooks/$(DEPDIR)/vtunify_mpi-vt_unify_hooks_prof.Tpo -c -o hooks/vtunify_mpi-vt_unify_hooks_prof.obj `if test -f 'hooks/vt_unify_hooks_prof.cc'; then $(CYGPATH_W) 'hooks/vt_unify_hooks_prof.cc'; else $(CYGPATH_W) '$(srcdir)/hooks/vt_unify_hooks_prof.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) hooks/$(DEPDIR)/vtunify_mpi-vt_unify_hooks_prof.Tpo hooks/$(DEPDIR)/vtunify_mpi-vt_unify_hooks_prof.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='hooks/vt_unify_hooks_prof.cc' object='hooks/vtunify_mpi-vt_unify_hooks_prof.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtunify_mpi-vt_unify_hooks_prof.obj `if test -f '$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_prof.cc'; then $(CYGPATH_W) '$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_prof.cc'; else $(CYGPATH_W) '$(srcdir)/$(VTUNIFYSRCDIR)/hooks/vt_unify_hooks_prof.cc'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtunify_mpi_CXXFLAGS) $(CXXFLAGS) -c -o hooks/vtunify_mpi-vt_unify_hooks_prof.obj `if test -f 'hooks/vt_unify_hooks_prof.cc'; then $(CYGPATH_W) 'hooks/vt_unify_hooks_prof.cc'; else $(CYGPATH_W) '$(srcdir)/hooks/vt_unify_hooks_prof.cc'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
 
 clean-libtool:
 	-rm -rf .libs _libs
+	-rm -rf hooks/.libs hooks/_libs
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
@@ -1476,10 +1450,13 @@ install-strip:
 mostlyclean-generic:
 
 clean-generic:
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
 	-test . = "$(srcdir)" || test -z "$(CONFIG_CLEAN_VPATH_FILES)" || rm -f $(CONFIG_CLEAN_VPATH_FILES)
+	-rm -f hooks/$(DEPDIR)/$(am__dirstamp)
+	-rm -f hooks/$(am__dirstamp)
 
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
@@ -1490,7 +1467,7 @@ clean-am: clean-binPROGRAMS clean-generic clean-libLTLIBRARIES \
 	clean-libtool mostlyclean-am
 
 distclean: distclean-am
-	-rm -rf ./$(DEPDIR)
+	-rm -rf ./$(DEPDIR) hooks/$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -1536,7 +1513,7 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
-	-rm -rf ./$(DEPDIR)
+	-rm -rf ./$(DEPDIR) hooks/$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
@@ -1572,6 +1549,10 @@ uninstall-am: uninstall-binPROGRAMS uninstall-libLTLIBRARIES
 	mostlyclean-libtool pdf pdf-am ps ps-am tags uninstall \
 	uninstall-am uninstall-binPROGRAMS uninstall-libLTLIBRARIES
 
+
+$(COMMONSOURCES):
+	$(AM_V_at)$(MKDIR_P) `dirname $@`
+	$(LN_S) $(abs_top_srcdir)/tools/vtunify/$@ $@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

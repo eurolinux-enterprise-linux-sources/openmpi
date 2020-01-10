@@ -1,6 +1,9 @@
+.\" -*- nroff -*-
+.\" Copyright (c) 2012      Oracle and/or its affiliates.  All rights reserved.
 .\" Copyright 2012 Cisco Systems, Inc.  All rights reserved.
 .\" Copyright 2006-2008 Sun Microsystems, Inc.
 .\" Copyright (c) 1996 Thinking Machines Corporation
+.\" $COPYRIGHT$
 .TH MPI_Improbe 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
 .SH NAME
 \fBMPI_Improbe\fP \- Non-blocking matched probe for a message.
@@ -60,8 +63,8 @@ Fortran only: Error status (integer).
 
 .SH DESCRIPTION
 .ft R
-Like MPI_Probe and MPI_Iprobe, the MPI_Mprobe and MPI_Improbe opera-
-tions allow incoming messages to be queried without actually receiving
+Like MPI_Probe and MPI_Iprobe, the MPI_Mprobe and MPI_Improbe operations
+allow incoming messages to be queried without actually receiving
 them, except that MPI_Mprobe and MPI_Improbe provide a mechanism to
 receive the specific message that was matched regardless of other
 intervening probe or receive operations.  This gives the application

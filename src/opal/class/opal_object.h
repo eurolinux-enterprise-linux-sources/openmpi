@@ -1,3 +1,4 @@
+/* -*- Mode: C; c-basic-offset:4 ; indent-tabs-mode:nil -*- */
 /*
  * Copyright (c) 2004-2005 The Trustees of Indiana University and Indiana
  *                         University Research and Technology
@@ -9,7 +10,11 @@
  *                         University of Stuttgart.  All rights reserved.
  * Copyright (c) 2004-2005 The Regents of the University of California.
  *                         All rights reserved.
- * Copyright (c) 2007      Cisco Systems, Inc.  All rights reserved.
+ * Copyright (c) 2007-2014 Cisco Systems, Inc.  All rights reserved.
+ * Copyright (c) 2014      Research Organization for Information Science
+ *                         and Technology (RIST). All rights reserved.
+ * Copyright (c) 2015      Los Alamos National Security, LLC. All rights
+ *                         reserved.
  * $COPYRIGHT$
  * 
  * Additional copyrights may follow
@@ -122,7 +127,7 @@
 #include <stdlib.h>
 #endif  /* HAVE_STDLIB_H */
 
-#include "opal/sys/atomic.h"
+#include "opal/threads/thread_usage.h"
 
 BEGIN_C_DECLS
 
@@ -464,7 +469,11 @@ static inline opal_object_t *opal_obj_new(opal_class_t * cls)
     opal_object_t *object;
     assert(cls->cls_sizeof >= sizeof(opal_object_t));
 
+#if OMPI_WANT_MEMCHECKER
+    object = (opal_object_t *) calloc(1, cls->cls_sizeof);
+#else
     object = (opal_object_t *) malloc(cls->cls_sizeof);
+#endif
     if (0 == cls->cls_initialized) {
         opal_class_initialize(cls);
     }
@@ -490,7 +499,7 @@ static inline opal_object_t *opal_obj_new(opal_class_t * cls)
 static inline int opal_obj_update(opal_object_t *object, int inc) __opal_attribute_always_inline__;
 static inline int opal_obj_update(opal_object_t *object, int inc)
 {
-    return opal_atomic_add_32(&(object->obj_reference_count), inc);
+    return OPAL_THREAD_ADD32(&object->obj_reference_count, inc);
 }
 
 END_C_DECLS

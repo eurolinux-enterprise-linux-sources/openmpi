@@ -20,6 +20,8 @@
 # Copyright (c) 2013      Mellanox Technologies, Inc.
 #                         All rights reserved.
 # Copyright (c) 2013-2014 Intel, Inc.  All rights reserved.
+# Copyright (c) 2014      Research Organization for Information Science
+#                         and Technology (RIST). All rights reserved.
 # $COPYRIGHT$
 # 
 # Additional copyrights may follow
@@ -34,8 +36,7 @@
 
 # Load in everything found by autogen.pl
 m4_include([config/autogen_found_items.m4])
-# Load the version code.  Because this is also used directly as a
-# shell script, no ac_defun
+# Load the version number code
 m4_include([config/opal_get_version.m4])
 AC_LANG([C])
 
@@ -47,7 +48,7 @@ AC_LANG([C])
 # was set during autogen.sh.
 
 AC_INIT([project_name_long],
-        [m4_normalize(esyscmd([config/opal_get_version.sh VERSION --base]))],
+        [m4_normalize(esyscmd([config/opal_get_version.sh VERSION --tarball]))],
         [http://www.open-mpi.org/community/help/], [project_name_short])
 AC_PREREQ(2.60)
 AC_CONFIG_AUX_DIR(config)
@@ -148,6 +149,7 @@ m4_ifdef([project_orte],
          [AC_SUBST(libopen_rte_so_version)])
 m4_ifdef([project_oshmem],
          [AC_SUBST(liboshmem_so_version)])
+AC_SUBST(libmca_opal_common_libfabric_so_version)
 AC_SUBST(libmca_opal_common_hwloc_so_version)
 AC_SUBST(libmca_opal_common_pmi_so_version)
 AC_SUBST(libopen_pal_so_version)
@@ -171,24 +173,9 @@ AC_CONFIG_HEADERS([opal/include/opal_config.h])
 m4_ifdef([project_orte],
          [AC_CONFIG_HEADERS([orte/include/orte_config.h])])
 m4_ifdef([project_ompi],
-         [AC_CONFIG_HEADERS([ompi/include/ompi_config.h ompi/include/mpi.h])])
+         [AC_CONFIG_HEADERS([ompi/include/mpi.h])])
 m4_ifdef([project_oshmem],
-         [AC_CONFIG_HEADER([oshmem/include/oshmem_config.h oshmem/include/shmem.h])])
-
-# override/fixup the version numbers set by AC_INIT, since on
-# developer builds, there's no good way to know what the version is
-# before running configure :(.  We only use the base version number
-# (ie, no svn r numbers) for the version set in AC_INIT.  This will
-# always match reality because we add the VERSION file (the only way
-# to change the major.minor.release{greek}) into the configure
-# dependencies.  PACKAGE_VERSION the AC_DEFINE doesn't change once set
-# the first time -- AC_INIT's input (so it doesn't have an r number in
-# it).  PACKAGE_VERSION the AC_SUBST can be rewritten along the way,
-# and we'd like it to have the r number in it so that it shows up in
-# the tarball name, so it is set to the full version here.
-PACKAGE_VERSION="$OPAL_VERSION"
-PACKAGE_STRING="${PACKAGE_NAME} ${PACKAGE_VERSION}"
-VERSION="${PACKAGE_VERSION}"
+         [AC_CONFIG_HEADER([oshmem/include/shmem.h])])
 
 ompi_show_subtitle "Initialization, setup"
 
@@ -259,16 +246,16 @@ m4_ifdef([project_oshmem], [OSHMEM_CONFIGURE_OPTIONS])
 
 # Set up project specific AM_CONDITIONALs
 AS_IF([test "$enable_ompi" != "no"], [project_ompi_amc=true], [project_ompi_amc=false])
-m4_ifndef([project_ompi], [project_ompi_amc=no])
-AM_CONDITIONAL([PROJECT_OMPI], [$project_ompi_amc])
+m4_ifndef([project_ompi], [project_ompi_amc=false])
+AM_CONDITIONAL([PROJECT_OMPI], [test "$project_ompi_amc" = "true"])
 
 AS_IF([test "$enable_orte" != "no"], [project_orte_amc=true], [project_orte_amc=false])
 m4_ifndef([project_orte], [project_orte_amc=false])
-AM_CONDITIONAL([PROJECT_ORTE], [$project_orte_amc])
+AM_CONDITIONAL([PROJECT_ORTE], [test "$project_orte_amc" = "true"])
 
 AS_IF([test "$enable_oshmem" != "no"], [project_oshmem_amc=true], [project_oshmem_amc=false])
 m4_ifndef([project_oshmem], [project_oshmem_amc=false])
-AM_CONDITIONAL([PROJECT_OSHMEM], [$project_oshmem_amc])
+AM_CONDITIONAL([PROJECT_OSHMEM], [test "$project_oshmem_amc" = "true"])
 
 if test "$enable_binaries" = "no" -a "$enable_dist" = "yes"; then
     AC_MSG_WARN([--disable-binaries is incompatible with --enable dist])
@@ -483,42 +470,8 @@ OPAL_VAR_SCOPE_POP
 # Check for other compiler characteristics
 #
 
-OPAL_VAR_SCOPE_PUSH([CFLAGS_save])
-if test "$GCC" = "yes"; then
-
-    # gcc 2.96 will emit oodles of warnings if you use "inline" with
-    # -pedantic (which we do in developer builds).  However,
-    # "__inline__" is ok.  So we have to force gcc to select the
-    # right one.  If you use -pedantic, the AC_C_INLINE test will fail
-    # (because it names a function foo() -- without the (void)).  So
-    # we turn off all the picky flags, turn on -ansi mode (which is
-    # implied by -pedantic), and set warnings to be errors.  Hence,
-    # this does the following (for 2.96):
-    #
-    # - causes the check for "inline" to emit a warning, which then
-    # fails
-    # - checks for __inline__, which then emits no error, and works
-    #
-    # This also works nicely for gcc 3.x because "inline" will work on
-    # the first check, and all is fine.  :-)
-
-    CFLAGS_save=$CFLAGS
-    CFLAGS="$OMPI_CFLAGS_BEFORE_PICKY -Werror -ansi"
-fi
-AC_C_INLINE
-# Microsoft compilers support 2 versions of restrict. One for functions, and
-# one for variables. The problem is that they don't have an equivalent
-# syntax, and the autoconf restrict detection is unable to detect them
-# correctly. It detect the restrict keyword as __restrict which break the
-# rules for function syntax which is declspec(restrict).
-if test "x$ompi_cv_c_compiler_vendor" != "xmicrosoft"; then
-    AC_C_RESTRICT
-fi
 OMPI_C_WEAK_SYMBOLS
-if test "$GCC" = "yes"; then
-    CFLAGS=$CFLAGS_save
-fi
-OPAL_VAR_SCOPE_POP
+OMPI_C_MACRO_WEAK_SYMBOLS
 
 if test "x$CC" = "xicc"; then
     OMPI_CHECK_ICC_VARARGS
@@ -546,14 +499,15 @@ fi
 
 OPAL_CHECK_OFFSETOF
 
-# Setup OMPI bindings (if we're building the OMPI project).  Note that
-# opal_wrapper.c has a hard-coded use of the OMPI_ENABLE_MPI_PROFILING
-# macro, so we need to define it (to 0) even if we're not building the
-# OMPI project.
+# Setup profiling bindings (if we're building the relevant projects).
+# Note that opal_wrapper.c has a hard-coded use of the
+# OMPI_ENABLE_MPI_PROFILING macro, so we need to define it (to 0) even
+# if we're not building the OMPI project.
 
 m4_ifdef([project_ompi], [OMPI_SETUP_MPI_PROFILING],
                          [AC_DEFINE([OMPI_ENABLE_MPI_PROFILING], [0],
                                     [We are not building OMPI, so no profiling])])
+m4_ifdef([project_oshmem], [OSHMEM_SETUP_PROFILING])
 
 
 ##################################
@@ -611,8 +565,8 @@ m4_ifdef([project_ompi], [OMPI_SETUP_MPI_FORTRAN],
 ])
 
 AM_CONDITIONAL(OSHMEM_BUILD_FORTRAN_BINDINGS,
-    [test "$enable_oshmem" == "yes" -a "$ompi_fortran_happy" == "1" -a \
-          "$OMPI_WANT_FORTRAN_BINDINGS" == "1" -a \
+    [test "$enable_oshmem" = "yes" -a "$ompi_fortran_happy" = "1" -a \
+          "$OMPI_WANT_FORTRAN_BINDINGS" = "1" -a \
           "$enable_oshmem_fortran" != "no"])
 
 # checkpoint results
@@ -636,6 +590,7 @@ AC_CHECK_HEADERS([alloca.h aio.h arpa/inet.h dirent.h \
     sys/types.h sys/uio.h sys/un.h net/uio.h sys/utsname.h sys/vfs.h sys/wait.h syslog.h \
     time.h termios.h ulimit.h unistd.h util.h utmp.h malloc.h \
     ifaddrs.h crt_externs.h regex.h signal.h \
+    mntent.h paths.h \
     ioLib.h sockLib.h hostLib.h shlwapi.h sys/synch.h limits.h db.h ndbm.h])
 
 AC_CHECK_HEADERS([sys/mount.h], [], [],
@@ -804,10 +759,65 @@ AC_INCLUDES_DEFAULT
 #endif
 ])
 
+#
+# Check for ptrdiff type.  Yes, there are platforms where
+# sizeof(void*) != sizeof(long) (64 bit Windows, apparently).
+#
+AC_MSG_CHECKING([for pointer diff type])
+if test $ac_cv_type_ptrdiff_t = yes ; then
+    opal_ptrdiff_t="ptrdiff_t"
+    opal_ptrdiff_size=$ac_cv_sizeof_ptrdiff_t
+elif test $ac_cv_sizeof_void_p -eq $ac_cv_sizeof_long ; then
+    opal_ptrdiff_t="long"
+    opal_ptrdiff_size=$ac_cv_sizeof_long
+elif test $ac_cv_type_long_long = yes -a $ac_cv_sizeof_void_p -eq $ac_cv_sizeof_long_long ; then
+    opal_ptrdiff_t="long long"
+    opal_ptrdiff_size=$ac_cv_sizeof_long_long
+else
+    AC_MSG_ERROR([Could not find datatype to emulate ptrdiff_t.  Cannot continue])
+fi
+AC_DEFINE_UNQUOTED([OPAL_PTRDIFF_TYPE], [$opal_ptrdiff_t],
+    [type to use for ptrdiff_t])
+AC_MSG_RESULT([$opal_ptrdiff_t (size: $opal_ptrdiff_size)])
+
+#
+# Find corresponding types for MPI_Aint, MPI_Count, and MPI_Offset.
+# And if relevant, find the corresponding MPI_ADDRESS_KIND,
+# MPI_COUNT_KIND, and MPI_OFFSET_KIND.
+#
+m4_ifdef([project_ompi], [OMPI_FIND_MPI_AINT_COUNT_OFFSET])
+
 
 # checkpoint results
 AC_CACHE_SAVE
 
+##################################
+# Linker characteristics
+##################################
+
+AC_MSG_CHECKING([the linker for support for the -fini option])
+OPAL_VAR_SCOPE_PUSH([LDFLAGS_save])
+LDFLAGS_save=$LDFLAGS
+LDFLAGS="$LDFLAGS_save -Wl,-fini -Wl,finalize"
+AC_TRY_LINK([void finalize (void) {}], [], [AC_MSG_RESULT([yes])
+        opal_ld_have_fini=1], [AC_MSG_RESULT([no])
+        opal_ld_have_fini=0])
+LDFLAGS=$LDFLAGS_save
+OPAL_VAR_SCOPE_POP
+
+opal_destructor_use_fini=0
+opal_no_destructor=0
+if test x$opal_cv___attribute__destructor = x0 ; then
+    if test x$opal_ld_have_fini = x1 ; then
+        opal_destructor_use_fini=1
+    else
+        opal_no_destructor=1;
+    fi
+fi
+
+AC_DEFINE_UNQUOTED(OPAL_NO_LIB_DESTRUCTOR, [$opal_no_destructor],
+    [Whether libraries can be configured with destructor functions])
+AM_CONDITIONAL(OPAL_DESTRUCTOR_USE_FINI, [test x$opal_destructor_use_fini = x1])
 
 ##################################
 # Libraries
@@ -816,22 +826,22 @@ AC_CACHE_SAVE
 ompi_show_title "Library and Function tests"
 
 # Darwin doesn't need -lutil, as it's something other than this -lutil.
-OMPI_CHECK_FUNC_LIB([openpty], [util])
+OPAL_SEARCH_LIBS_CORE([openpty], [util])
 
-AC_CHECK_LIB([nsl], [gethostbyname])
+OPAL_SEARCH_LIBS_CORE([gethostbyname], [nsl])
 
-AC_CHECK_LIB([socket], [socket])
+OPAL_SEARCH_LIBS_CORE([socket], [socket])
 
 # Solaris has sched_yield in -lrt, usually in libc
-OMPI_CHECK_FUNC_LIB([sched_yield], [rt])
+OPAL_SEARCH_LIBS_CORE([sched_yield], [rt])
 
-# IRIX has dirname in -lgen, usually in libc
-OMPI_CHECK_FUNC_LIB([dirname], [gen])
+# IRIX and CentOS have dirname in -lgen, usually in libc
+OPAL_SEARCH_LIBS_CORE([dirname], [gen])
 
 # Darwin doesn't need -lm, as it's a symlink to libSystem.dylib
-OMPI_CHECK_FUNC_LIB([ceil], [m])
+OPAL_SEARCH_LIBS_CORE([ceil], [m])
 
-AC_CHECK_FUNCS([asprintf snprintf vasprintf vsnprintf openpty isatty getpwuid fork waitpid execve pipe ptsname setsid mmap tcgetpgrp posix_memalign strsignal sysconf syslog vsyslog regcmp regexec regfree _NSGetEnviron socketpair strncpy_s _strdup usleep mkfifo dbopen dbm_open statfs statvfs setpgid])
+AC_CHECK_FUNCS([asprintf snprintf vasprintf vsnprintf openpty isatty getpwuid fork waitpid execve pipe ptsname setsid mmap tcgetpgrp posix_memalign strsignal sysconf syslog vsyslog regcmp regexec regfree _NSGetEnviron socketpair strncpy_s usleep mkfifo dbopen dbm_open statfs statvfs setpgid  setenv])
 
 # Sanity check: ensure that we got at least one of statfs or statvfs.
 if test $ac_cv_func_statfs = no -a $ac_cv_func_statvfs = no; then
@@ -889,97 +899,6 @@ AC_CACHE_SAVE
 ##################################
 
 ompi_show_title "System-specific tests"
-
-#
-# Test to determine types of MPI_Offset and MPI_Count. This is searched in the
-# following order int64_t, long long, long, int. If none of these are 8 bytes,
-# then we should search for int32_t, long long, long, int. MPI_Count needs to
-# be at least as large as MPI_Offset and MPI_Aint.
-#
-MPI_OFFSET_TYPE="not found"
-MPI_OFFSET_DATATYPE="not found"
-AC_MSG_CHECKING([checking for type of MPI_Offset])
-if test $ac_cv_type_long_long = yes -a $ac_cv_sizeof_long_long = 8; then
-    MPI_OFFSET_TYPE="long long"
-    MPI_OFFSET_DATATYPE=MPI_LONG_LONG
-    MPI_OFFSET_SIZE=8
-    MPI_COUNT_TYPE="long long"
-    MPI_COUNT_SIZE=8
-elif test $ac_cv_type_long = yes -a $ac_cv_sizeof_long = 8; then
-    MPI_OFFSET_TYPE="long"
-    MPI_OFFSET_DATATYPE=MPI_LONG
-    MPI_OFFSET_SIZE=8
-    MPI_COUNT_TYPE="long"
-    MPI_COUNT_SIZE=8
-elif test $ac_cv_sizeof_int = 8; then
-    MPI_OFFSET_TYPE="int"
-    MPI_OFFSET_DATATYPE=MPI_INT
-    MPI_OFFSET_SIZE=8
-    MPI_COUNT_TYPE="int"
-    MPI_COUNT_SIZE=8
-elif test $ac_cv_type_long_long = yes -a $ac_cv_sizeof_long_long = 4; then
-    MPI_OFFSET_TYPE="long long"
-    MPI_OFFSET_DATATYPE=MPI_LONG_LONG
-    MPI_OFFSET_SIZE=4
-    MPI_COUNT_TYPE="long long"
-    MPI_COUNT_SIZE=4
-elif test $ac_cv_type_long = yes -a $ac_cv_sizeof_long = 4; then
-    MPI_OFFSET_TYPE="long"
-    MPI_OFFSET_DATATYPE=MPI_LONG
-    MPI_OFFSET_SIZE=4
-    MPI_COUNT_TYPE="long"
-    MPI_COUNT_SIZE=8
-elif test $ac_cv_sizeof_int = 4; then
-    MPI_OFFSET_TYPE="int"
-    MPI_OFFSET_DATATYPE=MPI_INT
-    MPI_OFFSET_SIZE=4
-    MPI_COUNT_TYPE="int"
-    MPI_COUNT_SIZE=8
-fi
-AC_MSG_RESULT([$MPI_OFFSET_TYPE])
-if test "$MPI_OFFSET_TYPE" = "not found"; then
-    AC_MSG_WARN([*** Unable to find the right definition for MPI_Offset and MPI_Count])
-    AC_MSG_ERROR([Cannot continue])
-fi
-AC_MSG_CHECKING([checking for an MPI datatype for MPI_Offset])
-AC_MSG_RESULT([$MPI_OFFSET_DATATYPE])
-# this should never happens
-if test "$MPI_OFFSET_DATATYPE" = "not found"; then
-    AC_MSG_WARN([*** Unable to find an MPI datatype corresponding to MPI_Offset])
-    AC_MSG_ERROR([Cannot continue])
-fi
-
-AC_DEFINE_UNQUOTED(OMPI_MPI_OFFSET_TYPE, $MPI_OFFSET_TYPE, [Type of MPI_Offset -- has to be defined here and typedef'ed later because mpi.h does not get AC SUBST's])
-AC_DEFINE_UNQUOTED(OMPI_MPI_OFFSET_SIZE, $MPI_OFFSET_SIZE, [Size of the MPI_Offset])
-AC_DEFINE_UNQUOTED(OMPI_OFFSET_DATATYPE, $MPI_OFFSET_DATATYPE, [MPI datatype corresponding to MPI_Offset])
-
-AC_DEFINE_UNQUOTED(OPAL_SIZEOF_LONG, $ac_cv_sizeof_long, "Size of 'long' type")
-
-if test $MPI_COUNT_SIZE -eq 8 ; then
-    MPI_COUNT_MAX="0x7fffffffffffffffll"
-elif test $MPI_COUNT_SIZE -eq 4 ; then
-    MPI_COUNT_MAX="0x7fffffffl"
-fi
-
-AC_DEFINE_UNQUOTED(OMPI_MPI_COUNT_SIZE, $MPI_COUNT_SIZE, [Size of the MPI_Count datatype])
-AC_DEFINE_UNQUOTED(OMPI_MPI_COUNT_TYPE, $MPI_COUNT_TYPE, [Type of the MPI_Count datatype])
-AC_DEFINE_UNQUOTED(MPI_COUNT_MAX, $MPI_COUNT_MAX, [Maximum value for an MPI_Count])
-
-#
-# Check for MPI_Aint type.  Yes, there are platforms where
-# sizeof(void*) != sizeof(long) (64 bit Windows, apparently).
-#
-if test $ac_cv_type_ptrdiff_t = yes ; then
-    opal_ptrdiff_t="ptrdiff_t"
-elif test $ac_cv_sizeof_void_p -eq $ac_cv_sizeof_long ; then
-    opal_ptrdiff_t="long"
-elif test $ac_cv_type_long_long = yes -a $ac_cv_sizeof_void_p -eq $ac_cv_sizeof_long_long ; then
-    opal_ptrdiff_t="long long"
-else
-    AC_MSG_ERROR([Could not find datatype to emulate ptrdiff_t.  Cannot continue])
-fi
-AC_DEFINE_UNQUOTED([OPAL_PTRDIFF_TYPE], [$opal_ptrdiff_t],
-    [type to use for ptrdiff_t])
 
 # Do we have _SC_NPROCESSORS_ONLN? (only going to pass if we also have
 # <unistd.h> and sysconf(), which is ok) OS X 10.4 has <unistd.h> and
@@ -1196,6 +1115,18 @@ m4_ifdef([project_ompi], [OMPI_REQUIRE_ENDPOINT_TAG_FINI])
 AC_CACHE_SAVE
 
 ##################################
+# CUDA: part two
+##################################
+
+# This is somewhat gross to have a configure check for a common MCA
+# component outside of the normal MCA checks, but this check must come
+# after the opal DL MCA checks have done.  Someday this could perhaps
+# be done better by having some kind of "run this check at the end of
+# all other MCA checks" hook...?
+
+OPAL_CHECK_CUDA_AFTER_OPAL_DL
+
+##################################
 # MPI Extended Interfaces
 ##################################
 
@@ -1256,8 +1187,6 @@ fi
 # a C++ compiler.
 AS_IF([test "$OMPI_WANT_FORTRAN_BINDINGS" != "1"],[F77=no FC=no])
 
-LT_CONFIG_LTDL_DIR([opal/libltdl], [subproject])
-LTDL_CONVENIENCE
 LT_INIT([dlopen win32-dll])
 
 # What's the suffix of shared libraries?  Inspired by generated
@@ -1293,8 +1222,6 @@ hpux9* | hpux10* | hpux11*)
 esac
 AC_SUBST(OPAL_DYN_LIB_PREFIX)
 AC_SUBST(OPAL_DYN_LIB_SUFFIX)
-
-OPAL_SETUP_LIBLTDL
 
 # Need the libtool binary before the rpathify stuff
 LT_OUTPUT

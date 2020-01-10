@@ -32,6 +32,10 @@ void mpit_unlock (void)
 
 int ompit_var_type_to_datatype (mca_base_var_type_t type, MPI_Datatype *datatype)
 {
+    if (!datatype) {
+        return OMPI_SUCCESS;
+    }
+
     switch (type) {
     case MCA_BASE_VAR_TYPE_INT:
         *datatype = MPI_INT;
@@ -62,14 +66,7 @@ int ompit_var_type_to_datatype (mca_base_var_type_t type, MPI_Datatype *datatype
         *datatype = MPI_CHAR;
         break;
     case MCA_BASE_VAR_TYPE_BOOL:
-        if (sizeof (bool) == sizeof (char)) {
-            *datatype = MPI_CHAR;
-        } else if (sizeof (bool) == sizeof (int)) {
-            *datatype = MPI_INT;
-        } else {
-            /* not supported -- fixme */
-            assert (0);
-        }
+        *datatype = MPI_INT;
         break;
     case MCA_BASE_VAR_TYPE_DOUBLE:
         *datatype = MPI_DOUBLE;

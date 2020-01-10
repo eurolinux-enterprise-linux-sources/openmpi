@@ -11,8 +11,10 @@
  * Copyright (c) 2004-2005 The Regents of the University of California.
  *                         All rights reserved.
  * Copyright (c) 2006      Cisco Systems, Inc.  All rights reserved.
- * Copyright (c) 2013      Los Alamos National Security, LLC.  All rights
+ * Copyright (c) 2013-2015 Los Alamos National Security, LLC.  All rights
  *                         reserved.
+ * Copyright (c) 2015      Research Organization for Information Science
+ *                         and Technology (RIST). All rights reserved.
  * $COPYRIGHT$
  * 
  * Additional copyrights may follow
@@ -62,7 +64,7 @@ int MPI_Put(const void *origin_addr, int origin_count, MPI_Datatype origin_datat
         } else if (NULL == target_datatype || 
                    MPI_DATATYPE_NULL == target_datatype) {
             rc = MPI_ERR_TYPE;
-        } else if ( target_disp < 0 ) {
+        } else if ( MPI_WIN_FLAVOR_DYNAMIC != win->w_flavor && target_disp < 0 ) {
             rc = MPI_ERR_DISP;
         } else {
             OMPI_CHECK_DATATYPE_FOR_ONE_SIDED(rc, origin_datatype, origin_count);
@@ -77,8 +79,7 @@ int MPI_Put(const void *origin_addr, int origin_count, MPI_Datatype origin_datat
 
     OPAL_CR_ENTER_LIBRARY();
 
-    /* XXX -- CONST -- do not cast away const -- update mca/osc */
-    rc = win->w_osc_module->osc_put((void *) origin_addr, origin_count, origin_datatype,
+    rc = win->w_osc_module->osc_put(origin_addr, origin_count, origin_datatype,
                                     target_rank, target_disp, target_count,
                                     target_datatype, win);
     OMPI_ERRHANDLER_RETURN(rc, win, rc, FUNC_NAME);

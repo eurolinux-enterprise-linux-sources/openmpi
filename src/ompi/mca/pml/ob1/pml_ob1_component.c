@@ -12,7 +12,7 @@
  *                         All rights reserved.
  * Copyright (c) 2007-2010 Cisco Systems, Inc.  All rights reserved.
  * Copyright (c) 2010      Oracle and/or its affiliates.  All rights reserved
- * Copyright (c) 2013      Los Alamos National Security, LLC. All rights
+ * Copyright (c) 2013-2015 Los Alamos National Security, LLC. All rights
  *                         reserved.
  * $COPYRIGHT$
  * 
@@ -217,24 +217,8 @@ static int mca_pml_ob1_component_register(void)
 
 static int mca_pml_ob1_component_open(void)
 {
-    mca_allocator_base_component_t* allocator_component;
-
     mca_pml_ob1_output = opal_output_open(NULL);
     opal_output_set_verbosity(mca_pml_ob1_output, mca_pml_ob1_verbose);
-
-    allocator_component = mca_allocator_component_lookup( mca_pml_ob1.allocator_name );
-    if(NULL == allocator_component) {
-        opal_output(0, "mca_pml_ob1_component_open: can't find allocator: %s\n", mca_pml_ob1.allocator_name);
-        return OMPI_ERROR;
-    }
-
-    mca_pml_ob1.allocator = allocator_component->allocator_init(true,
-                                                                mca_pml_ob1_seg_alloc,
-                                                                mca_pml_ob1_seg_free, NULL);
-    if(NULL == mca_pml_ob1.allocator) {
-        opal_output(0, "mca_pml_ob1_component_open: unable to initialize allocator\n");
-        return OMPI_ERROR;
-    }
 
     mca_pml_ob1.enabled = false; 
     return mca_base_framework_open(&ompi_bml_base_framework, 0);
@@ -259,14 +243,26 @@ mca_pml_ob1_component_init( int* priority,
                             bool enable_progress_threads,
                             bool enable_mpi_threads )
 {
+    mca_allocator_base_component_t* allocator_component;
+
     opal_output_verbose( 10, mca_pml_ob1_output,
                          "in ob1, my priority is %d\n", mca_pml_ob1.priority);
 
-    if((*priority) > mca_pml_ob1.priority) { 
-        *priority = mca_pml_ob1.priority;
+    *priority = mca_pml_ob1.priority;
+
+    allocator_component = mca_allocator_component_lookup( mca_pml_ob1.allocator_name );
+    if(NULL == allocator_component) {
+        opal_output(0, "mca_pml_ob1_component_init: can't find allocator: %s\n", mca_pml_ob1.allocator_name);
         return NULL;
     }
-    *priority = mca_pml_ob1.priority;
+
+    mca_pml_ob1.allocator = allocator_component->allocator_init(true,
+                                                                mca_pml_ob1_seg_alloc,
+                                                                mca_pml_ob1_seg_free, NULL);
+    if(NULL == mca_pml_ob1.allocator) {
+        opal_output(0, "mca_pml_ob1_component_init: unable to initialize allocator\n");
+        return NULL;
+    }
 
     if(OMPI_SUCCESS != mca_bml_base_init( enable_progress_threads, 
                                           enable_mpi_threads)) {
@@ -294,6 +290,18 @@ int mca_pml_ob1_component_fini(void)
         return OMPI_SUCCESS; /* never selected.. return success.. */  
     mca_pml_ob1.enabled = false;  /* not anymore */
 
+    /* return the static receive/send requests to the respective free list and
+     * let the free list handle destruction. */
+    if( NULL != mca_pml_ob1_recvreq ) {
+        OMPI_FREE_LIST_RETURN_MT (&mca_pml_base_recv_requests, (ompi_free_list_item_t *) mca_pml_ob1_recvreq);
+        mca_pml_ob1_recvreq = NULL;
+    }
+
+    if( NULL != mca_pml_ob1_sendreq ) {
+        OMPI_FREE_LIST_RETURN_MT (&mca_pml_base_send_requests, (ompi_free_list_item_t *) mca_pml_ob1_sendreq);
+        mca_pml_ob1_sendreq = NULL;
+    }
+
     OBJ_DESTRUCT(&mca_pml_ob1.rdma_pending);
     OBJ_DESTRUCT(&mca_pml_ob1.pckt_pending);
     OBJ_DESTRUCT(&mca_pml_ob1.recv_pending);
@@ -304,6 +312,7 @@ int mca_pml_ob1_component_fini(void)
     OBJ_DESTRUCT(&mca_pml_ob1.recv_frags);
     OBJ_DESTRUCT(&mca_pml_ob1.rdma_frags);
     OBJ_DESTRUCT(&mca_pml_ob1.lock);
+    OBJ_DESTRUCT(&mca_pml_ob1.send_ranges);
 
     if( NULL != mca_pml_ob1.allocator ) {
         (void)mca_pml_ob1.allocator->alc_finalize(mca_pml_ob1.allocator);

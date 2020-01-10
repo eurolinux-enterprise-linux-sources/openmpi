@@ -9,9 +9,11 @@
 #                         University of Stuttgart.  All rights reserved.
 # Copyright (c) 2004-2005 The Regents of the University of California.
 #                         All rights reserved.
-# Copyright (c) 2006-2012 Cisco Systems, Inc.  All rights reserved.
+# Copyright (c) 2006-2014 Cisco Systems, Inc.  All rights reserved.
 # Copyright (c) 2013      Mellanox Technologies, Inc.
 #                         All rights reserved.
+# Copyright (c) 2015      Research Organization for Information Science
+#                         and Technology (RIST). All rights reserved.
 # $COPYRIGHT$
 # 
 # Additional copyrights may follow
@@ -134,6 +136,10 @@
 # type: bool (0/1)
 %{!?allow_fortify_source: %define allow_fortify_source 1}
 
+# Select md5 packing algorithm, that src.rpm created on one distro can be read on another.
+%global _binary_filedigest_algorithm 1
+%global _source_filedigest_algorithm 1
+
 #############################################################################
 #
 # Configuration Logic
@@ -208,6 +214,7 @@ Vendor: %{?_vendorinfo:%{_vendorinfo}}%{!?_vendorinfo:%{_vendor}}
 Distribution: %{?_distribution:%{_distribution}}%{!?_distribution:%{_vendor}}
 Prefix: %{_prefix}
 Provides: mpi
+Provides: openmpi = %{version}
 BuildRoot: /var/tmp/%{name}-%{version}-%{release}-root
 %if %{disable_auto_requires}
 AutoReq: no
@@ -220,18 +227,19 @@ Requires: %{mpi_selector_rpm_name}
 %endif
 
 %description
-Open MPI is a project combining technologies and resources from
-several other projects (FT-MPI, LA-MPI, LAM/MPI, and PACX-MPI) in
-order to build the best MPI library available.
+Open MPI is an open source implementation of the Message Passing
+Interface specification (http://www.mpi-forum.org/) developed and
+maintained by a consortium of research, academic, and industry
+partners.
 
-The project includes implementation of SHMEM parallel
-programming library in the Partitioned Global Address Space.
-This library provides fast inter-processor communication for large
-messages using data passing and one-sided communication techniques.
-SHMEM API based on OpenSHMEM standard from http://www.openshmem.org/
+Open MPI also includes an implementation of the OpenSHMEM parallel
+programming API (http://www.openshmem.org/).  OpenSHMEM is a
+Partitioned Global Address Space (PGAS) abstraction layer, which
+provides fast inter-process communication using one-sided
+communication techniques.
 
 This RPM contains all the tools necessary to compile, link, and run
-Open MPI/SHMEM jobs.
+Open MPI and OpenSHMEM jobs.
 
 %if !%{build_all_in_one_rpm}
 
@@ -245,6 +253,8 @@ Open MPI/SHMEM jobs.
 Summary: Tools and plugin modules for running Open MPI/SHMEM jobs
 Group: Development/Libraries
 Provides: mpi
+Provides: openmpi = %{version}
+Provides: openmpi-runtime = %{version}
 %if %{disable_auto_requires}
 AutoReq: no
 %endif
@@ -253,19 +263,20 @@ Requires: %{modules_rpm_name}
 %endif
 
 %description runtime
-Open MPI is a project combining technologies and resources from several other
-projects (FT-MPI, LA-MPI, LAM/MPI, and PACX-MPI) in order to build the best
-MPI library available.
+Open MPI is an open source implementation of the Message Passing
+Interface specification (http://www.mpi-forum.org/) developed and
+maintained by a consortium of research, academic, and industry
+partners.
 
-The project includes implementation of SHMEM parallel
-programming library in the Partitioned Global Address Space.
-This library provides fast inter-processor communication for large
-messages using data passing and one-sided communication techniques.
-SHMEM API based on OpenSHMEM standard from http://www.openshmem.org/
+Open MPI also includes an implementation of the OpenSHMEM parallel
+programming API (http://www.openshmem.org/).  OpenSHMEM is a
+Partitioned Global Address Space (PGAS) abstraction layer, which
+provides fast inter-process communication using one-sided
+communication techniques.
 
 This subpackage provides general tools (mpirun, mpiexec, etc.) and the
 Module Component Architecture (MCA) base and plugins necessary for
-running Open MPI/SHMEM jobs.
+running Open MPI/OpenSHMEM jobs.
 
 %endif
 
@@ -281,21 +292,24 @@ Group: Development/Libraries
 %if %{disable_auto_requires}
 AutoReq: no
 %endif
+Provides: openmpi-devel = %{version}
 Requires: %{name}-runtime
 
 %description devel
-Open MPI is a project combining technologies and resources from
-several other projects (FT-MPI, LA-MPI, LAM/MPI, and PACX-MPI) in
-order to build the best MPI library available.
+Open MPI is an open source implementation of the Message Passing
+Interface specification (http://www.mpi-forum.org/) developed and
+maintained by a consortium of research, academic, and industry
+partners.
 
-The project includes implementation of SHMEM parallel
-programming library in the Partitioned Global Address Space.
-This library provides fast inter-processor communication for large
-messages using data passing and one-sided communication techniques.
-SHMEM API based on OpenSHMEM standard from http://www.openshmem.org/
+Open MPI also includes an implementation of the OpenSHMEM parallel
+programming API (http://www.openshmem.org/).  OpenSHMEM is a
+Partitioned Global Address Space (PGAS) abstraction layer, which
+provides fast inter-process communication using one-sided
+communication techniques.
 
-This subpackage provides the development files for Open MPI/SHMEM, such as
-wrapper compilers and header files for MPI/SHMEM development.
+This subpackage provides the development files for Open MPI/OpenSHMEM,
+such as wrapper compilers and header files for MPI/OpenSHMEM
+development.
 
 #############################################################################
 #
@@ -309,20 +323,22 @@ Group: Development/Documentation
 %if %{disable_auto_requires}
 AutoReq: no
 %endif
+Provides: openmpi-docs = %{version}
 Requires: %{name}-runtime
 
 %description docs
-Open MPI is a project combining technologies and resources from several other
-projects (FT-MPI, LA-MPI, LAM/MPI, and PACX-MPI) in order to build the best
-MPI library available.
+Open MPI is an open source implementation of the Message Passing
+Interface specification (http://www.mpi-forum.org/) developed and
+maintained by a consortium of research, academic, and industry
+partners.
 
-The project includes implementation of SHMEM parallel
-programming library in the Partitioned Global Address Space.
-This library provides fast inter-processor communication for large
-messages using data passing and one-sided communication techniques.
-SHMEM API based on OpenSHMEM standard from http://www.openshmem.org/
+Open MPI also includes an implementation of the OpenSHMEM parallel
+programming API (http://www.openshmem.org/).  OpenSHMEM is a
+Partitioned Global Address Space (PGAS) abstraction layer, which
+provides fast inter-process communication using one-sided
+communication techniques.
 
-This subpackage provides the documentation for Open MPI/SHMEM.
+This subpackage provides the documentation for Open MPI/OpenSHMEM.
 
 #############################################################################
 #
@@ -658,7 +674,14 @@ test "x$RPM_BUILD_ROOT" != "x" && rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-, root, root, -)
+%if %(test "%{_prefix}" = "/usr" && echo 1 || echo 0)
+%{_bindir}/*
+%{_includedir}/*
+%{_libdir}/*
+%{_datadir}
+%else
 %{_prefix}
+%endif
 # If the sysconfdir is not under the prefix, then list it explicitly.
 %if !%{sysconfdir_in_prefix}
 %{_sysconfdir}
@@ -694,7 +717,13 @@ test "x$RPM_BUILD_ROOT" != "x" && rm -rf $RPM_BUILD_ROOT
 
 %files runtime -f runtime.files
 %defattr(-, root, root, -)
-%dir %{_prefix}
+%if %(test "%{_prefix}" = "/usr" && echo 1 || echo 0)
+%{_bindir}/*
+%{_libdir}/*
+%{_datadir}
+%else
+%{_prefix}
+%endif
 # If the sysconfdir is not under the prefix, then list it explicitly.
 %if !%{sysconfdir_in_prefix}
 %{_sysconfdir}
@@ -717,9 +746,6 @@ test "x$RPM_BUILD_ROOT" != "x" && rm -rf $RPM_BUILD_ROOT
 %{shell_scripts_path}/%{shell_scripts_basename}.sh
 %{shell_scripts_path}/%{shell_scripts_basename}.csh
 %endif
-%dir %{_bindir}
-%dir %{_libdir}
-%dir %{_libdir}/openmpi
 %doc README INSTALL LICENSE
 %{_pkgdatadir}
 
@@ -744,6 +770,14 @@ test "x$RPM_BUILD_ROOT" != "x" && rm -rf $RPM_BUILD_ROOT
 #
 #############################################################################
 %changelog
+* Thu Nov 12 2015 Gilles Gouaillardet <gilles@rist.or.jp>
+- Revamp packaging when prefix is /usr
+
+* Mon Jul 07 2014 Jeff Squyres <jsquyres@cisco.com>
+- Several minor fixes from Oliver Lahaye: fix dates in changelog,
+  added %{?dist} tag to the Release field, and added some Provides
+  fields in case %{name} is overridden.
+
 * Mon Jun 24 2013 Igor Ivanov <Igor.Ivanov@itseez.com>
 - Add Open SHMEM parallel programming library as part of Open MPI
 
@@ -784,7 +818,7 @@ test "x$RPM_BUILD_ROOT" != "x" && rm -rf $RPM_BUILD_ROOT
   _FORTIFY_SOURCE processing on platforms where it just doesn't work
   (even with gcc; also reported by Jim Kusznir).
 
-* Thu Sep  8 2009 Jeff Squyres <jsquyres@cisco.com>
+* Tue Sep  8 2009 Jeff Squyres <jsquyres@cisco.com>
 - Change shell_scripts_basename to not include version number to
   accomodate what mpi-selector expects.
 
@@ -855,14 +889,14 @@ test "x$RPM_BUILD_ROOT" != "x" && rm -rf $RPM_BUILD_ROOT
 - Ensure to list sysconfdir in the files list if it's outside of the
   prefix.
 
-* Wed Mar 30 2006 Jeff Squyres <jsquyres@cisco.com>
+* Thu Mar 30 2006 Jeff Squyres <jsquyres@cisco.com>
 - Lots of bit rot updates
 - Reorganize and rename the subpackages
 - Add / formalize a variety of rpmbuild --define options
 - Comment out the docs subpackage for the moment (until we have some
   documentation -- coming in v1.1!)
 
-* Wed May 03 2005 Jeff Squyres <jsquyres@open-mpi.org>
+* Tue May 03 2005 Jeff Squyres <jsquyres@open-mpi.org>
 - Added some defines for LANL defaults
 - Added more defines for granulatirty of installation location for
   modulefile

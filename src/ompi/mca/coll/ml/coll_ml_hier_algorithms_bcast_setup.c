@@ -1,6 +1,11 @@
+/* -*- Mode: C; c-basic-offset:4 ; indent-tabs-mode:nil -*- */
 /*
  * Copyright (c) 2009-2012 Oak Ridge National Laboratory.  All rights reserved.
  * Copyright (c) 2009-2012 Mellanox Technologies.  All rights reserved.
+ * Copyright (c) 2014      Research Organization for Information Science
+ *                         and Technology (RIST). All rights reserved.
+ * Copyright (c) 2014      Los Alamos National Security, LLC. All rights
+ *                         reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -140,24 +145,23 @@ static int mca_coll_ml_build_bcast_dynamic_schedule_no_attributes(
                            *bcol_module;
 
     *coll_desc = (mca_coll_ml_collective_operation_description_t *)
-        malloc(sizeof(mca_coll_ml_collective_operation_description_t));
+        calloc(1, sizeof(mca_coll_ml_collective_operation_description_t));
     schedule = *coll_desc;
     if (NULL == schedule) {
-        ML_ERROR(("Can't allocate memory.\n"));
-        ret = OMPI_ERR_OUT_OF_RESOURCE;
-        goto Bcast_Setup_Error;
+        ML_ERROR(("Can't allocate memory."));
+        return OMPI_ERR_OUT_OF_RESOURCE;
     }
 
-    scratch_indx = (int *) malloc(sizeof(int) * (n_hiers));
+    scratch_indx = (int *) calloc(n_hiers, sizeof (int));
     if (NULL == scratch_indx) {
-        ML_ERROR(("Can't allocate memory.\n"));
+        ML_ERROR(("Can't allocate memory."));
         ret = OMPI_ERR_OUT_OF_RESOURCE;
         goto Bcast_Setup_Error;
     }
 
     scratch_num = (int *) malloc(sizeof(int) * (n_hiers));
     if (NULL == scratch_num) {
-        ML_ERROR(("Can't allocate memory.\n"));
+        ML_ERROR(("Can't allocate memory."));
         ret = OMPI_ERR_OUT_OF_RESOURCE;
         goto Bcast_Setup_Error;
     }
@@ -200,7 +204,7 @@ static int mca_coll_ml_build_bcast_dynamic_schedule_no_attributes(
     schedule->component_functions = (struct mca_coll_ml_compound_functions_t *)
             calloc(n_hiers, sizeof(struct mca_coll_ml_compound_functions_t));
     if (NULL == schedule->component_functions) {
-        ML_ERROR(("Can't allocate memory.\n"));
+        ML_ERROR(("Can't allocate memory."));
         ret = OMPI_ERR_OUT_OF_RESOURCE;
         goto Bcast_Setup_Error;
     }
@@ -310,24 +314,23 @@ static int mca_coll_ml_build_bcast_sequential_schedule_no_attributes(
                            *bcol_module;
 
     *coll_desc = (mca_coll_ml_collective_operation_description_t *)
-        malloc(sizeof(mca_coll_ml_collective_operation_description_t));
+        calloc(1, sizeof(mca_coll_ml_collective_operation_description_t));
     schedule = *coll_desc;
     if (NULL == schedule) {
-        ML_ERROR(("Can't allocate memory.\n"));
-        ret = OMPI_ERR_OUT_OF_RESOURCE;
-        goto Bcast_Setup_Error;
+        ML_ERROR(("Can't allocate memory."));
+        return OMPI_ERR_OUT_OF_RESOURCE;
     }
 
-    scratch_indx = (int *) malloc(sizeof(int) * (n_hiers));
+    scratch_indx = (int *) calloc(n_hiers, sizeof (int));
     if (NULL == scratch_indx) {
-        ML_ERROR(("Can't allocate memory.\n"));
+        ML_ERROR(("Can't allocate memory."));
         ret = OMPI_ERR_OUT_OF_RESOURCE;
         goto Bcast_Setup_Error;
     }
 
     scratch_num = (int *) malloc(sizeof(int) * (n_hiers));
     if (NULL == scratch_num) {
-        ML_ERROR(("Can't allocate memory.\n"));
+        ML_ERROR(("Can't allocate memory."));
         ret = OMPI_ERR_OUT_OF_RESOURCE;
         goto Bcast_Setup_Error;
     }
@@ -373,7 +376,7 @@ static int mca_coll_ml_build_bcast_sequential_schedule_no_attributes(
     schedule->component_functions = (struct mca_coll_ml_compound_functions_t *)
             calloc(n_hiers, sizeof(struct mca_coll_ml_compound_functions_t));
     if (NULL == schedule->component_functions) {
-        ML_ERROR(("Can't allocate memory.\n"));
+        ML_ERROR(("Can't allocate memory."));
         ret = OMPI_ERR_OUT_OF_RESOURCE;
         goto Bcast_Setup_Error;
     }
@@ -381,7 +384,7 @@ static int mca_coll_ml_build_bcast_sequential_schedule_no_attributes(
     schedule->comp_fn_arr = (struct mca_coll_ml_compound_functions_t **)
         calloc(n_hiers,sizeof(struct mca_coll_ml_compound_functions_t *));
     if (NULL == schedule->comp_fn_arr) {
-        ML_ERROR(("Can't allocate memory.\n"));
+        ML_ERROR(("Can't allocate memory."));
         ret = OMPI_ERR_OUT_OF_RESOURCE;
         goto Bcast_Setup_Error;
     }
@@ -515,6 +518,8 @@ Bcast_Setup_Error:
     if (NULL != schedule->comp_fn_arr) {
         free(schedule->comp_fn_arr);
     }
+    free (schedule);
+    *coll_desc = NULL;
 
     return ret;
 }
@@ -564,24 +569,23 @@ static int mca_coll_ml_build_bcast_known_schedule_no_attributes(
                            *bcol_module;
 
     *coll_desc = (mca_coll_ml_collective_operation_description_t *)
-        malloc(sizeof(mca_coll_ml_collective_operation_description_t));
+        calloc(1, sizeof(mca_coll_ml_collective_operation_description_t));
     schedule = *coll_desc;
     if (NULL == schedule) {
-        ML_ERROR(("Can't allocate memory.\n"));
-        ret = OMPI_ERR_OUT_OF_RESOURCE;
-        goto Bcast_Setup_Error;
+        ML_ERROR(("Can't allocate memory."));
+        return OMPI_ERR_OUT_OF_RESOURCE;
     }
 
-    scratch_indx = (int *) malloc(sizeof(int) * (n_hiers));
+    scratch_indx = (int *) calloc(n_hiers, sizeof (int));
     if (NULL == scratch_indx) {
-        ML_ERROR(("Can't allocate memory.\n"));
+        ML_ERROR(("Can't allocate memory."));
         ret = OMPI_ERR_OUT_OF_RESOURCE;
         goto Bcast_Setup_Error;
     }
 
     scratch_num = (int *) malloc(sizeof(int) * (n_hiers));
     if (NULL == scratch_num) {
-        ML_ERROR(("Can't allocate memory.\n"));
+        ML_ERROR(("Can't allocate memory."));
         ret = OMPI_ERR_OUT_OF_RESOURCE;
         goto Bcast_Setup_Error;
     }
@@ -593,7 +597,6 @@ static int mca_coll_ml_build_bcast_known_schedule_no_attributes(
         if (IS_BCOL_TYPE_IDENTICAL(prev_bcol, GET_BCOL(topo_info, i_hier))) {
             scratch_indx[i_hier] = scratch_indx[i_hier - 1] + 1;
         } else {
-            scratch_indx[i_hier] = 0;
             prev_bcol = GET_BCOL(topo_info, i_hier);
         }
     }
@@ -624,7 +627,7 @@ static int mca_coll_ml_build_bcast_known_schedule_no_attributes(
     schedule->component_functions = (struct mca_coll_ml_compound_functions_t *)
             calloc(n_hiers, sizeof(struct mca_coll_ml_compound_functions_t));
     if (NULL == schedule->component_functions) {
-        ML_ERROR(("Can't allocate memory.\n"));
+        ML_ERROR(("Can't allocate memory."));
         ret = OMPI_ERR_OUT_OF_RESOURCE;
         goto Bcast_Setup_Error;
     }
@@ -720,6 +723,8 @@ Bcast_Setup_Error:
     if (NULL != schedule->component_functions) {
         free(schedule->component_functions);
     }
+    free (schedule);
+    *coll_desc = NULL;
 
     return ret;
 }
@@ -799,4 +804,48 @@ int ml_coll_hier_bcast_setup(mca_coll_ml_module_t *ml_module)
 
     topo_info->hierarchical_algorithms[BCOL_BCAST] = NULL;
     return ret;
+}
+
+void ml_coll_hier_bcast_cleanup(mca_coll_ml_module_t *ml_module)
+{
+    /* Hierarchy Setup */
+    int i, alg;
+    int topo_index = 0;
+    mca_coll_ml_topology_t *topo_info = ml_module->topo_list;
+
+    assert (NULL != ml_module);
+
+    for (i = 0; i < ML_NUM_MSG; i++) {
+
+        switch (i) {
+            case ML_SMALL_MSG:
+            case ML_LARGE_MSG:
+                break;
+            default:
+                topo_info->hierarchical_algorithms[ML_BCAST] = NULL;
+                return;
+        }
+
+        alg = mca_coll_ml_component.coll_config[ML_BCAST][i].algorithm_id;
+        topo_index = ml_module->collectives_topology_map[ML_BCAST][alg];
+        if (ML_UNDEFINED == alg || ML_UNDEFINED == topo_index) {
+            ML_ERROR(("No topology index or algorithm was defined"));
+            topo_info->hierarchical_algorithms[ML_BCAST] = NULL;
+            return;
+        }
+
+        if (NULL != ml_module->coll_ml_bcast_functions[alg]) {
+            if (ML_BCAST_SMALL_DATA_KNOWN <= alg && ML_BCAST_LARGE_DATA_SEQUENTIAL >= alg) {
+                if (ml_module->coll_ml_bcast_functions[alg]->component_functions) {
+                    free(ml_module->coll_ml_bcast_functions[alg]->component_functions);
+                    ml_module->coll_ml_bcast_functions[alg]->component_functions = NULL;
+                }
+
+                free(ml_module->coll_ml_bcast_functions[alg]);
+                ml_module->coll_ml_bcast_functions[alg] = NULL;
+            } else {
+                topo_info->hierarchical_algorithms[ML_BCAST] = NULL;
+            }
+        }
+    }
 }

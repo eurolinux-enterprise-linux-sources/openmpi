@@ -2,24 +2,28 @@
 # Copyright (c) 2004-2007 The Trustees of Indiana University and Indiana
 #                         University Research and Technology
 #                         Corporation.  All rights reserved.
-# Copyright (c) 2004-2012 The University of Tennessee and The University
+# Copyright (c) 2004-2013 The University of Tennessee and The University
 #                         of Tennessee Research Foundation.  All rights
 #                         reserved.
 # Copyright (c) 2004-2009 High Performance Computing Center Stuttgart, 
 #                         University of Stuttgart.  All rights reserved.
 # Copyright (c) 2004-2005 The Regents of the University of California.
 #                         All rights reserved.
-# Copyright (c) 2006-2014 Cisco Systems, Inc.  All rights reserved.
-# Copyright (c) 2011-2012 Inria.  All rights reserved.
-# Copyright (c) 2011-2012 Universite Bordeaux 1
+# Copyright (c) 2006-2015 Cisco Systems, Inc.  All rights reserved.
+# Copyright (c) 2011-2013 Inria.  All rights reserved.
+# Copyright (c) 2011-2013 Universite Bordeaux 1
 # Copyright (c) 2013-2014 Los Alamos National Security, LLC. All rights
 #                         reserved.
+# Copyright (c) 2015      Research Organization for Information Science
+#                         and Technology (RIST). All rights reserved.
 # $COPYRIGHT$
 # 
 # Additional copyrights may follow
 # 
 # $HEADER$
 #
+
+include $(top_srcdir)/Makefile.man-page-rules
 
 SUBDIRS = profile
 
@@ -50,7 +54,16 @@ AM_CPPFLAGS = -DOMPI_PROFILE_LAYER=0 -DOMPI_COMPILING_FORTRAN_WRAPPERS=1
 #
 
 lib_LTLIBRARIES =
-libmpi_mpifh_la_LIBADD = $(top_builddir)/ompi/libmpi.la $(OMPI_MPIEXT_MPIFH_LIBS)
+noinst_LTLIBRARIES =
+CLEANFILES =
+# Note that we invoke some OPAL functions directly in libmpi_mpifh.la,
+# so we need to link in the OPAL library directly (pulling it in
+# indirectly via libmpi.la does not work on all platforms).
+libmpi_mpifh_la_LIBADD = \
+        $(top_builddir)/ompi/libmpi.la \
+        $(OMPI_MPIEXT_MPIFH_LIBS) \
+        $(OMPI_TOP_BUILDDIR)/opal/libopen-pal.la
+
 libmpi_mpifh_la_LDFLAGS = -version-info $(libmpi_mpifh_so_version)
 
 # Are we building the mpif.h bindings at all?
@@ -75,6 +88,55 @@ headers = \
 #
 libmpi_mpifh_la_SOURCES =
 
+# sizeof_f.f90 is generated based on some results from configure tests.
+CLEANFILES += sizeof_f.f90
+
+# The sizeof-mpif08*f90 file will generate a module which needs to be
+# cleaned
+MOSTLYCLEANFILES = *.mod
+
+# If we're building the MPI_SIZEOF interfaces, generate the source
+# code in sizeof_f.f90 (via a perl script).  Normally, we'd just add
+# sizeof_f.f90 to the libmpi_mpif_la_SOURCES and be done with it.
+# However, since this is the first *actual Fortran* source that we've
+# added to libmpi_mpif_la_SOURCEs, this causes Libtool to use the
+# *Fortran* linker to create the final libmpi_mpif.la library
+# (vs. using the C linker, as it has done for years).  This exposes an
+# unfortunate bug in the Absoft linker: it does not honor the order of
+# -Wl arguments, which basically causes the resulting libmpi_mpif.so
+# to be borked.
+#
+# To get around this, we compile sizeof_f.f90 into its own LT
+# convenience library, and then we LIBADD that convenience library
+# into the main libmpi_mpifh.la.  In this way, we basically trick
+# Libtool into still using the C linker to create libmpi_mpif.la, and
+# our -Wl flags therefore don't get re-ordered.
+#
+# All this being said, we can't rely on Automake/Libtool not figuring
+# out this workaround indefinitely.  So Jeff advised Absoft to fix
+# this bug in Sep 2014.
+if OMPI_BUILD_FORTRAN_MPIFH_BINDINGS
+
+if BUILD_FORTRAN_SIZEOF
+noinst_LTLIBRARIES += libmpi_mpifh_sizeof.la
+# Do not dist this file; it is generated
+nodist_libmpi_mpifh_sizeof_la_SOURCES = sizeof_f.f90
+libmpi_mpifh_la_LIBADD += libmpi_mpifh_sizeof.la
+endif
+
+sizeof_pl = $(top_srcdir)/ompi/mpi/fortran/base/gen-mpi-sizeof.pl
+
+sizeof_f.f90: $(top_builddir)/config.status
+sizeof_f.f90: $(sizeof_pl)
+sizeof_f.f90:
+	$(OMPI_V_GEN) $(sizeof_pl) \
+	    --impl=$@ --ierror=mandatory --mpi \
+	    --maxrank=$(OMPI_FORTRAN_MAX_ARRAY_RANK) \
+	    --generate=$(OMPI_FORTRAN_BUILD_SIZEOF) \
+	    --real16=$(OMPI_HAVE_FORTRAN_REAL16) \
+	    --complex32=$(OMPI_HAVE_FORTRAN_COMPLEX32)
+endif OMPI_BUILD_FORTRAN_MPIFH_BINDINGS
+
 if BUILD_MPI_FORTRAN_MPIFH_BINDINGS_LAYER
 libmpi_mpifh_la_SOURCES += \
         abort_f.c \
@@ -82,6 +144,8 @@ libmpi_mpifh_la_SOURCES += \
         add_error_code_f.c \
         add_error_string_f.c \
         address_f.c \
+        aint_add_f.c \
+        aint_diff_f.c \
         allgather_f.c \
         allgatherv_f.c \
         alloc_mem_f.c \
@@ -343,12 +407,17 @@ libmpi_mpifh_la_SOURCES += \
         rput_f.c \
         compare_and_swap_f.c \
         fetch_and_op_f.c \
+        win_allocate_f.c \
+        win_allocate_shared_f.c \
+        win_attach_f.c \
         win_call_errhandler_f.c \
         win_complete_f.c \
+        win_create_dynamic_f.c \
         win_create_errhandler_f.c \
         win_create_f.c \
         win_create_keyval_f.c \
         win_delete_attr_f.c \
+        win_detach_f.c \
         win_fence_f.c \
         win_free_f.c \
         win_free_keyval_f.c \
@@ -357,13 +426,17 @@ libmpi_mpifh_la_SOURCES += \
         win_get_group_f.c \
         win_get_name_f.c \
         win_lock_f.c \
+        win_lock_all_f.c \
         win_post_f.c \
         win_set_attr_f.c \
         win_set_errhandler_f.c \
         win_set_name_f.c \
+        win_shared_query_f.c \
         win_start_f.c \
+        win_sync_f.c \
         win_test_f.c \
         win_unlock_f.c \
+        win_unlock_all_f.c \
         win_wait_f.c \
         win_flush_f.c \
         win_flush_all_f.c \

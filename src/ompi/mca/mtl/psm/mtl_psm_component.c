@@ -12,6 +12,7 @@
  * Copyright (c) 2006-2010 QLogic Corporation. All rights reserved.
  * Copyright (c) 2012-2013 Los Alamos National Security, LLC.
  *                         All rights reserved.
+ * Copyright (c) 2014      Intel Corporation. All rights reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -36,8 +37,11 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+static int param_priority;
+
 static int ompi_mtl_psm_component_open(void);
 static int ompi_mtl_psm_component_close(void);
+static int ompi_mtl_psm_component_query(mca_base_module_t **module, int *priority);
 static int ompi_mtl_psm_component_register(void);
 
 static mca_mtl_base_module_t* ompi_mtl_psm_component_init( bool enable_progress_threads, 
@@ -52,14 +56,14 @@ mca_mtl_psm_component_t mca_mtl_psm_component = {
         {
             MCA_MTL_BASE_VERSION_2_0_0,
             
-            "psm", /* MCA component name */
-            OMPI_MAJOR_VERSION,  /* MCA component major version */
-            OMPI_MINOR_VERSION,  /* MCA component minor version */
-            OMPI_RELEASE_VERSION,  /* MCA component release version */
-            ompi_mtl_psm_component_open,  /* component open */
-            ompi_mtl_psm_component_close,  /* component close */
-	    NULL,
-	    ompi_mtl_psm_component_register
+            .mca_component_name = "psm",
+            .mca_component_major_version = OMPI_MAJOR_VERSION,
+            .mca_component_minor_version = OMPI_MINOR_VERSION,
+            .mca_component_release_version = OMPI_RELEASE_VERSION,
+            .mca_open_component = ompi_mtl_psm_component_open,
+            .mca_close_component = ompi_mtl_psm_component_close,
+            .mca_query_component = ompi_mtl_psm_component_query,
+            .mca_register_component_params = ompi_mtl_psm_component_register,
         },
         {
             /* The component is not checkpoint ready */
@@ -84,8 +88,17 @@ ompi_mtl_psm_component_register(void)
 #if PSM_VERNO >= 0x010d
     mca_base_var_enum_t *new_enum;
 #endif
-    int ret;
     
+
+    /* set priority high enough to beat ob1's default */
+    param_priority = 30;
+    (void) mca_base_component_var_register (&mca_mtl_psm_component.super.mtl_version,
+                                            "priority", "Priority of the PSM MTL component",
+                                            MCA_BASE_VAR_TYPE_INT, NULL, 0, 0,
+                                            OPAL_INFO_LVL_9,
+                                            MCA_BASE_VAR_SCOPE_READONLY,
+                                            &param_priority);
+
     ompi_mtl_psm.connect_timeout = 180;
     (void) mca_base_component_var_register(&mca_mtl_psm_component.super.mtl_version,
                                            "connect_timeout",
@@ -147,7 +160,7 @@ ompi_mtl_psm_component_register(void)
 
     ompi_mtl_psm.path_res_type = PSM_PATH_RES_NONE;
     mca_base_var_enum_create("mtl_psm_path_query", path_query_values, &new_enum);
-    ret = mca_base_component_var_register(&mca_mtl_psm_component.super.mtl_version,
+    (void) mca_base_component_var_register(&mca_mtl_psm_component.super.mtl_version,
                                           "path_query",
                                           "Path record query mechanisms",
                                           MCA_BASE_VAR_TYPE_INT, new_enum, 0, 0,
@@ -181,8 +194,28 @@ ompi_mtl_psm_component_open(void)
 }
 
 static int
+ompi_mtl_psm_component_query(mca_base_module_t **module, int *priority)
+{
+    /*
+     * if we get here it means that PSM is available so give high priority
+     */
+
+    *priority = param_priority;
+    *module = (mca_base_module_t *)&ompi_mtl_psm.super;
+    return OMPI_SUCCESS;
+}
+
+
+static int
 ompi_mtl_psm_component_close(void)
 {
+    return OMPI_SUCCESS;
+}
+
+static int
+get_num_total_procs(int *out_ntp)
+{
+    *out_ntp = (int)ompi_process_info.num_procs;
     return OMPI_SUCCESS;
 }
 
@@ -218,6 +251,7 @@ ompi_mtl_psm_component_init(bool enable_progress_threads,
     int	verno_major = PSM_VERNO_MAJOR;
     int verno_minor = PSM_VERNO_MINOR;
     int local_rank = -1, num_local_procs = 0;
+    int num_total_procs = 0;
 
     /* Compute the total number of processes on this host and our local rank
      * on that node. We need to provide PSM with these values so it can 
@@ -232,15 +266,13 @@ ompi_mtl_psm_component_init(bool enable_progress_threads,
         opal_output(0, "Cannot determine local rank. Cannot continue.\n");
         return NULL;
     }
-     
-    err = psm_error_register_handler(NULL /* no ep */,
-			             PSM_ERRHANDLER_NOP);
-    if (err) {
-        opal_output(0, "Error in psm_error_register_handler (error %s)\n", 
-		    psm_error_get_string(err));
-	return NULL;
+    if (OMPI_SUCCESS != get_num_total_procs(&num_total_procs)) {
+        opal_output(0, "Cannot determine total number of processes. "
+                    "Cannot continue.\n");
+        return NULL;
     }
-    
+
+     
 #if PSM_VERNO >= 0x010c
     /* Set infinipath debug level */
     err = psm_setopt(PSM_COMPONENT_CORE, 0, PSM_CORE_OPT_DEBUG, 
@@ -254,15 +286,24 @@ ompi_mtl_psm_component_init(bool enable_progress_threads,
     }
 #endif
     
-    /* Only allow for shm and ipath devices in 2.0 and earlier releases 
-     * (unless the user overrides the setting).
-     */
-    
-    if (PSM_VERNO >= 0x0104) {
-      setenv("PSM_DEVICES", "self,shm,ipath", 0);
-    }
-    else {
-      setenv("PSM_DEVICES", "shm,ipath", 0);
+    if (getenv("PSM_DEVICES") == NULL) {
+        /* Only allow for shm and ipath devices in 2.0 and earlier releases 
+         * (unless the user overrides the setting).
+         */
+        if (PSM_VERNO >= 0x0104) {
+            if (num_local_procs == num_total_procs) {
+                setenv("PSM_DEVICES", "self,shm", 0);
+	    } else {
+                setenv("PSM_DEVICES", "self,shm,ipath", 0);
+	    }
+        }
+        else {
+            if (num_local_procs == num_total_procs) {
+                setenv("PSM_DEVICES", "shm", 0);
+	    } else {
+                setenv("PSM_DEVICES", "shm,ipath", 0);
+	    }
+        }
     }
     
     err = psm_init(&verno_major, &verno_minor);
@@ -279,6 +320,15 @@ ompi_mtl_psm_component_init(bool enable_progress_threads,
     ompi_mtl_psm.super.mtl_request_size = 
       sizeof(mca_mtl_psm_request_t) - 
       sizeof(struct mca_mtl_request_t);
+
+    /* don't register the err handler until we know we will be active */
+    err = psm_error_register_handler(NULL /* no ep */,
+			             PSM_ERRHANDLER_NOP);
+    if (err) {
+        opal_output(0, "Error in psm_error_register_handler (error %s)\n", 
+		    psm_error_get_string(err));
+	return NULL;
+    }
     
     return &ompi_mtl_psm.super;
 }

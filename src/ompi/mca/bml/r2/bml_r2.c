@@ -1,19 +1,22 @@
-/* -*- Mode: C; c-basic-offset:4 ; -*- */
+/* -*- Mode: C; c-basic-offset:4 ; indent-tabs-mode:nil -*- */
 /*
  * Copyright (c) 2004-2007 The Trustees of Indiana University and Indiana
  *                         University Research and Technology
  *                         Corporation.  All rights reserved.
- * Copyright (c) 2004-2011 The University of Tennessee and The University
+ * Copyright (c) 2004-2014 The University of Tennessee and The University
  *                         of Tennessee Research Foundation.  All rights
  *                         reserved.
  * Copyright (c) 2004-2005 High Performance Computing Center Stuttgart, 
  *                         University of Stuttgart.  All rights reserved.
  * Copyright (c) 2004-2006 The Regents of the University of California.
  *                         All rights reserved.
- * Copyright (c) 2007-2012 Los Alamos National Security, LLC.  All rights
+ * Copyright (c) 2007-2014 Los Alamos National Security, LLC.  All rights
  *                         reserved. 
- * Copyright (c) 2008-2009 Cisco Systems, Inc.  All rights reserved.
+ * Copyright (c) 2008-2015 Cisco Systems, Inc.  All rights reserved.
  * Copyright (c) 2013      Intel, Inc. All rights reserved
+ * Copyright (c) 2014      NVIDIA Corporation.  All rights reserved.
+ * Copyright (c) 2014      Research Organization for Information Science
+ *                         and Technology (RIST). All rights reserved.
  * $COPYRIGHT$
  * 
  * Additional copyrights may follow
@@ -42,15 +45,6 @@ extern mca_bml_base_component_t mca_bml_r2_component;
 
 /* Names of all the BTL components that this BML is aware of */
 static char *btl_names = NULL;
-
-static inline unsigned int bml_base_log2(unsigned long val) {
-    unsigned int count = 0;
-    while(val > 0) {
-        val = val >> 1;
-        count++;
-    }
-    return count > 0 ? count-1: 0;
-}
 
 static int btl_exclusivity_compare(const void* arg1, const void* arg2)
 {
@@ -146,7 +140,6 @@ static int mca_bml_r2_add_procs( size_t nprocs,
     size_t p, p_index, n_new_procs = 0;
     struct mca_btl_base_endpoint_t ** btl_endpoints = NULL;  
     struct ompi_proc_t** new_procs = NULL; 
-    struct ompi_proc_t *unreach_proc = NULL;
     int rc, ret = OMPI_SUCCESS;
 
     if(0 == nprocs) {
@@ -216,7 +209,7 @@ static int mca_bml_r2_add_procs( size_t nprocs,
         /* for each proc that is reachable */
         for( p = 0; p < n_new_procs; p++ ) {
             if(opal_bitmap_is_set_bit(reachable, p)) {
-                ompi_proc_t *proc = new_procs[p]; 
+                ompi_proc_t *proc = new_procs[p];
                 mca_bml_base_endpoint_t * bml_endpoint = 
                     (mca_bml_base_endpoint_t*) proc->proc_endpoints[OMPI_PROC_ENDPOINT_TAG_BML]; 
                 mca_bml_base_btl_t* bml_btl; 
@@ -250,9 +243,22 @@ static int mca_bml_r2_add_procs( size_t nprocs,
                     /* skip this btl if the exclusivity is less than the previous */
                     if(bml_btl->btl->btl_exclusivity > btl->btl_exclusivity) {
                         btl->btl_del_procs(btl, 1, &proc, &btl_endpoints[p]);
+                        opal_output_verbose(20, ompi_btl_base_framework.framework_output, 
+                                            "mca: bml: Not using %s btl to %s on node %s "
+                                            "because %s btl has higher exclusivity (%d > %d)",
+                                            btl->btl_component->btl_version.mca_component_name,
+                                            OMPI_NAME_PRINT(&proc->proc_name), proc->proc_hostname,
+                                            bml_btl->btl->btl_component->btl_version.mca_component_name,
+                                            bml_btl->btl->btl_exclusivity,
+                                            btl->btl_exclusivity);
                         continue;
                     }
                 }
+                opal_output_verbose(1, ompi_btl_base_framework.framework_output, 
+                                    "mca: bml: Using %s btl to %s on node %s",
+                                    btl->btl_component->btl_version.mca_component_name,
+                                    OMPI_NAME_PRINT(&proc->proc_name),
+                                    proc->proc_hostname);
 
                 /* cache the endpoint on the proc */
                 bml_btl = mca_bml_base_btl_array_insert(&bml_endpoint->btl_send);
@@ -394,32 +400,28 @@ static int mca_bml_r2_add_procs( size_t nprocs,
     }
 
     /* see if we have a connection to everyone else */
-    for(p=0; p<n_new_procs; p++) {
+    for(p = 0; p < n_new_procs; p++) {
         ompi_proc_t *proc = new_procs[p];
 
         if (NULL == proc->proc_endpoints[OMPI_PROC_ENDPOINT_TAG_BML]) {
-            if (NULL == unreach_proc) {
-                unreach_proc = proc;
-            }
             ret = OMPI_ERR_UNREACH;
+            if (mca_bml_r2.show_unreach_errors) {
+                opal_show_help("help-mca-bml-r2.txt",
+                               "unreachable proc",
+                               true, 
+                               OMPI_NAME_PRINT(&(ompi_proc_local_proc->proc_name)),
+                               (NULL != ompi_proc_local_proc->proc_hostname ?
+                                ompi_proc_local_proc->proc_hostname : "unknown!"),
+                               OMPI_NAME_PRINT(&(proc->proc_name)),
+                               (NULL != proc->proc_hostname ?
+                                proc->proc_hostname : "unknown!"),
+                               btl_names);
+            }
+            break;
         }
     }
 
-    if (mca_bml_r2.show_unreach_errors && 
-        OMPI_ERR_UNREACH == ret) {
-        opal_show_help("help-mca-bml-r2.txt",
-                       "unreachable proc",
-                       true, 
-                       OMPI_NAME_PRINT(&(ompi_proc_local_proc->proc_name)),
-                       (NULL != ompi_proc_local_proc->proc_hostname ?
-                        ompi_proc_local_proc->proc_hostname : "unknown!"),
-                       OMPI_NAME_PRINT(&(unreach_proc->proc_name)),
-                       (NULL != ompi_proc_local_proc->proc_hostname ?
-                        ompi_proc_local_proc->proc_hostname : "unknown!"),
-                       btl_names);
-    }
-
-    free(new_procs); 
+    free(new_procs);
 
     return ret;
 }
@@ -444,60 +446,46 @@ static int mca_bml_r2_del_procs(size_t nprocs,
 
     for(p = 0; p < nprocs; p++) { 
         ompi_proc_t *proc = procs[p]; 
-        if(((opal_object_t*)proc)->obj_reference_count == 1) { 
+        /* We much check that there are 2 references to the proc (not 1). The
+         * first reference belongs to ompi/proc the second belongs to the bml
+         * since we retained it. We will release that reference at the end of
+         * the loop below. */
+        if(((opal_object_t*)proc)->obj_reference_count == 2) {
             del_procs[n_del_procs++] = proc; 
         }
     }
-    
+
     for(p = 0; p < n_del_procs; p++) {
         ompi_proc_t *proc = del_procs[p];
         mca_bml_base_endpoint_t* bml_endpoint =
             (mca_bml_base_endpoint_t*) proc->proc_endpoints[OMPI_PROC_ENDPOINT_TAG_BML];
         size_t f_index, f_size;
-        size_t n_index, n_size;
- 
+
         /* notify each btl that the proc is going away */
-        f_size = mca_bml_base_btl_array_get_size(&bml_endpoint->btl_eager);
+        f_size = mca_bml_base_btl_array_get_size(&bml_endpoint->btl_send);
         for(f_index = 0; f_index < f_size; f_index++) {
-            mca_bml_base_btl_t* bml_btl = mca_bml_base_btl_array_get_index(&bml_endpoint->btl_eager, f_index);
+            mca_bml_base_btl_t* bml_btl = mca_bml_base_btl_array_get_index(&bml_endpoint->btl_send, f_index);
             mca_btl_base_module_t* btl = bml_btl->btl;
-            
-            rc = btl->btl_del_procs(btl,1,&proc,&bml_btl->btl_endpoint);
+
+            rc = btl->btl_del_procs(btl, 1, &proc, &bml_btl->btl_endpoint);
             if(OMPI_SUCCESS != rc) {
+                free(del_procs);
                 return rc;
             }
 
-            /* remove this from next array so that we dont call it twice w/ 
-             * the same address pointer
+            /* The reference stored in btl_eager and btl_rdma will automatically
+             * dissapear once the btl_array destructor is called. Thus, there is
+             * no need for extra cleaning here.
              */
-            n_size = mca_bml_base_btl_array_get_size(&bml_endpoint->btl_eager);
-            for(n_index = 0; n_index < n_size; n_index++) {
-                mca_bml_base_btl_t* search_bml_btl = mca_bml_base_btl_array_get_index(&bml_endpoint->btl_send, n_index);
-                if(search_bml_btl->btl == btl) {
-                    memset(search_bml_btl, 0, sizeof(mca_bml_base_btl_t));
-                    break;
-                }
-            }
         }
 
-        /* notify each r2 that was not in the array of r2s for first fragments */
-        n_size = mca_bml_base_btl_array_get_size(&bml_endpoint->btl_send);
-        for(n_index = 0; n_index < n_size; n_index++) {
-            mca_bml_base_btl_t* bml_btl = mca_bml_base_btl_array_get_index(&bml_endpoint->btl_eager, n_index);
-            mca_btl_base_module_t* btl = bml_btl->btl;
-            if (btl != 0) {
-                rc = btl->btl_del_procs(btl,1,&proc,&bml_btl->btl_endpoint);
-                if(OMPI_SUCCESS != rc) {
-                    return rc;
-                }
-            }
-        }
-        
-        OBJ_RELEASE(proc); 
+        OBJ_RELEASE(proc);
         /* do any required cleanup */
         OBJ_RELEASE(bml_endpoint);
-        
+        proc->proc_endpoints[OMPI_PROC_ENDPOINT_TAG_BML] = NULL;
     }
+    free(del_procs);
+
     return OMPI_SUCCESS;
 }
 

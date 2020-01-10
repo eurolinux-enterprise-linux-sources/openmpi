@@ -13,7 +13,6 @@
 #include "opal/datatype/opal_convertor.h"
 
 #include "btl_usnic.h"
-#include "btl_usnic_module.h"
 
 #ifndef MIN
 #  define MIN(a,b)                ((a) < (b) ? (a) : (b))
@@ -75,37 +74,52 @@ usnic_convertor_pack_simple(
     }
 }
 
+static inline int
+usnic_netmask_to_cidrlen(
+    uint32_t netmask_be)
+{
+    return 33 - ffs(ntohl(netmask_be));
+}
+
+static inline uint32_t
+usnic_cidrlen_to_netmask(
+    int cidrlen)
+{
+    uint32_t mask;
+
+    mask = ~0 << (32 - cidrlen);
+    return htonl(mask);
+}
+
 /*
  * Safely (but abnornmally) exit this process without abort()'ing (and
  * leaving a corefile).
  */
-void ompi_btl_usnic_exit(void);
+struct opal_btl_usnic_module_t;
+void opal_btl_usnic_exit(struct opal_btl_usnic_module_t *module);
 
 /*
- * If cidrmask==0, it is not included in the output string.  addr is
+ * Print a show_help message and then call opal_btl_usnic_exit().
+ */
+void opal_btl_usnic_util_abort(const char *msg, const char *file, int line);
+
+/*
+ * Long enough to hold "xxx.xxx.xxx.xxx/xx"
+ */
+#define IPV4STRADDRLEN 20
+
+/*
+ * If netmask==0, it is not included in the output string.  addr is
  * expected to be in network byte order.
  */
-void ompi_btl_usnic_snprintf_ipv4_addr(char *out, size_t maxlen,
-                                       uint32_t addr, uint32_t cidrmask);
+void opal_btl_usnic_snprintf_ipv4_addr(char *out, size_t maxlen,
+                                       uint32_t addr, uint32_t netmask);
 
-void ompi_btl_usnic_sprintf_mac(char *out, const uint8_t mac[6]);
+void opal_btl_usnic_snprintf_bool_array(char *s, size_t slen, bool a[], size_t alen);
 
-void ompi_btl_usnic_sprintf_gid_mac(char *out, union ibv_gid *gid);
+void opal_btl_usnic_dump_hex(void *vaddr, int len);
 
-void ompi_btl_usnic_snprintf_bool_array(char *s, size_t slen, bool a[], size_t alen);
-
-int ompi_btl_usnic_find_ip(ompi_btl_usnic_module_t *module, uint8_t mac[6]);
-
-void ompi_btl_usnic_gid_to_mac(union ibv_gid *gid, uint8_t mac[6]);
-
-void ompi_btl_usnic_dump_hex(uint8_t *addr, int len);
-
-uint32_t ompi_btl_usnic_get_ipv4_subnet(uint32_t addrn, uint32_t cidr_len);
-
-void ompi_btl_usnic_util_abort(const char *msg, const char *file, int line,
-                               int ret);
-
-size_t ompi_btl_usnic_convertor_pack_peek(const opal_convertor_t *conv,
+size_t opal_btl_usnic_convertor_pack_peek(const opal_convertor_t *conv,
                                           size_t max_len);
 
 #endif /* BTL_USNIC_UTIL_H */

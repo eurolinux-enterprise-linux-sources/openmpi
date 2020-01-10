@@ -375,9 +375,7 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 @AMHAVEMPI_TRUE@SUBDIRS = . mpi
-OTFPROFILESRCDIR = $(srcdir)
 COMMONINCLUDES = \
-	-I$(OTFPROFILESRCDIR) \
 	-I$(top_builddir)/otflib -I$(top_srcdir)/otflib \
 	-I$(top_builddir)/otfauxlib -I$(top_srcdir)/otfauxlib
 
@@ -385,31 +383,30 @@ COMMONCXXFLAGS =
 COMMONLDADD = $(top_builddir)/otflib/libopen-trace-format.la $(MATHLIB)
 COMMONDEPENDENCIES = $(top_builddir)/otflib/libopen-trace-format.la
 COMMONSOURCES = \
-	$(OTFPROFILESRCDIR)/clustering.h \
-	$(OTFPROFILESRCDIR)/collect_data.h \
-        $(OTFPROFILESRCDIR)/collect_dispersion.h \
-	$(OTFPROFILESRCDIR)/comparison.h \
-	$(OTFPROFILESRCDIR)/create_csv.h \
-	$(OTFPROFILESRCDIR)/create_marker.h \
-	$(OTFPROFILESRCDIR)/create_latex.h \
-	$(OTFPROFILESRCDIR)/create_filter.h \
-	$(OTFPROFILESRCDIR)/datastructs.h \
-	$(OTFPROFILESRCDIR)/otfprofile.h \
-	$(OTFPROFILESRCDIR)/process_dispersion.h \
-	$(OTFPROFILESRCDIR)/summarize_data.h \
-	$(OTFPROFILESRCDIR)/clustering.cpp \
-	$(OTFPROFILESRCDIR)/collect_data.cpp \
-        $(OTFPROFILESRCDIR)/collect_dispersion.cpp \
-	$(OTFPROFILESRCDIR)/comparison_clinkage.cpp \
-	$(OTFPROFILESRCDIR)/comparison_kmeans.cpp \
-	$(OTFPROFILESRCDIR)/create_csv.cpp \
-	$(OTFPROFILESRCDIR)/create_marker.cpp \
-	$(OTFPROFILESRCDIR)/create_latex.cpp \
-	$(OTFPROFILESRCDIR)/create_filter.cpp \
-	$(OTFPROFILESRCDIR)/otfprofile.cpp \
-	$(OTFPROFILESRCDIR)/process_dispersion.cpp \
-	$(OTFPROFILESRCDIR)/summarize_data.cpp \
-	$(OTFPROFILESRCDIR)/summarize_data.h
+	clustering.h \
+	collect_data.h \
+        collect_dispersion.h \
+	comparison.h \
+	create_csv.h \
+	create_marker.h \
+	create_latex.h \
+	create_filter.h \
+	datastructs.h \
+	otfprofile.h \
+	process_dispersion.h \
+	summarize_data.h \
+	clustering.cpp \
+	collect_data.cpp \
+        collect_dispersion.cpp \
+	comparison_clinkage.cpp \
+	comparison_kmeans.cpp \
+	create_csv.cpp \
+	create_marker.cpp \
+	create_latex.cpp \
+	create_filter.cpp \
+	otfprofile.cpp \
+	process_dispersion.cpp \
+	summarize_data.cpp
 
 AM_CPPFLAGS = $(COMMONINCLUDES)
 otfprofile_CXXFLAGS = $(COMMONCXXFLAGS)
@@ -541,173 +538,173 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LTCXXCOMPILE) -c -o $@ $<
 
-otfprofile-clustering.o: $(OTFPROFILESRCDIR)/clustering.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -MT otfprofile-clustering.o -MD -MP -MF $(DEPDIR)/otfprofile-clustering.Tpo -c -o otfprofile-clustering.o `test -f '$(OTFPROFILESRCDIR)/clustering.cpp' || echo '$(srcdir)/'`$(OTFPROFILESRCDIR)/clustering.cpp
+otfprofile-clustering.o: clustering.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -MT otfprofile-clustering.o -MD -MP -MF $(DEPDIR)/otfprofile-clustering.Tpo -c -o otfprofile-clustering.o `test -f 'clustering.cpp' || echo '$(srcdir)/'`clustering.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/otfprofile-clustering.Tpo $(DEPDIR)/otfprofile-clustering.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(OTFPROFILESRCDIR)/clustering.cpp' object='otfprofile-clustering.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='clustering.cpp' object='otfprofile-clustering.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -c -o otfprofile-clustering.o `test -f '$(OTFPROFILESRCDIR)/clustering.cpp' || echo '$(srcdir)/'`$(OTFPROFILESRCDIR)/clustering.cpp
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -c -o otfprofile-clustering.o `test -f 'clustering.cpp' || echo '$(srcdir)/'`clustering.cpp
 
-otfprofile-clustering.obj: $(OTFPROFILESRCDIR)/clustering.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -MT otfprofile-clustering.obj -MD -MP -MF $(DEPDIR)/otfprofile-clustering.Tpo -c -o otfprofile-clustering.obj `if test -f '$(OTFPROFILESRCDIR)/clustering.cpp'; then $(CYGPATH_W) '$(OTFPROFILESRCDIR)/clustering.cpp'; else $(CYGPATH_W) '$(srcdir)/$(OTFPROFILESRCDIR)/clustering.cpp'; fi`
+otfprofile-clustering.obj: clustering.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -MT otfprofile-clustering.obj -MD -MP -MF $(DEPDIR)/otfprofile-clustering.Tpo -c -o otfprofile-clustering.obj `if test -f 'clustering.cpp'; then $(CYGPATH_W) 'clustering.cpp'; else $(CYGPATH_W) '$(srcdir)/clustering.cpp'; fi`
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/otfprofile-clustering.Tpo $(DEPDIR)/otfprofile-clustering.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(OTFPROFILESRCDIR)/clustering.cpp' object='otfprofile-clustering.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='clustering.cpp' object='otfprofile-clustering.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -c -o otfprofile-clustering.obj `if test -f '$(OTFPROFILESRCDIR)/clustering.cpp'; then $(CYGPATH_W) '$(OTFPROFILESRCDIR)/clustering.cpp'; else $(CYGPATH_W) '$(srcdir)/$(OTFPROFILESRCDIR)/clustering.cpp'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -c -o otfprofile-clustering.obj `if test -f 'clustering.cpp'; then $(CYGPATH_W) 'clustering.cpp'; else $(CYGPATH_W) '$(srcdir)/clustering.cpp'; fi`
 
-otfprofile-collect_data.o: $(OTFPROFILESRCDIR)/collect_data.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -MT otfprofile-collect_data.o -MD -MP -MF $(DEPDIR)/otfprofile-collect_data.Tpo -c -o otfprofile-collect_data.o `test -f '$(OTFPROFILESRCDIR)/collect_data.cpp' || echo '$(srcdir)/'`$(OTFPROFILESRCDIR)/collect_data.cpp
+otfprofile-collect_data.o: collect_data.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -MT otfprofile-collect_data.o -MD -MP -MF $(DEPDIR)/otfprofile-collect_data.Tpo -c -o otfprofile-collect_data.o `test -f 'collect_data.cpp' || echo '$(srcdir)/'`collect_data.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/otfprofile-collect_data.Tpo $(DEPDIR)/otfprofile-collect_data.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(OTFPROFILESRCDIR)/collect_data.cpp' object='otfprofile-collect_data.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='collect_data.cpp' object='otfprofile-collect_data.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -c -o otfprofile-collect_data.o `test -f '$(OTFPROFILESRCDIR)/collect_data.cpp' || echo '$(srcdir)/'`$(OTFPROFILESRCDIR)/collect_data.cpp
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -c -o otfprofile-collect_data.o `test -f 'collect_data.cpp' || echo '$(srcdir)/'`collect_data.cpp
 
-otfprofile-collect_data.obj: $(OTFPROFILESRCDIR)/collect_data.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -MT otfprofile-collect_data.obj -MD -MP -MF $(DEPDIR)/otfprofile-collect_data.Tpo -c -o otfprofile-collect_data.obj `if test -f '$(OTFPROFILESRCDIR)/collect_data.cpp'; then $(CYGPATH_W) '$(OTFPROFILESRCDIR)/collect_data.cpp'; else $(CYGPATH_W) '$(srcdir)/$(OTFPROFILESRCDIR)/collect_data.cpp'; fi`
+otfprofile-collect_data.obj: collect_data.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -MT otfprofile-collect_data.obj -MD -MP -MF $(DEPDIR)/otfprofile-collect_data.Tpo -c -o otfprofile-collect_data.obj `if test -f 'collect_data.cpp'; then $(CYGPATH_W) 'collect_data.cpp'; else $(CYGPATH_W) '$(srcdir)/collect_data.cpp'; fi`
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/otfprofile-collect_data.Tpo $(DEPDIR)/otfprofile-collect_data.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(OTFPROFILESRCDIR)/collect_data.cpp' object='otfprofile-collect_data.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='collect_data.cpp' object='otfprofile-collect_data.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -c -o otfprofile-collect_data.obj `if test -f '$(OTFPROFILESRCDIR)/collect_data.cpp'; then $(CYGPATH_W) '$(OTFPROFILESRCDIR)/collect_data.cpp'; else $(CYGPATH_W) '$(srcdir)/$(OTFPROFILESRCDIR)/collect_data.cpp'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -c -o otfprofile-collect_data.obj `if test -f 'collect_data.cpp'; then $(CYGPATH_W) 'collect_data.cpp'; else $(CYGPATH_W) '$(srcdir)/collect_data.cpp'; fi`
 
-otfprofile-collect_dispersion.o: $(OTFPROFILESRCDIR)/collect_dispersion.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -MT otfprofile-collect_dispersion.o -MD -MP -MF $(DEPDIR)/otfprofile-collect_dispersion.Tpo -c -o otfprofile-collect_dispersion.o `test -f '$(OTFPROFILESRCDIR)/collect_dispersion.cpp' || echo '$(srcdir)/'`$(OTFPROFILESRCDIR)/collect_dispersion.cpp
+otfprofile-collect_dispersion.o: collect_dispersion.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -MT otfprofile-collect_dispersion.o -MD -MP -MF $(DEPDIR)/otfprofile-collect_dispersion.Tpo -c -o otfprofile-collect_dispersion.o `test -f 'collect_dispersion.cpp' || echo '$(srcdir)/'`collect_dispersion.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/otfprofile-collect_dispersion.Tpo $(DEPDIR)/otfprofile-collect_dispersion.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(OTFPROFILESRCDIR)/collect_dispersion.cpp' object='otfprofile-collect_dispersion.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='collect_dispersion.cpp' object='otfprofile-collect_dispersion.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -c -o otfprofile-collect_dispersion.o `test -f '$(OTFPROFILESRCDIR)/collect_dispersion.cpp' || echo '$(srcdir)/'`$(OTFPROFILESRCDIR)/collect_dispersion.cpp
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -c -o otfprofile-collect_dispersion.o `test -f 'collect_dispersion.cpp' || echo '$(srcdir)/'`collect_dispersion.cpp
 
-otfprofile-collect_dispersion.obj: $(OTFPROFILESRCDIR)/collect_dispersion.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -MT otfprofile-collect_dispersion.obj -MD -MP -MF $(DEPDIR)/otfprofile-collect_dispersion.Tpo -c -o otfprofile-collect_dispersion.obj `if test -f '$(OTFPROFILESRCDIR)/collect_dispersion.cpp'; then $(CYGPATH_W) '$(OTFPROFILESRCDIR)/collect_dispersion.cpp'; else $(CYGPATH_W) '$(srcdir)/$(OTFPROFILESRCDIR)/collect_dispersion.cpp'; fi`
+otfprofile-collect_dispersion.obj: collect_dispersion.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -MT otfprofile-collect_dispersion.obj -MD -MP -MF $(DEPDIR)/otfprofile-collect_dispersion.Tpo -c -o otfprofile-collect_dispersion.obj `if test -f 'collect_dispersion.cpp'; then $(CYGPATH_W) 'collect_dispersion.cpp'; else $(CYGPATH_W) '$(srcdir)/collect_dispersion.cpp'; fi`
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/otfprofile-collect_dispersion.Tpo $(DEPDIR)/otfprofile-collect_dispersion.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(OTFPROFILESRCDIR)/collect_dispersion.cpp' object='otfprofile-collect_dispersion.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='collect_dispersion.cpp' object='otfprofile-collect_dispersion.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -c -o otfprofile-collect_dispersion.obj `if test -f '$(OTFPROFILESRCDIR)/collect_dispersion.cpp'; then $(CYGPATH_W) '$(OTFPROFILESRCDIR)/collect_dispersion.cpp'; else $(CYGPATH_W) '$(srcdir)/$(OTFPROFILESRCDIR)/collect_dispersion.cpp'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -c -o otfprofile-collect_dispersion.obj `if test -f 'collect_dispersion.cpp'; then $(CYGPATH_W) 'collect_dispersion.cpp'; else $(CYGPATH_W) '$(srcdir)/collect_dispersion.cpp'; fi`
 
-otfprofile-comparison_clinkage.o: $(OTFPROFILESRCDIR)/comparison_clinkage.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -MT otfprofile-comparison_clinkage.o -MD -MP -MF $(DEPDIR)/otfprofile-comparison_clinkage.Tpo -c -o otfprofile-comparison_clinkage.o `test -f '$(OTFPROFILESRCDIR)/comparison_clinkage.cpp' || echo '$(srcdir)/'`$(OTFPROFILESRCDIR)/comparison_clinkage.cpp
+otfprofile-comparison_clinkage.o: comparison_clinkage.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -MT otfprofile-comparison_clinkage.o -MD -MP -MF $(DEPDIR)/otfprofile-comparison_clinkage.Tpo -c -o otfprofile-comparison_clinkage.o `test -f 'comparison_clinkage.cpp' || echo '$(srcdir)/'`comparison_clinkage.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/otfprofile-comparison_clinkage.Tpo $(DEPDIR)/otfprofile-comparison_clinkage.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(OTFPROFILESRCDIR)/comparison_clinkage.cpp' object='otfprofile-comparison_clinkage.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='comparison_clinkage.cpp' object='otfprofile-comparison_clinkage.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -c -o otfprofile-comparison_clinkage.o `test -f '$(OTFPROFILESRCDIR)/comparison_clinkage.cpp' || echo '$(srcdir)/'`$(OTFPROFILESRCDIR)/comparison_clinkage.cpp
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -c -o otfprofile-comparison_clinkage.o `test -f 'comparison_clinkage.cpp' || echo '$(srcdir)/'`comparison_clinkage.cpp
 
-otfprofile-comparison_clinkage.obj: $(OTFPROFILESRCDIR)/comparison_clinkage.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -MT otfprofile-comparison_clinkage.obj -MD -MP -MF $(DEPDIR)/otfprofile-comparison_clinkage.Tpo -c -o otfprofile-comparison_clinkage.obj `if test -f '$(OTFPROFILESRCDIR)/comparison_clinkage.cpp'; then $(CYGPATH_W) '$(OTFPROFILESRCDIR)/comparison_clinkage.cpp'; else $(CYGPATH_W) '$(srcdir)/$(OTFPROFILESRCDIR)/comparison_clinkage.cpp'; fi`
+otfprofile-comparison_clinkage.obj: comparison_clinkage.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -MT otfprofile-comparison_clinkage.obj -MD -MP -MF $(DEPDIR)/otfprofile-comparison_clinkage.Tpo -c -o otfprofile-comparison_clinkage.obj `if test -f 'comparison_clinkage.cpp'; then $(CYGPATH_W) 'comparison_clinkage.cpp'; else $(CYGPATH_W) '$(srcdir)/comparison_clinkage.cpp'; fi`
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/otfprofile-comparison_clinkage.Tpo $(DEPDIR)/otfprofile-comparison_clinkage.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(OTFPROFILESRCDIR)/comparison_clinkage.cpp' object='otfprofile-comparison_clinkage.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='comparison_clinkage.cpp' object='otfprofile-comparison_clinkage.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -c -o otfprofile-comparison_clinkage.obj `if test -f '$(OTFPROFILESRCDIR)/comparison_clinkage.cpp'; then $(CYGPATH_W) '$(OTFPROFILESRCDIR)/comparison_clinkage.cpp'; else $(CYGPATH_W) '$(srcdir)/$(OTFPROFILESRCDIR)/comparison_clinkage.cpp'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -c -o otfprofile-comparison_clinkage.obj `if test -f 'comparison_clinkage.cpp'; then $(CYGPATH_W) 'comparison_clinkage.cpp'; else $(CYGPATH_W) '$(srcdir)/comparison_clinkage.cpp'; fi`
 
-otfprofile-comparison_kmeans.o: $(OTFPROFILESRCDIR)/comparison_kmeans.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -MT otfprofile-comparison_kmeans.o -MD -MP -MF $(DEPDIR)/otfprofile-comparison_kmeans.Tpo -c -o otfprofile-comparison_kmeans.o `test -f '$(OTFPROFILESRCDIR)/comparison_kmeans.cpp' || echo '$(srcdir)/'`$(OTFPROFILESRCDIR)/comparison_kmeans.cpp
+otfprofile-comparison_kmeans.o: comparison_kmeans.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -MT otfprofile-comparison_kmeans.o -MD -MP -MF $(DEPDIR)/otfprofile-comparison_kmeans.Tpo -c -o otfprofile-comparison_kmeans.o `test -f 'comparison_kmeans.cpp' || echo '$(srcdir)/'`comparison_kmeans.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/otfprofile-comparison_kmeans.Tpo $(DEPDIR)/otfprofile-comparison_kmeans.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(OTFPROFILESRCDIR)/comparison_kmeans.cpp' object='otfprofile-comparison_kmeans.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='comparison_kmeans.cpp' object='otfprofile-comparison_kmeans.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -c -o otfprofile-comparison_kmeans.o `test -f '$(OTFPROFILESRCDIR)/comparison_kmeans.cpp' || echo '$(srcdir)/'`$(OTFPROFILESRCDIR)/comparison_kmeans.cpp
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -c -o otfprofile-comparison_kmeans.o `test -f 'comparison_kmeans.cpp' || echo '$(srcdir)/'`comparison_kmeans.cpp
 
-otfprofile-comparison_kmeans.obj: $(OTFPROFILESRCDIR)/comparison_kmeans.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -MT otfprofile-comparison_kmeans.obj -MD -MP -MF $(DEPDIR)/otfprofile-comparison_kmeans.Tpo -c -o otfprofile-comparison_kmeans.obj `if test -f '$(OTFPROFILESRCDIR)/comparison_kmeans.cpp'; then $(CYGPATH_W) '$(OTFPROFILESRCDIR)/comparison_kmeans.cpp'; else $(CYGPATH_W) '$(srcdir)/$(OTFPROFILESRCDIR)/comparison_kmeans.cpp'; fi`
+otfprofile-comparison_kmeans.obj: comparison_kmeans.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -MT otfprofile-comparison_kmeans.obj -MD -MP -MF $(DEPDIR)/otfprofile-comparison_kmeans.Tpo -c -o otfprofile-comparison_kmeans.obj `if test -f 'comparison_kmeans.cpp'; then $(CYGPATH_W) 'comparison_kmeans.cpp'; else $(CYGPATH_W) '$(srcdir)/comparison_kmeans.cpp'; fi`
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/otfprofile-comparison_kmeans.Tpo $(DEPDIR)/otfprofile-comparison_kmeans.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(OTFPROFILESRCDIR)/comparison_kmeans.cpp' object='otfprofile-comparison_kmeans.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='comparison_kmeans.cpp' object='otfprofile-comparison_kmeans.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -c -o otfprofile-comparison_kmeans.obj `if test -f '$(OTFPROFILESRCDIR)/comparison_kmeans.cpp'; then $(CYGPATH_W) '$(OTFPROFILESRCDIR)/comparison_kmeans.cpp'; else $(CYGPATH_W) '$(srcdir)/$(OTFPROFILESRCDIR)/comparison_kmeans.cpp'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -c -o otfprofile-comparison_kmeans.obj `if test -f 'comparison_kmeans.cpp'; then $(CYGPATH_W) 'comparison_kmeans.cpp'; else $(CYGPATH_W) '$(srcdir)/comparison_kmeans.cpp'; fi`
 
-otfprofile-create_csv.o: $(OTFPROFILESRCDIR)/create_csv.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -MT otfprofile-create_csv.o -MD -MP -MF $(DEPDIR)/otfprofile-create_csv.Tpo -c -o otfprofile-create_csv.o `test -f '$(OTFPROFILESRCDIR)/create_csv.cpp' || echo '$(srcdir)/'`$(OTFPROFILESRCDIR)/create_csv.cpp
+otfprofile-create_csv.o: create_csv.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -MT otfprofile-create_csv.o -MD -MP -MF $(DEPDIR)/otfprofile-create_csv.Tpo -c -o otfprofile-create_csv.o `test -f 'create_csv.cpp' || echo '$(srcdir)/'`create_csv.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/otfprofile-create_csv.Tpo $(DEPDIR)/otfprofile-create_csv.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(OTFPROFILESRCDIR)/create_csv.cpp' object='otfprofile-create_csv.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='create_csv.cpp' object='otfprofile-create_csv.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -c -o otfprofile-create_csv.o `test -f '$(OTFPROFILESRCDIR)/create_csv.cpp' || echo '$(srcdir)/'`$(OTFPROFILESRCDIR)/create_csv.cpp
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -c -o otfprofile-create_csv.o `test -f 'create_csv.cpp' || echo '$(srcdir)/'`create_csv.cpp
 
-otfprofile-create_csv.obj: $(OTFPROFILESRCDIR)/create_csv.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -MT otfprofile-create_csv.obj -MD -MP -MF $(DEPDIR)/otfprofile-create_csv.Tpo -c -o otfprofile-create_csv.obj `if test -f '$(OTFPROFILESRCDIR)/create_csv.cpp'; then $(CYGPATH_W) '$(OTFPROFILESRCDIR)/create_csv.cpp'; else $(CYGPATH_W) '$(srcdir)/$(OTFPROFILESRCDIR)/create_csv.cpp'; fi`
+otfprofile-create_csv.obj: create_csv.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -MT otfprofile-create_csv.obj -MD -MP -MF $(DEPDIR)/otfprofile-create_csv.Tpo -c -o otfprofile-create_csv.obj `if test -f 'create_csv.cpp'; then $(CYGPATH_W) 'create_csv.cpp'; else $(CYGPATH_W) '$(srcdir)/create_csv.cpp'; fi`
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/otfprofile-create_csv.Tpo $(DEPDIR)/otfprofile-create_csv.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(OTFPROFILESRCDIR)/create_csv.cpp' object='otfprofile-create_csv.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='create_csv.cpp' object='otfprofile-create_csv.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -c -o otfprofile-create_csv.obj `if test -f '$(OTFPROFILESRCDIR)/create_csv.cpp'; then $(CYGPATH_W) '$(OTFPROFILESRCDIR)/create_csv.cpp'; else $(CYGPATH_W) '$(srcdir)/$(OTFPROFILESRCDIR)/create_csv.cpp'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -c -o otfprofile-create_csv.obj `if test -f 'create_csv.cpp'; then $(CYGPATH_W) 'create_csv.cpp'; else $(CYGPATH_W) '$(srcdir)/create_csv.cpp'; fi`
 
-otfprofile-create_marker.o: $(OTFPROFILESRCDIR)/create_marker.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -MT otfprofile-create_marker.o -MD -MP -MF $(DEPDIR)/otfprofile-create_marker.Tpo -c -o otfprofile-create_marker.o `test -f '$(OTFPROFILESRCDIR)/create_marker.cpp' || echo '$(srcdir)/'`$(OTFPROFILESRCDIR)/create_marker.cpp
+otfprofile-create_marker.o: create_marker.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -MT otfprofile-create_marker.o -MD -MP -MF $(DEPDIR)/otfprofile-create_marker.Tpo -c -o otfprofile-create_marker.o `test -f 'create_marker.cpp' || echo '$(srcdir)/'`create_marker.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/otfprofile-create_marker.Tpo $(DEPDIR)/otfprofile-create_marker.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(OTFPROFILESRCDIR)/create_marker.cpp' object='otfprofile-create_marker.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='create_marker.cpp' object='otfprofile-create_marker.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -c -o otfprofile-create_marker.o `test -f '$(OTFPROFILESRCDIR)/create_marker.cpp' || echo '$(srcdir)/'`$(OTFPROFILESRCDIR)/create_marker.cpp
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -c -o otfprofile-create_marker.o `test -f 'create_marker.cpp' || echo '$(srcdir)/'`create_marker.cpp
 
-otfprofile-create_marker.obj: $(OTFPROFILESRCDIR)/create_marker.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -MT otfprofile-create_marker.obj -MD -MP -MF $(DEPDIR)/otfprofile-create_marker.Tpo -c -o otfprofile-create_marker.obj `if test -f '$(OTFPROFILESRCDIR)/create_marker.cpp'; then $(CYGPATH_W) '$(OTFPROFILESRCDIR)/create_marker.cpp'; else $(CYGPATH_W) '$(srcdir)/$(OTFPROFILESRCDIR)/create_marker.cpp'; fi`
+otfprofile-create_marker.obj: create_marker.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -MT otfprofile-create_marker.obj -MD -MP -MF $(DEPDIR)/otfprofile-create_marker.Tpo -c -o otfprofile-create_marker.obj `if test -f 'create_marker.cpp'; then $(CYGPATH_W) 'create_marker.cpp'; else $(CYGPATH_W) '$(srcdir)/create_marker.cpp'; fi`
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/otfprofile-create_marker.Tpo $(DEPDIR)/otfprofile-create_marker.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(OTFPROFILESRCDIR)/create_marker.cpp' object='otfprofile-create_marker.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='create_marker.cpp' object='otfprofile-create_marker.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -c -o otfprofile-create_marker.obj `if test -f '$(OTFPROFILESRCDIR)/create_marker.cpp'; then $(CYGPATH_W) '$(OTFPROFILESRCDIR)/create_marker.cpp'; else $(CYGPATH_W) '$(srcdir)/$(OTFPROFILESRCDIR)/create_marker.cpp'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -c -o otfprofile-create_marker.obj `if test -f 'create_marker.cpp'; then $(CYGPATH_W) 'create_marker.cpp'; else $(CYGPATH_W) '$(srcdir)/create_marker.cpp'; fi`
 
-otfprofile-create_latex.o: $(OTFPROFILESRCDIR)/create_latex.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -MT otfprofile-create_latex.o -MD -MP -MF $(DEPDIR)/otfprofile-create_latex.Tpo -c -o otfprofile-create_latex.o `test -f '$(OTFPROFILESRCDIR)/create_latex.cpp' || echo '$(srcdir)/'`$(OTFPROFILESRCDIR)/create_latex.cpp
+otfprofile-create_latex.o: create_latex.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -MT otfprofile-create_latex.o -MD -MP -MF $(DEPDIR)/otfprofile-create_latex.Tpo -c -o otfprofile-create_latex.o `test -f 'create_latex.cpp' || echo '$(srcdir)/'`create_latex.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/otfprofile-create_latex.Tpo $(DEPDIR)/otfprofile-create_latex.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(OTFPROFILESRCDIR)/create_latex.cpp' object='otfprofile-create_latex.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='create_latex.cpp' object='otfprofile-create_latex.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -c -o otfprofile-create_latex.o `test -f '$(OTFPROFILESRCDIR)/create_latex.cpp' || echo '$(srcdir)/'`$(OTFPROFILESRCDIR)/create_latex.cpp
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -c -o otfprofile-create_latex.o `test -f 'create_latex.cpp' || echo '$(srcdir)/'`create_latex.cpp
 
-otfprofile-create_latex.obj: $(OTFPROFILESRCDIR)/create_latex.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -MT otfprofile-create_latex.obj -MD -MP -MF $(DEPDIR)/otfprofile-create_latex.Tpo -c -o otfprofile-create_latex.obj `if test -f '$(OTFPROFILESRCDIR)/create_latex.cpp'; then $(CYGPATH_W) '$(OTFPROFILESRCDIR)/create_latex.cpp'; else $(CYGPATH_W) '$(srcdir)/$(OTFPROFILESRCDIR)/create_latex.cpp'; fi`
+otfprofile-create_latex.obj: create_latex.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -MT otfprofile-create_latex.obj -MD -MP -MF $(DEPDIR)/otfprofile-create_latex.Tpo -c -o otfprofile-create_latex.obj `if test -f 'create_latex.cpp'; then $(CYGPATH_W) 'create_latex.cpp'; else $(CYGPATH_W) '$(srcdir)/create_latex.cpp'; fi`
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/otfprofile-create_latex.Tpo $(DEPDIR)/otfprofile-create_latex.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(OTFPROFILESRCDIR)/create_latex.cpp' object='otfprofile-create_latex.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='create_latex.cpp' object='otfprofile-create_latex.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -c -o otfprofile-create_latex.obj `if test -f '$(OTFPROFILESRCDIR)/create_latex.cpp'; then $(CYGPATH_W) '$(OTFPROFILESRCDIR)/create_latex.cpp'; else $(CYGPATH_W) '$(srcdir)/$(OTFPROFILESRCDIR)/create_latex.cpp'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -c -o otfprofile-create_latex.obj `if test -f 'create_latex.cpp'; then $(CYGPATH_W) 'create_latex.cpp'; else $(CYGPATH_W) '$(srcdir)/create_latex.cpp'; fi`
 
-otfprofile-create_filter.o: $(OTFPROFILESRCDIR)/create_filter.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -MT otfprofile-create_filter.o -MD -MP -MF $(DEPDIR)/otfprofile-create_filter.Tpo -c -o otfprofile-create_filter.o `test -f '$(OTFPROFILESRCDIR)/create_filter.cpp' || echo '$(srcdir)/'`$(OTFPROFILESRCDIR)/create_filter.cpp
+otfprofile-create_filter.o: create_filter.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -MT otfprofile-create_filter.o -MD -MP -MF $(DEPDIR)/otfprofile-create_filter.Tpo -c -o otfprofile-create_filter.o `test -f 'create_filter.cpp' || echo '$(srcdir)/'`create_filter.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/otfprofile-create_filter.Tpo $(DEPDIR)/otfprofile-create_filter.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(OTFPROFILESRCDIR)/create_filter.cpp' object='otfprofile-create_filter.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='create_filter.cpp' object='otfprofile-create_filter.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -c -o otfprofile-create_filter.o `test -f '$(OTFPROFILESRCDIR)/create_filter.cpp' || echo '$(srcdir)/'`$(OTFPROFILESRCDIR)/create_filter.cpp
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -c -o otfprofile-create_filter.o `test -f 'create_filter.cpp' || echo '$(srcdir)/'`create_filter.cpp
 
-otfprofile-create_filter.obj: $(OTFPROFILESRCDIR)/create_filter.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -MT otfprofile-create_filter.obj -MD -MP -MF $(DEPDIR)/otfprofile-create_filter.Tpo -c -o otfprofile-create_filter.obj `if test -f '$(OTFPROFILESRCDIR)/create_filter.cpp'; then $(CYGPATH_W) '$(OTFPROFILESRCDIR)/create_filter.cpp'; else $(CYGPATH_W) '$(srcdir)/$(OTFPROFILESRCDIR)/create_filter.cpp'; fi`
+otfprofile-create_filter.obj: create_filter.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -MT otfprofile-create_filter.obj -MD -MP -MF $(DEPDIR)/otfprofile-create_filter.Tpo -c -o otfprofile-create_filter.obj `if test -f 'create_filter.cpp'; then $(CYGPATH_W) 'create_filter.cpp'; else $(CYGPATH_W) '$(srcdir)/create_filter.cpp'; fi`
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/otfprofile-create_filter.Tpo $(DEPDIR)/otfprofile-create_filter.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(OTFPROFILESRCDIR)/create_filter.cpp' object='otfprofile-create_filter.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='create_filter.cpp' object='otfprofile-create_filter.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -c -o otfprofile-create_filter.obj `if test -f '$(OTFPROFILESRCDIR)/create_filter.cpp'; then $(CYGPATH_W) '$(OTFPROFILESRCDIR)/create_filter.cpp'; else $(CYGPATH_W) '$(srcdir)/$(OTFPROFILESRCDIR)/create_filter.cpp'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -c -o otfprofile-create_filter.obj `if test -f 'create_filter.cpp'; then $(CYGPATH_W) 'create_filter.cpp'; else $(CYGPATH_W) '$(srcdir)/create_filter.cpp'; fi`
 
-otfprofile-otfprofile.o: $(OTFPROFILESRCDIR)/otfprofile.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -MT otfprofile-otfprofile.o -MD -MP -MF $(DEPDIR)/otfprofile-otfprofile.Tpo -c -o otfprofile-otfprofile.o `test -f '$(OTFPROFILESRCDIR)/otfprofile.cpp' || echo '$(srcdir)/'`$(OTFPROFILESRCDIR)/otfprofile.cpp
+otfprofile-otfprofile.o: otfprofile.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -MT otfprofile-otfprofile.o -MD -MP -MF $(DEPDIR)/otfprofile-otfprofile.Tpo -c -o otfprofile-otfprofile.o `test -f 'otfprofile.cpp' || echo '$(srcdir)/'`otfprofile.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/otfprofile-otfprofile.Tpo $(DEPDIR)/otfprofile-otfprofile.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(OTFPROFILESRCDIR)/otfprofile.cpp' object='otfprofile-otfprofile.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='otfprofile.cpp' object='otfprofile-otfprofile.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -c -o otfprofile-otfprofile.o `test -f '$(OTFPROFILESRCDIR)/otfprofile.cpp' || echo '$(srcdir)/'`$(OTFPROFILESRCDIR)/otfprofile.cpp
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -c -o otfprofile-otfprofile.o `test -f 'otfprofile.cpp' || echo '$(srcdir)/'`otfprofile.cpp
 
-otfprofile-otfprofile.obj: $(OTFPROFILESRCDIR)/otfprofile.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -MT otfprofile-otfprofile.obj -MD -MP -MF $(DEPDIR)/otfprofile-otfprofile.Tpo -c -o otfprofile-otfprofile.obj `if test -f '$(OTFPROFILESRCDIR)/otfprofile.cpp'; then $(CYGPATH_W) '$(OTFPROFILESRCDIR)/otfprofile.cpp'; else $(CYGPATH_W) '$(srcdir)/$(OTFPROFILESRCDIR)/otfprofile.cpp'; fi`
+otfprofile-otfprofile.obj: otfprofile.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -MT otfprofile-otfprofile.obj -MD -MP -MF $(DEPDIR)/otfprofile-otfprofile.Tpo -c -o otfprofile-otfprofile.obj `if test -f 'otfprofile.cpp'; then $(CYGPATH_W) 'otfprofile.cpp'; else $(CYGPATH_W) '$(srcdir)/otfprofile.cpp'; fi`
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/otfprofile-otfprofile.Tpo $(DEPDIR)/otfprofile-otfprofile.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(OTFPROFILESRCDIR)/otfprofile.cpp' object='otfprofile-otfprofile.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='otfprofile.cpp' object='otfprofile-otfprofile.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -c -o otfprofile-otfprofile.obj `if test -f '$(OTFPROFILESRCDIR)/otfprofile.cpp'; then $(CYGPATH_W) '$(OTFPROFILESRCDIR)/otfprofile.cpp'; else $(CYGPATH_W) '$(srcdir)/$(OTFPROFILESRCDIR)/otfprofile.cpp'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -c -o otfprofile-otfprofile.obj `if test -f 'otfprofile.cpp'; then $(CYGPATH_W) 'otfprofile.cpp'; else $(CYGPATH_W) '$(srcdir)/otfprofile.cpp'; fi`
 
-otfprofile-process_dispersion.o: $(OTFPROFILESRCDIR)/process_dispersion.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -MT otfprofile-process_dispersion.o -MD -MP -MF $(DEPDIR)/otfprofile-process_dispersion.Tpo -c -o otfprofile-process_dispersion.o `test -f '$(OTFPROFILESRCDIR)/process_dispersion.cpp' || echo '$(srcdir)/'`$(OTFPROFILESRCDIR)/process_dispersion.cpp
+otfprofile-process_dispersion.o: process_dispersion.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -MT otfprofile-process_dispersion.o -MD -MP -MF $(DEPDIR)/otfprofile-process_dispersion.Tpo -c -o otfprofile-process_dispersion.o `test -f 'process_dispersion.cpp' || echo '$(srcdir)/'`process_dispersion.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/otfprofile-process_dispersion.Tpo $(DEPDIR)/otfprofile-process_dispersion.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(OTFPROFILESRCDIR)/process_dispersion.cpp' object='otfprofile-process_dispersion.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='process_dispersion.cpp' object='otfprofile-process_dispersion.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -c -o otfprofile-process_dispersion.o `test -f '$(OTFPROFILESRCDIR)/process_dispersion.cpp' || echo '$(srcdir)/'`$(OTFPROFILESRCDIR)/process_dispersion.cpp
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -c -o otfprofile-process_dispersion.o `test -f 'process_dispersion.cpp' || echo '$(srcdir)/'`process_dispersion.cpp
 
-otfprofile-process_dispersion.obj: $(OTFPROFILESRCDIR)/process_dispersion.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -MT otfprofile-process_dispersion.obj -MD -MP -MF $(DEPDIR)/otfprofile-process_dispersion.Tpo -c -o otfprofile-process_dispersion.obj `if test -f '$(OTFPROFILESRCDIR)/process_dispersion.cpp'; then $(CYGPATH_W) '$(OTFPROFILESRCDIR)/process_dispersion.cpp'; else $(CYGPATH_W) '$(srcdir)/$(OTFPROFILESRCDIR)/process_dispersion.cpp'; fi`
+otfprofile-process_dispersion.obj: process_dispersion.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -MT otfprofile-process_dispersion.obj -MD -MP -MF $(DEPDIR)/otfprofile-process_dispersion.Tpo -c -o otfprofile-process_dispersion.obj `if test -f 'process_dispersion.cpp'; then $(CYGPATH_W) 'process_dispersion.cpp'; else $(CYGPATH_W) '$(srcdir)/process_dispersion.cpp'; fi`
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/otfprofile-process_dispersion.Tpo $(DEPDIR)/otfprofile-process_dispersion.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(OTFPROFILESRCDIR)/process_dispersion.cpp' object='otfprofile-process_dispersion.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='process_dispersion.cpp' object='otfprofile-process_dispersion.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -c -o otfprofile-process_dispersion.obj `if test -f '$(OTFPROFILESRCDIR)/process_dispersion.cpp'; then $(CYGPATH_W) '$(OTFPROFILESRCDIR)/process_dispersion.cpp'; else $(CYGPATH_W) '$(srcdir)/$(OTFPROFILESRCDIR)/process_dispersion.cpp'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -c -o otfprofile-process_dispersion.obj `if test -f 'process_dispersion.cpp'; then $(CYGPATH_W) 'process_dispersion.cpp'; else $(CYGPATH_W) '$(srcdir)/process_dispersion.cpp'; fi`
 
-otfprofile-summarize_data.o: $(OTFPROFILESRCDIR)/summarize_data.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -MT otfprofile-summarize_data.o -MD -MP -MF $(DEPDIR)/otfprofile-summarize_data.Tpo -c -o otfprofile-summarize_data.o `test -f '$(OTFPROFILESRCDIR)/summarize_data.cpp' || echo '$(srcdir)/'`$(OTFPROFILESRCDIR)/summarize_data.cpp
+otfprofile-summarize_data.o: summarize_data.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -MT otfprofile-summarize_data.o -MD -MP -MF $(DEPDIR)/otfprofile-summarize_data.Tpo -c -o otfprofile-summarize_data.o `test -f 'summarize_data.cpp' || echo '$(srcdir)/'`summarize_data.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/otfprofile-summarize_data.Tpo $(DEPDIR)/otfprofile-summarize_data.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(OTFPROFILESRCDIR)/summarize_data.cpp' object='otfprofile-summarize_data.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='summarize_data.cpp' object='otfprofile-summarize_data.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -c -o otfprofile-summarize_data.o `test -f '$(OTFPROFILESRCDIR)/summarize_data.cpp' || echo '$(srcdir)/'`$(OTFPROFILESRCDIR)/summarize_data.cpp
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -c -o otfprofile-summarize_data.o `test -f 'summarize_data.cpp' || echo '$(srcdir)/'`summarize_data.cpp
 
-otfprofile-summarize_data.obj: $(OTFPROFILESRCDIR)/summarize_data.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -MT otfprofile-summarize_data.obj -MD -MP -MF $(DEPDIR)/otfprofile-summarize_data.Tpo -c -o otfprofile-summarize_data.obj `if test -f '$(OTFPROFILESRCDIR)/summarize_data.cpp'; then $(CYGPATH_W) '$(OTFPROFILESRCDIR)/summarize_data.cpp'; else $(CYGPATH_W) '$(srcdir)/$(OTFPROFILESRCDIR)/summarize_data.cpp'; fi`
+otfprofile-summarize_data.obj: summarize_data.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -MT otfprofile-summarize_data.obj -MD -MP -MF $(DEPDIR)/otfprofile-summarize_data.Tpo -c -o otfprofile-summarize_data.obj `if test -f 'summarize_data.cpp'; then $(CYGPATH_W) 'summarize_data.cpp'; else $(CYGPATH_W) '$(srcdir)/summarize_data.cpp'; fi`
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/otfprofile-summarize_data.Tpo $(DEPDIR)/otfprofile-summarize_data.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(OTFPROFILESRCDIR)/summarize_data.cpp' object='otfprofile-summarize_data.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='summarize_data.cpp' object='otfprofile-summarize_data.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -c -o otfprofile-summarize_data.obj `if test -f '$(OTFPROFILESRCDIR)/summarize_data.cpp'; then $(CYGPATH_W) '$(OTFPROFILESRCDIR)/summarize_data.cpp'; else $(CYGPATH_W) '$(srcdir)/$(OTFPROFILESRCDIR)/summarize_data.cpp'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(otfprofile_CXXFLAGS) $(CXXFLAGS) -c -o otfprofile-summarize_data.obj `if test -f 'summarize_data.cpp'; then $(CYGPATH_W) 'summarize_data.cpp'; else $(CYGPATH_W) '$(srcdir)/summarize_data.cpp'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo

@@ -115,17 +115,18 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am__objects_1 = vtfilter_mpi-vt_filterc.$(OBJEXT) \
-	vtfilter_mpi-vt_filthandler.$(OBJEXT) \
-	vtfilter_mpi-vt_otfhandler.$(OBJEXT) \
-	vtfilter_mpi-vt_tracefilter.$(OBJEXT)
+am__dirstamp = $(am__leading_dot)dirstamp
+am__objects_1 = old/vtfilter_mpi-vt_filterc.$(OBJEXT) \
+	old/vtfilter_mpi-vt_filthandler.$(OBJEXT) \
+	old/vtfilter_mpi-vt_otfhandler.$(OBJEXT) \
+	old/vtfilter_mpi-vt_tracefilter.$(OBJEXT)
 am__objects_2 = vtfilter_mpi-vt_filter.$(OBJEXT) \
 	vtfilter_mpi-vt_filter_common.$(OBJEXT) \
 	vtfilter_mpi-vt_filter_gen.$(OBJEXT) \
 	vtfilter_mpi-vt_filter_trc.$(OBJEXT) \
 	vtfilter_mpi-vt_filter_trc_hdlr.$(OBJEXT) $(am__objects_1)
-am_vtfilter_mpi_OBJECTS = $(am__objects_2)
-vtfilter_mpi_OBJECTS = $(am_vtfilter_mpi_OBJECTS)
+nodist_vtfilter_mpi_OBJECTS = $(am__objects_2)
+vtfilter_mpi_OBJECTS = $(nodist_vtfilter_mpi_OBJECTS)
 am__DEPENDENCIES_1 =
 @AMEXTERNOTF_FALSE@am__DEPENDENCIES_2 = $(top_builddir)/extlib/otf/otflib/libopen-trace-format.la
 @AMEXTERNOTF_TRUE@am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1) \
@@ -191,8 +192,8 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(vtfilter_mpi_SOURCES)
-DIST_SOURCES = $(vtfilter_mpi_SOURCES)
+SOURCES = $(nodist_vtfilter_mpi_SOURCES)
+DIST_SOURCES =
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -534,36 +535,36 @@ top_srcdir = @top_srcdir@
 top_vt_builddir = @top_vt_builddir@
 top_vt_srcdir = @top_vt_srcdir@
 unimci_config_cmd = @unimci_config_cmd@
-VTFILTERSRCDIR = $(srcdir)/..
+AUTOMAKE_OPTIONS = subdir-objects
 @AMEXTERNOTF_FALSE@OTFINCLUDE = -I$(top_srcdir)/extlib/otf/otflib -I$(top_builddir)/extlib/otf/otflib
 @AMEXTERNOTF_TRUE@OTFINCLUDE = $(OTFINCDIR)
 @AMEXTERNOTF_FALSE@OTFLIBRARY = $(top_builddir)/extlib/otf/otflib/libopen-trace-format.la
 @AMEXTERNOTF_TRUE@OTFLIBRARY = $(OTFLIBDIR) $(OTFLIB)
 @AMEXTERNOTF_FALSE@OTFDEPENDENCIES = $(OTFLIBRARY)
 @AMEXTERNOTF_TRUE@OTFDEPENDENCIES = 
-AM_CPPFLAGS = -I$(VTFILTERSRCDIR) $(OTFINCLUDE) -I$(top_srcdir)/include -I$(top_builddir)/include -I$(top_srcdir)/rfg -I$(top_srcdir)/vtlib
+AM_CPPFLAGS = $(OTFINCLUDE) -I$(top_srcdir)/tools/vtfilter -I$(top_srcdir)/tools/vtfilter/old -I$(top_srcdir)/include -I$(top_builddir)/include -I$(top_srcdir)/rfg -I$(top_srcdir)/vtlib
 OLDSOURCES = \
-	$(VTFILTERSRCDIR)/old/vt_filterc.h \
-	$(VTFILTERSRCDIR)/old/vt_filthandler.h \
-	$(VTFILTERSRCDIR)/old/vt_otfhandler.h \
-	$(VTFILTERSRCDIR)/old/vt_filterc.cc \
-	$(VTFILTERSRCDIR)/old/vt_filthandler.cc \
-	$(VTFILTERSRCDIR)/old/vt_otfhandler.cc \
-	$(VTFILTERSRCDIR)/old/vt_tracefilter.cc
+	old/vt_filterc.h \
+	old/vt_filthandler.h \
+	old/vt_otfhandler.h \
+	old/vt_filterc.cc \
+	old/vt_filthandler.cc \
+	old/vt_otfhandler.cc \
+	old/vt_tracefilter.cc
 
 OLDCXXFLAGS = -DVT_FILTER_OLD
 COMMONSOURCES = \
-	$(VTFILTERSRCDIR)/vt_filter.h \
-	$(VTFILTERSRCDIR)/vt_filter_common.h \
-	$(VTFILTERSRCDIR)/vt_filter_config.h \
-	$(VTFILTERSRCDIR)/vt_filter_gen.h \
-	$(VTFILTERSRCDIR)/vt_filter_trc.h \
-	$(VTFILTERSRCDIR)/vt_filter_trc_hdlr.h \
-	$(VTFILTERSRCDIR)/vt_filter.cc \
-	$(VTFILTERSRCDIR)/vt_filter_common.cc \
-	$(VTFILTERSRCDIR)/vt_filter_gen.cc \
-	$(VTFILTERSRCDIR)/vt_filter_trc.cc \
-	$(VTFILTERSRCDIR)/vt_filter_trc_hdlr.cc \
+	vt_filter.h \
+	vt_filter_common.h \
+	vt_filter_config.h \
+	vt_filter_gen.h \
+	vt_filter_trc.h \
+	vt_filter_trc_hdlr.h \
+	vt_filter.cc \
+	vt_filter_common.cc \
+	vt_filter_gen.cc \
+	vt_filter_trc.cc \
+	vt_filter_trc_hdlr.cc \
 	$(OLDSOURCES)
 
 @AMHAVEOMP_FALSE@COMMONCXXFLAGS = $(OLDCXXFLAGS)
@@ -582,9 +583,10 @@ COMMONDEPENDENCIES = \
 
 vtfilter_mpi_CXXFLAGS = $(COMMONCXXFLAGS) -DVT_MPI $(MPICXXFLAGS) $(MPIINCDIR)
 vtfilter_mpi_LDFLAGS = $(COMMONLDFLAGS) $(MPICXXFLAGS)
-vtfilter_mpi_SOURCES = $(COMMONSOURCES)
+nodist_vtfilter_mpi_SOURCES = $(COMMONSOURCES)
 vtfilter_mpi_LDADD = $(COMMONLDADD) $(MPILIBDIR) $(MPILIB)
 vtfilter_mpi_DEPENDENCIES = $(COMMONDEPENDENCIES)
+CLEANFILES = $(COMMONSOURCES)
 all: all-am
 
 .SUFFIXES:
@@ -666,12 +668,27 @@ clean-binPROGRAMS:
 	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
 	echo " rm -f" $$list; \
 	rm -f $$list
+old/$(am__dirstamp):
+	@$(MKDIR_P) old
+	@: > old/$(am__dirstamp)
+old/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) old/$(DEPDIR)
+	@: > old/$(DEPDIR)/$(am__dirstamp)
+old/vtfilter_mpi-vt_filterc.$(OBJEXT): old/$(am__dirstamp) \
+	old/$(DEPDIR)/$(am__dirstamp)
+old/vtfilter_mpi-vt_filthandler.$(OBJEXT): old/$(am__dirstamp) \
+	old/$(DEPDIR)/$(am__dirstamp)
+old/vtfilter_mpi-vt_otfhandler.$(OBJEXT): old/$(am__dirstamp) \
+	old/$(DEPDIR)/$(am__dirstamp)
+old/vtfilter_mpi-vt_tracefilter.$(OBJEXT): old/$(am__dirstamp) \
+	old/$(DEPDIR)/$(am__dirstamp)
 vtfilter-mpi$(EXEEXT): $(vtfilter_mpi_OBJECTS) $(vtfilter_mpi_DEPENDENCIES) $(EXTRA_vtfilter_mpi_DEPENDENCIES) 
 	@rm -f vtfilter-mpi$(EXEEXT)
 	$(AM_V_CXXLD)$(vtfilter_mpi_LINK) $(vtfilter_mpi_OBJECTS) $(vtfilter_mpi_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
+	-rm -f old/*.$(OBJEXT)
 
 distclean-compile:
 	-rm -f *.tab.c
@@ -681,157 +698,160 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vtfilter_mpi-vt_filter_gen.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vtfilter_mpi-vt_filter_trc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vtfilter_mpi-vt_filter_trc_hdlr.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vtfilter_mpi-vt_filterc.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vtfilter_mpi-vt_filthandler.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vtfilter_mpi-vt_otfhandler.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vtfilter_mpi-vt_tracefilter.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@old/$(DEPDIR)/vtfilter_mpi-vt_filterc.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@old/$(DEPDIR)/vtfilter_mpi-vt_filthandler.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@old/$(DEPDIR)/vtfilter_mpi-vt_otfhandler.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@old/$(DEPDIR)/vtfilter_mpi-vt_tracefilter.Po@am__quote@
 
 .cc.o:
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
+@am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
+@am__fastdepCXX_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXXCOMPILE) -c -o $@ $<
 
 .cc.obj:
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ `$(CYGPATH_W) '$<'`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.obj$$||'`;\
+@am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ `$(CYGPATH_W) '$<'` &&\
+@am__fastdepCXX_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
 
 .cc.lo:
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LTCXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Plo
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.lo$$||'`;\
+@am__fastdepCXX_TRUE@	$(LTCXXCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
+@am__fastdepCXX_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Plo
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LTCXXCOMPILE) -c -o $@ $<
 
-vtfilter_mpi-vt_filter.o: $(VTFILTERSRCDIR)/vt_filter.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtfilter_mpi-vt_filter.o -MD -MP -MF $(DEPDIR)/vtfilter_mpi-vt_filter.Tpo -c -o vtfilter_mpi-vt_filter.o `test -f '$(VTFILTERSRCDIR)/vt_filter.cc' || echo '$(srcdir)/'`$(VTFILTERSRCDIR)/vt_filter.cc
+vtfilter_mpi-vt_filter.o: vt_filter.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtfilter_mpi-vt_filter.o -MD -MP -MF $(DEPDIR)/vtfilter_mpi-vt_filter.Tpo -c -o vtfilter_mpi-vt_filter.o `test -f 'vt_filter.cc' || echo '$(srcdir)/'`vt_filter.cc
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/vtfilter_mpi-vt_filter.Tpo $(DEPDIR)/vtfilter_mpi-vt_filter.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTFILTERSRCDIR)/vt_filter.cc' object='vtfilter_mpi-vt_filter.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='vt_filter.cc' object='vtfilter_mpi-vt_filter.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtfilter_mpi-vt_filter.o `test -f '$(VTFILTERSRCDIR)/vt_filter.cc' || echo '$(srcdir)/'`$(VTFILTERSRCDIR)/vt_filter.cc
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtfilter_mpi-vt_filter.o `test -f 'vt_filter.cc' || echo '$(srcdir)/'`vt_filter.cc
 
-vtfilter_mpi-vt_filter.obj: $(VTFILTERSRCDIR)/vt_filter.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtfilter_mpi-vt_filter.obj -MD -MP -MF $(DEPDIR)/vtfilter_mpi-vt_filter.Tpo -c -o vtfilter_mpi-vt_filter.obj `if test -f '$(VTFILTERSRCDIR)/vt_filter.cc'; then $(CYGPATH_W) '$(VTFILTERSRCDIR)/vt_filter.cc'; else $(CYGPATH_W) '$(srcdir)/$(VTFILTERSRCDIR)/vt_filter.cc'; fi`
+vtfilter_mpi-vt_filter.obj: vt_filter.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtfilter_mpi-vt_filter.obj -MD -MP -MF $(DEPDIR)/vtfilter_mpi-vt_filter.Tpo -c -o vtfilter_mpi-vt_filter.obj `if test -f 'vt_filter.cc'; then $(CYGPATH_W) 'vt_filter.cc'; else $(CYGPATH_W) '$(srcdir)/vt_filter.cc'; fi`
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/vtfilter_mpi-vt_filter.Tpo $(DEPDIR)/vtfilter_mpi-vt_filter.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTFILTERSRCDIR)/vt_filter.cc' object='vtfilter_mpi-vt_filter.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='vt_filter.cc' object='vtfilter_mpi-vt_filter.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtfilter_mpi-vt_filter.obj `if test -f '$(VTFILTERSRCDIR)/vt_filter.cc'; then $(CYGPATH_W) '$(VTFILTERSRCDIR)/vt_filter.cc'; else $(CYGPATH_W) '$(srcdir)/$(VTFILTERSRCDIR)/vt_filter.cc'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtfilter_mpi-vt_filter.obj `if test -f 'vt_filter.cc'; then $(CYGPATH_W) 'vt_filter.cc'; else $(CYGPATH_W) '$(srcdir)/vt_filter.cc'; fi`
 
-vtfilter_mpi-vt_filter_common.o: $(VTFILTERSRCDIR)/vt_filter_common.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtfilter_mpi-vt_filter_common.o -MD -MP -MF $(DEPDIR)/vtfilter_mpi-vt_filter_common.Tpo -c -o vtfilter_mpi-vt_filter_common.o `test -f '$(VTFILTERSRCDIR)/vt_filter_common.cc' || echo '$(srcdir)/'`$(VTFILTERSRCDIR)/vt_filter_common.cc
+vtfilter_mpi-vt_filter_common.o: vt_filter_common.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtfilter_mpi-vt_filter_common.o -MD -MP -MF $(DEPDIR)/vtfilter_mpi-vt_filter_common.Tpo -c -o vtfilter_mpi-vt_filter_common.o `test -f 'vt_filter_common.cc' || echo '$(srcdir)/'`vt_filter_common.cc
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/vtfilter_mpi-vt_filter_common.Tpo $(DEPDIR)/vtfilter_mpi-vt_filter_common.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTFILTERSRCDIR)/vt_filter_common.cc' object='vtfilter_mpi-vt_filter_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='vt_filter_common.cc' object='vtfilter_mpi-vt_filter_common.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtfilter_mpi-vt_filter_common.o `test -f '$(VTFILTERSRCDIR)/vt_filter_common.cc' || echo '$(srcdir)/'`$(VTFILTERSRCDIR)/vt_filter_common.cc
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtfilter_mpi-vt_filter_common.o `test -f 'vt_filter_common.cc' || echo '$(srcdir)/'`vt_filter_common.cc
 
-vtfilter_mpi-vt_filter_common.obj: $(VTFILTERSRCDIR)/vt_filter_common.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtfilter_mpi-vt_filter_common.obj -MD -MP -MF $(DEPDIR)/vtfilter_mpi-vt_filter_common.Tpo -c -o vtfilter_mpi-vt_filter_common.obj `if test -f '$(VTFILTERSRCDIR)/vt_filter_common.cc'; then $(CYGPATH_W) '$(VTFILTERSRCDIR)/vt_filter_common.cc'; else $(CYGPATH_W) '$(srcdir)/$(VTFILTERSRCDIR)/vt_filter_common.cc'; fi`
+vtfilter_mpi-vt_filter_common.obj: vt_filter_common.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtfilter_mpi-vt_filter_common.obj -MD -MP -MF $(DEPDIR)/vtfilter_mpi-vt_filter_common.Tpo -c -o vtfilter_mpi-vt_filter_common.obj `if test -f 'vt_filter_common.cc'; then $(CYGPATH_W) 'vt_filter_common.cc'; else $(CYGPATH_W) '$(srcdir)/vt_filter_common.cc'; fi`
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/vtfilter_mpi-vt_filter_common.Tpo $(DEPDIR)/vtfilter_mpi-vt_filter_common.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTFILTERSRCDIR)/vt_filter_common.cc' object='vtfilter_mpi-vt_filter_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='vt_filter_common.cc' object='vtfilter_mpi-vt_filter_common.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtfilter_mpi-vt_filter_common.obj `if test -f '$(VTFILTERSRCDIR)/vt_filter_common.cc'; then $(CYGPATH_W) '$(VTFILTERSRCDIR)/vt_filter_common.cc'; else $(CYGPATH_W) '$(srcdir)/$(VTFILTERSRCDIR)/vt_filter_common.cc'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtfilter_mpi-vt_filter_common.obj `if test -f 'vt_filter_common.cc'; then $(CYGPATH_W) 'vt_filter_common.cc'; else $(CYGPATH_W) '$(srcdir)/vt_filter_common.cc'; fi`
 
-vtfilter_mpi-vt_filter_gen.o: $(VTFILTERSRCDIR)/vt_filter_gen.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtfilter_mpi-vt_filter_gen.o -MD -MP -MF $(DEPDIR)/vtfilter_mpi-vt_filter_gen.Tpo -c -o vtfilter_mpi-vt_filter_gen.o `test -f '$(VTFILTERSRCDIR)/vt_filter_gen.cc' || echo '$(srcdir)/'`$(VTFILTERSRCDIR)/vt_filter_gen.cc
+vtfilter_mpi-vt_filter_gen.o: vt_filter_gen.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtfilter_mpi-vt_filter_gen.o -MD -MP -MF $(DEPDIR)/vtfilter_mpi-vt_filter_gen.Tpo -c -o vtfilter_mpi-vt_filter_gen.o `test -f 'vt_filter_gen.cc' || echo '$(srcdir)/'`vt_filter_gen.cc
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/vtfilter_mpi-vt_filter_gen.Tpo $(DEPDIR)/vtfilter_mpi-vt_filter_gen.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTFILTERSRCDIR)/vt_filter_gen.cc' object='vtfilter_mpi-vt_filter_gen.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='vt_filter_gen.cc' object='vtfilter_mpi-vt_filter_gen.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtfilter_mpi-vt_filter_gen.o `test -f '$(VTFILTERSRCDIR)/vt_filter_gen.cc' || echo '$(srcdir)/'`$(VTFILTERSRCDIR)/vt_filter_gen.cc
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtfilter_mpi-vt_filter_gen.o `test -f 'vt_filter_gen.cc' || echo '$(srcdir)/'`vt_filter_gen.cc
 
-vtfilter_mpi-vt_filter_gen.obj: $(VTFILTERSRCDIR)/vt_filter_gen.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtfilter_mpi-vt_filter_gen.obj -MD -MP -MF $(DEPDIR)/vtfilter_mpi-vt_filter_gen.Tpo -c -o vtfilter_mpi-vt_filter_gen.obj `if test -f '$(VTFILTERSRCDIR)/vt_filter_gen.cc'; then $(CYGPATH_W) '$(VTFILTERSRCDIR)/vt_filter_gen.cc'; else $(CYGPATH_W) '$(srcdir)/$(VTFILTERSRCDIR)/vt_filter_gen.cc'; fi`
+vtfilter_mpi-vt_filter_gen.obj: vt_filter_gen.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtfilter_mpi-vt_filter_gen.obj -MD -MP -MF $(DEPDIR)/vtfilter_mpi-vt_filter_gen.Tpo -c -o vtfilter_mpi-vt_filter_gen.obj `if test -f 'vt_filter_gen.cc'; then $(CYGPATH_W) 'vt_filter_gen.cc'; else $(CYGPATH_W) '$(srcdir)/vt_filter_gen.cc'; fi`
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/vtfilter_mpi-vt_filter_gen.Tpo $(DEPDIR)/vtfilter_mpi-vt_filter_gen.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTFILTERSRCDIR)/vt_filter_gen.cc' object='vtfilter_mpi-vt_filter_gen.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='vt_filter_gen.cc' object='vtfilter_mpi-vt_filter_gen.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtfilter_mpi-vt_filter_gen.obj `if test -f '$(VTFILTERSRCDIR)/vt_filter_gen.cc'; then $(CYGPATH_W) '$(VTFILTERSRCDIR)/vt_filter_gen.cc'; else $(CYGPATH_W) '$(srcdir)/$(VTFILTERSRCDIR)/vt_filter_gen.cc'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtfilter_mpi-vt_filter_gen.obj `if test -f 'vt_filter_gen.cc'; then $(CYGPATH_W) 'vt_filter_gen.cc'; else $(CYGPATH_W) '$(srcdir)/vt_filter_gen.cc'; fi`
 
-vtfilter_mpi-vt_filter_trc.o: $(VTFILTERSRCDIR)/vt_filter_trc.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtfilter_mpi-vt_filter_trc.o -MD -MP -MF $(DEPDIR)/vtfilter_mpi-vt_filter_trc.Tpo -c -o vtfilter_mpi-vt_filter_trc.o `test -f '$(VTFILTERSRCDIR)/vt_filter_trc.cc' || echo '$(srcdir)/'`$(VTFILTERSRCDIR)/vt_filter_trc.cc
+vtfilter_mpi-vt_filter_trc.o: vt_filter_trc.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtfilter_mpi-vt_filter_trc.o -MD -MP -MF $(DEPDIR)/vtfilter_mpi-vt_filter_trc.Tpo -c -o vtfilter_mpi-vt_filter_trc.o `test -f 'vt_filter_trc.cc' || echo '$(srcdir)/'`vt_filter_trc.cc
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/vtfilter_mpi-vt_filter_trc.Tpo $(DEPDIR)/vtfilter_mpi-vt_filter_trc.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTFILTERSRCDIR)/vt_filter_trc.cc' object='vtfilter_mpi-vt_filter_trc.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='vt_filter_trc.cc' object='vtfilter_mpi-vt_filter_trc.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtfilter_mpi-vt_filter_trc.o `test -f '$(VTFILTERSRCDIR)/vt_filter_trc.cc' || echo '$(srcdir)/'`$(VTFILTERSRCDIR)/vt_filter_trc.cc
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtfilter_mpi-vt_filter_trc.o `test -f 'vt_filter_trc.cc' || echo '$(srcdir)/'`vt_filter_trc.cc
 
-vtfilter_mpi-vt_filter_trc.obj: $(VTFILTERSRCDIR)/vt_filter_trc.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtfilter_mpi-vt_filter_trc.obj -MD -MP -MF $(DEPDIR)/vtfilter_mpi-vt_filter_trc.Tpo -c -o vtfilter_mpi-vt_filter_trc.obj `if test -f '$(VTFILTERSRCDIR)/vt_filter_trc.cc'; then $(CYGPATH_W) '$(VTFILTERSRCDIR)/vt_filter_trc.cc'; else $(CYGPATH_W) '$(srcdir)/$(VTFILTERSRCDIR)/vt_filter_trc.cc'; fi`
+vtfilter_mpi-vt_filter_trc.obj: vt_filter_trc.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtfilter_mpi-vt_filter_trc.obj -MD -MP -MF $(DEPDIR)/vtfilter_mpi-vt_filter_trc.Tpo -c -o vtfilter_mpi-vt_filter_trc.obj `if test -f 'vt_filter_trc.cc'; then $(CYGPATH_W) 'vt_filter_trc.cc'; else $(CYGPATH_W) '$(srcdir)/vt_filter_trc.cc'; fi`
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/vtfilter_mpi-vt_filter_trc.Tpo $(DEPDIR)/vtfilter_mpi-vt_filter_trc.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTFILTERSRCDIR)/vt_filter_trc.cc' object='vtfilter_mpi-vt_filter_trc.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='vt_filter_trc.cc' object='vtfilter_mpi-vt_filter_trc.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtfilter_mpi-vt_filter_trc.obj `if test -f '$(VTFILTERSRCDIR)/vt_filter_trc.cc'; then $(CYGPATH_W) '$(VTFILTERSRCDIR)/vt_filter_trc.cc'; else $(CYGPATH_W) '$(srcdir)/$(VTFILTERSRCDIR)/vt_filter_trc.cc'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtfilter_mpi-vt_filter_trc.obj `if test -f 'vt_filter_trc.cc'; then $(CYGPATH_W) 'vt_filter_trc.cc'; else $(CYGPATH_W) '$(srcdir)/vt_filter_trc.cc'; fi`
 
-vtfilter_mpi-vt_filter_trc_hdlr.o: $(VTFILTERSRCDIR)/vt_filter_trc_hdlr.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtfilter_mpi-vt_filter_trc_hdlr.o -MD -MP -MF $(DEPDIR)/vtfilter_mpi-vt_filter_trc_hdlr.Tpo -c -o vtfilter_mpi-vt_filter_trc_hdlr.o `test -f '$(VTFILTERSRCDIR)/vt_filter_trc_hdlr.cc' || echo '$(srcdir)/'`$(VTFILTERSRCDIR)/vt_filter_trc_hdlr.cc
+vtfilter_mpi-vt_filter_trc_hdlr.o: vt_filter_trc_hdlr.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtfilter_mpi-vt_filter_trc_hdlr.o -MD -MP -MF $(DEPDIR)/vtfilter_mpi-vt_filter_trc_hdlr.Tpo -c -o vtfilter_mpi-vt_filter_trc_hdlr.o `test -f 'vt_filter_trc_hdlr.cc' || echo '$(srcdir)/'`vt_filter_trc_hdlr.cc
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/vtfilter_mpi-vt_filter_trc_hdlr.Tpo $(DEPDIR)/vtfilter_mpi-vt_filter_trc_hdlr.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTFILTERSRCDIR)/vt_filter_trc_hdlr.cc' object='vtfilter_mpi-vt_filter_trc_hdlr.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='vt_filter_trc_hdlr.cc' object='vtfilter_mpi-vt_filter_trc_hdlr.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtfilter_mpi-vt_filter_trc_hdlr.o `test -f '$(VTFILTERSRCDIR)/vt_filter_trc_hdlr.cc' || echo '$(srcdir)/'`$(VTFILTERSRCDIR)/vt_filter_trc_hdlr.cc
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtfilter_mpi-vt_filter_trc_hdlr.o `test -f 'vt_filter_trc_hdlr.cc' || echo '$(srcdir)/'`vt_filter_trc_hdlr.cc
 
-vtfilter_mpi-vt_filter_trc_hdlr.obj: $(VTFILTERSRCDIR)/vt_filter_trc_hdlr.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtfilter_mpi-vt_filter_trc_hdlr.obj -MD -MP -MF $(DEPDIR)/vtfilter_mpi-vt_filter_trc_hdlr.Tpo -c -o vtfilter_mpi-vt_filter_trc_hdlr.obj `if test -f '$(VTFILTERSRCDIR)/vt_filter_trc_hdlr.cc'; then $(CYGPATH_W) '$(VTFILTERSRCDIR)/vt_filter_trc_hdlr.cc'; else $(CYGPATH_W) '$(srcdir)/$(VTFILTERSRCDIR)/vt_filter_trc_hdlr.cc'; fi`
+vtfilter_mpi-vt_filter_trc_hdlr.obj: vt_filter_trc_hdlr.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtfilter_mpi-vt_filter_trc_hdlr.obj -MD -MP -MF $(DEPDIR)/vtfilter_mpi-vt_filter_trc_hdlr.Tpo -c -o vtfilter_mpi-vt_filter_trc_hdlr.obj `if test -f 'vt_filter_trc_hdlr.cc'; then $(CYGPATH_W) 'vt_filter_trc_hdlr.cc'; else $(CYGPATH_W) '$(srcdir)/vt_filter_trc_hdlr.cc'; fi`
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/vtfilter_mpi-vt_filter_trc_hdlr.Tpo $(DEPDIR)/vtfilter_mpi-vt_filter_trc_hdlr.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTFILTERSRCDIR)/vt_filter_trc_hdlr.cc' object='vtfilter_mpi-vt_filter_trc_hdlr.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='vt_filter_trc_hdlr.cc' object='vtfilter_mpi-vt_filter_trc_hdlr.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtfilter_mpi-vt_filter_trc_hdlr.obj `if test -f '$(VTFILTERSRCDIR)/vt_filter_trc_hdlr.cc'; then $(CYGPATH_W) '$(VTFILTERSRCDIR)/vt_filter_trc_hdlr.cc'; else $(CYGPATH_W) '$(srcdir)/$(VTFILTERSRCDIR)/vt_filter_trc_hdlr.cc'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtfilter_mpi-vt_filter_trc_hdlr.obj `if test -f 'vt_filter_trc_hdlr.cc'; then $(CYGPATH_W) 'vt_filter_trc_hdlr.cc'; else $(CYGPATH_W) '$(srcdir)/vt_filter_trc_hdlr.cc'; fi`
 
-vtfilter_mpi-vt_filterc.o: $(VTFILTERSRCDIR)/old/vt_filterc.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtfilter_mpi-vt_filterc.o -MD -MP -MF $(DEPDIR)/vtfilter_mpi-vt_filterc.Tpo -c -o vtfilter_mpi-vt_filterc.o `test -f '$(VTFILTERSRCDIR)/old/vt_filterc.cc' || echo '$(srcdir)/'`$(VTFILTERSRCDIR)/old/vt_filterc.cc
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/vtfilter_mpi-vt_filterc.Tpo $(DEPDIR)/vtfilter_mpi-vt_filterc.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTFILTERSRCDIR)/old/vt_filterc.cc' object='vtfilter_mpi-vt_filterc.o' libtool=no @AMDEPBACKSLASH@
+old/vtfilter_mpi-vt_filterc.o: old/vt_filterc.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -MT old/vtfilter_mpi-vt_filterc.o -MD -MP -MF old/$(DEPDIR)/vtfilter_mpi-vt_filterc.Tpo -c -o old/vtfilter_mpi-vt_filterc.o `test -f 'old/vt_filterc.cc' || echo '$(srcdir)/'`old/vt_filterc.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) old/$(DEPDIR)/vtfilter_mpi-vt_filterc.Tpo old/$(DEPDIR)/vtfilter_mpi-vt_filterc.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='old/vt_filterc.cc' object='old/vtfilter_mpi-vt_filterc.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtfilter_mpi-vt_filterc.o `test -f '$(VTFILTERSRCDIR)/old/vt_filterc.cc' || echo '$(srcdir)/'`$(VTFILTERSRCDIR)/old/vt_filterc.cc
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -c -o old/vtfilter_mpi-vt_filterc.o `test -f 'old/vt_filterc.cc' || echo '$(srcdir)/'`old/vt_filterc.cc
 
-vtfilter_mpi-vt_filterc.obj: $(VTFILTERSRCDIR)/old/vt_filterc.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtfilter_mpi-vt_filterc.obj -MD -MP -MF $(DEPDIR)/vtfilter_mpi-vt_filterc.Tpo -c -o vtfilter_mpi-vt_filterc.obj `if test -f '$(VTFILTERSRCDIR)/old/vt_filterc.cc'; then $(CYGPATH_W) '$(VTFILTERSRCDIR)/old/vt_filterc.cc'; else $(CYGPATH_W) '$(srcdir)/$(VTFILTERSRCDIR)/old/vt_filterc.cc'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/vtfilter_mpi-vt_filterc.Tpo $(DEPDIR)/vtfilter_mpi-vt_filterc.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTFILTERSRCDIR)/old/vt_filterc.cc' object='vtfilter_mpi-vt_filterc.obj' libtool=no @AMDEPBACKSLASH@
+old/vtfilter_mpi-vt_filterc.obj: old/vt_filterc.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -MT old/vtfilter_mpi-vt_filterc.obj -MD -MP -MF old/$(DEPDIR)/vtfilter_mpi-vt_filterc.Tpo -c -o old/vtfilter_mpi-vt_filterc.obj `if test -f 'old/vt_filterc.cc'; then $(CYGPATH_W) 'old/vt_filterc.cc'; else $(CYGPATH_W) '$(srcdir)/old/vt_filterc.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) old/$(DEPDIR)/vtfilter_mpi-vt_filterc.Tpo old/$(DEPDIR)/vtfilter_mpi-vt_filterc.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='old/vt_filterc.cc' object='old/vtfilter_mpi-vt_filterc.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtfilter_mpi-vt_filterc.obj `if test -f '$(VTFILTERSRCDIR)/old/vt_filterc.cc'; then $(CYGPATH_W) '$(VTFILTERSRCDIR)/old/vt_filterc.cc'; else $(CYGPATH_W) '$(srcdir)/$(VTFILTERSRCDIR)/old/vt_filterc.cc'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -c -o old/vtfilter_mpi-vt_filterc.obj `if test -f 'old/vt_filterc.cc'; then $(CYGPATH_W) 'old/vt_filterc.cc'; else $(CYGPATH_W) '$(srcdir)/old/vt_filterc.cc'; fi`
 
-vtfilter_mpi-vt_filthandler.o: $(VTFILTERSRCDIR)/old/vt_filthandler.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtfilter_mpi-vt_filthandler.o -MD -MP -MF $(DEPDIR)/vtfilter_mpi-vt_filthandler.Tpo -c -o vtfilter_mpi-vt_filthandler.o `test -f '$(VTFILTERSRCDIR)/old/vt_filthandler.cc' || echo '$(srcdir)/'`$(VTFILTERSRCDIR)/old/vt_filthandler.cc
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/vtfilter_mpi-vt_filthandler.Tpo $(DEPDIR)/vtfilter_mpi-vt_filthandler.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTFILTERSRCDIR)/old/vt_filthandler.cc' object='vtfilter_mpi-vt_filthandler.o' libtool=no @AMDEPBACKSLASH@
+old/vtfilter_mpi-vt_filthandler.o: old/vt_filthandler.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -MT old/vtfilter_mpi-vt_filthandler.o -MD -MP -MF old/$(DEPDIR)/vtfilter_mpi-vt_filthandler.Tpo -c -o old/vtfilter_mpi-vt_filthandler.o `test -f 'old/vt_filthandler.cc' || echo '$(srcdir)/'`old/vt_filthandler.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) old/$(DEPDIR)/vtfilter_mpi-vt_filthandler.Tpo old/$(DEPDIR)/vtfilter_mpi-vt_filthandler.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='old/vt_filthandler.cc' object='old/vtfilter_mpi-vt_filthandler.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtfilter_mpi-vt_filthandler.o `test -f '$(VTFILTERSRCDIR)/old/vt_filthandler.cc' || echo '$(srcdir)/'`$(VTFILTERSRCDIR)/old/vt_filthandler.cc
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -c -o old/vtfilter_mpi-vt_filthandler.o `test -f 'old/vt_filthandler.cc' || echo '$(srcdir)/'`old/vt_filthandler.cc
 
-vtfilter_mpi-vt_filthandler.obj: $(VTFILTERSRCDIR)/old/vt_filthandler.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtfilter_mpi-vt_filthandler.obj -MD -MP -MF $(DEPDIR)/vtfilter_mpi-vt_filthandler.Tpo -c -o vtfilter_mpi-vt_filthandler.obj `if test -f '$(VTFILTERSRCDIR)/old/vt_filthandler.cc'; then $(CYGPATH_W) '$(VTFILTERSRCDIR)/old/vt_filthandler.cc'; else $(CYGPATH_W) '$(srcdir)/$(VTFILTERSRCDIR)/old/vt_filthandler.cc'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/vtfilter_mpi-vt_filthandler.Tpo $(DEPDIR)/vtfilter_mpi-vt_filthandler.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTFILTERSRCDIR)/old/vt_filthandler.cc' object='vtfilter_mpi-vt_filthandler.obj' libtool=no @AMDEPBACKSLASH@
+old/vtfilter_mpi-vt_filthandler.obj: old/vt_filthandler.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -MT old/vtfilter_mpi-vt_filthandler.obj -MD -MP -MF old/$(DEPDIR)/vtfilter_mpi-vt_filthandler.Tpo -c -o old/vtfilter_mpi-vt_filthandler.obj `if test -f 'old/vt_filthandler.cc'; then $(CYGPATH_W) 'old/vt_filthandler.cc'; else $(CYGPATH_W) '$(srcdir)/old/vt_filthandler.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) old/$(DEPDIR)/vtfilter_mpi-vt_filthandler.Tpo old/$(DEPDIR)/vtfilter_mpi-vt_filthandler.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='old/vt_filthandler.cc' object='old/vtfilter_mpi-vt_filthandler.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtfilter_mpi-vt_filthandler.obj `if test -f '$(VTFILTERSRCDIR)/old/vt_filthandler.cc'; then $(CYGPATH_W) '$(VTFILTERSRCDIR)/old/vt_filthandler.cc'; else $(CYGPATH_W) '$(srcdir)/$(VTFILTERSRCDIR)/old/vt_filthandler.cc'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -c -o old/vtfilter_mpi-vt_filthandler.obj `if test -f 'old/vt_filthandler.cc'; then $(CYGPATH_W) 'old/vt_filthandler.cc'; else $(CYGPATH_W) '$(srcdir)/old/vt_filthandler.cc'; fi`
 
-vtfilter_mpi-vt_otfhandler.o: $(VTFILTERSRCDIR)/old/vt_otfhandler.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtfilter_mpi-vt_otfhandler.o -MD -MP -MF $(DEPDIR)/vtfilter_mpi-vt_otfhandler.Tpo -c -o vtfilter_mpi-vt_otfhandler.o `test -f '$(VTFILTERSRCDIR)/old/vt_otfhandler.cc' || echo '$(srcdir)/'`$(VTFILTERSRCDIR)/old/vt_otfhandler.cc
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/vtfilter_mpi-vt_otfhandler.Tpo $(DEPDIR)/vtfilter_mpi-vt_otfhandler.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTFILTERSRCDIR)/old/vt_otfhandler.cc' object='vtfilter_mpi-vt_otfhandler.o' libtool=no @AMDEPBACKSLASH@
+old/vtfilter_mpi-vt_otfhandler.o: old/vt_otfhandler.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -MT old/vtfilter_mpi-vt_otfhandler.o -MD -MP -MF old/$(DEPDIR)/vtfilter_mpi-vt_otfhandler.Tpo -c -o old/vtfilter_mpi-vt_otfhandler.o `test -f 'old/vt_otfhandler.cc' || echo '$(srcdir)/'`old/vt_otfhandler.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) old/$(DEPDIR)/vtfilter_mpi-vt_otfhandler.Tpo old/$(DEPDIR)/vtfilter_mpi-vt_otfhandler.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='old/vt_otfhandler.cc' object='old/vtfilter_mpi-vt_otfhandler.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtfilter_mpi-vt_otfhandler.o `test -f '$(VTFILTERSRCDIR)/old/vt_otfhandler.cc' || echo '$(srcdir)/'`$(VTFILTERSRCDIR)/old/vt_otfhandler.cc
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -c -o old/vtfilter_mpi-vt_otfhandler.o `test -f 'old/vt_otfhandler.cc' || echo '$(srcdir)/'`old/vt_otfhandler.cc
 
-vtfilter_mpi-vt_otfhandler.obj: $(VTFILTERSRCDIR)/old/vt_otfhandler.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtfilter_mpi-vt_otfhandler.obj -MD -MP -MF $(DEPDIR)/vtfilter_mpi-vt_otfhandler.Tpo -c -o vtfilter_mpi-vt_otfhandler.obj `if test -f '$(VTFILTERSRCDIR)/old/vt_otfhandler.cc'; then $(CYGPATH_W) '$(VTFILTERSRCDIR)/old/vt_otfhandler.cc'; else $(CYGPATH_W) '$(srcdir)/$(VTFILTERSRCDIR)/old/vt_otfhandler.cc'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/vtfilter_mpi-vt_otfhandler.Tpo $(DEPDIR)/vtfilter_mpi-vt_otfhandler.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTFILTERSRCDIR)/old/vt_otfhandler.cc' object='vtfilter_mpi-vt_otfhandler.obj' libtool=no @AMDEPBACKSLASH@
+old/vtfilter_mpi-vt_otfhandler.obj: old/vt_otfhandler.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -MT old/vtfilter_mpi-vt_otfhandler.obj -MD -MP -MF old/$(DEPDIR)/vtfilter_mpi-vt_otfhandler.Tpo -c -o old/vtfilter_mpi-vt_otfhandler.obj `if test -f 'old/vt_otfhandler.cc'; then $(CYGPATH_W) 'old/vt_otfhandler.cc'; else $(CYGPATH_W) '$(srcdir)/old/vt_otfhandler.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) old/$(DEPDIR)/vtfilter_mpi-vt_otfhandler.Tpo old/$(DEPDIR)/vtfilter_mpi-vt_otfhandler.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='old/vt_otfhandler.cc' object='old/vtfilter_mpi-vt_otfhandler.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtfilter_mpi-vt_otfhandler.obj `if test -f '$(VTFILTERSRCDIR)/old/vt_otfhandler.cc'; then $(CYGPATH_W) '$(VTFILTERSRCDIR)/old/vt_otfhandler.cc'; else $(CYGPATH_W) '$(srcdir)/$(VTFILTERSRCDIR)/old/vt_otfhandler.cc'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -c -o old/vtfilter_mpi-vt_otfhandler.obj `if test -f 'old/vt_otfhandler.cc'; then $(CYGPATH_W) 'old/vt_otfhandler.cc'; else $(CYGPATH_W) '$(srcdir)/old/vt_otfhandler.cc'; fi`
 
-vtfilter_mpi-vt_tracefilter.o: $(VTFILTERSRCDIR)/old/vt_tracefilter.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtfilter_mpi-vt_tracefilter.o -MD -MP -MF $(DEPDIR)/vtfilter_mpi-vt_tracefilter.Tpo -c -o vtfilter_mpi-vt_tracefilter.o `test -f '$(VTFILTERSRCDIR)/old/vt_tracefilter.cc' || echo '$(srcdir)/'`$(VTFILTERSRCDIR)/old/vt_tracefilter.cc
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/vtfilter_mpi-vt_tracefilter.Tpo $(DEPDIR)/vtfilter_mpi-vt_tracefilter.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTFILTERSRCDIR)/old/vt_tracefilter.cc' object='vtfilter_mpi-vt_tracefilter.o' libtool=no @AMDEPBACKSLASH@
+old/vtfilter_mpi-vt_tracefilter.o: old/vt_tracefilter.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -MT old/vtfilter_mpi-vt_tracefilter.o -MD -MP -MF old/$(DEPDIR)/vtfilter_mpi-vt_tracefilter.Tpo -c -o old/vtfilter_mpi-vt_tracefilter.o `test -f 'old/vt_tracefilter.cc' || echo '$(srcdir)/'`old/vt_tracefilter.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) old/$(DEPDIR)/vtfilter_mpi-vt_tracefilter.Tpo old/$(DEPDIR)/vtfilter_mpi-vt_tracefilter.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='old/vt_tracefilter.cc' object='old/vtfilter_mpi-vt_tracefilter.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtfilter_mpi-vt_tracefilter.o `test -f '$(VTFILTERSRCDIR)/old/vt_tracefilter.cc' || echo '$(srcdir)/'`$(VTFILTERSRCDIR)/old/vt_tracefilter.cc
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -c -o old/vtfilter_mpi-vt_tracefilter.o `test -f 'old/vt_tracefilter.cc' || echo '$(srcdir)/'`old/vt_tracefilter.cc
 
-vtfilter_mpi-vt_tracefilter.obj: $(VTFILTERSRCDIR)/old/vt_tracefilter.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -MT vtfilter_mpi-vt_tracefilter.obj -MD -MP -MF $(DEPDIR)/vtfilter_mpi-vt_tracefilter.Tpo -c -o vtfilter_mpi-vt_tracefilter.obj `if test -f '$(VTFILTERSRCDIR)/old/vt_tracefilter.cc'; then $(CYGPATH_W) '$(VTFILTERSRCDIR)/old/vt_tracefilter.cc'; else $(CYGPATH_W) '$(srcdir)/$(VTFILTERSRCDIR)/old/vt_tracefilter.cc'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/vtfilter_mpi-vt_tracefilter.Tpo $(DEPDIR)/vtfilter_mpi-vt_tracefilter.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(VTFILTERSRCDIR)/old/vt_tracefilter.cc' object='vtfilter_mpi-vt_tracefilter.obj' libtool=no @AMDEPBACKSLASH@
+old/vtfilter_mpi-vt_tracefilter.obj: old/vt_tracefilter.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -MT old/vtfilter_mpi-vt_tracefilter.obj -MD -MP -MF old/$(DEPDIR)/vtfilter_mpi-vt_tracefilter.Tpo -c -o old/vtfilter_mpi-vt_tracefilter.obj `if test -f 'old/vt_tracefilter.cc'; then $(CYGPATH_W) 'old/vt_tracefilter.cc'; else $(CYGPATH_W) '$(srcdir)/old/vt_tracefilter.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) old/$(DEPDIR)/vtfilter_mpi-vt_tracefilter.Tpo old/$(DEPDIR)/vtfilter_mpi-vt_tracefilter.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='old/vt_tracefilter.cc' object='old/vtfilter_mpi-vt_tracefilter.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -c -o vtfilter_mpi-vt_tracefilter.obj `if test -f '$(VTFILTERSRCDIR)/old/vt_tracefilter.cc'; then $(CYGPATH_W) '$(VTFILTERSRCDIR)/old/vt_tracefilter.cc'; else $(CYGPATH_W) '$(srcdir)/$(VTFILTERSRCDIR)/old/vt_tracefilter.cc'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vtfilter_mpi_CXXFLAGS) $(CXXFLAGS) -c -o old/vtfilter_mpi-vt_tracefilter.obj `if test -f 'old/vt_tracefilter.cc'; then $(CYGPATH_W) 'old/vt_tracefilter.cc'; else $(CYGPATH_W) '$(srcdir)/old/vt_tracefilter.cc'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -964,10 +984,13 @@ install-strip:
 mostlyclean-generic:
 
 clean-generic:
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
 	-test . = "$(srcdir)" || test -z "$(CONFIG_CLEAN_VPATH_FILES)" || rm -f $(CONFIG_CLEAN_VPATH_FILES)
+	-rm -f old/$(DEPDIR)/$(am__dirstamp)
+	-rm -f old/$(am__dirstamp)
 
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
@@ -977,7 +1000,7 @@ clean: clean-am
 clean-am: clean-binPROGRAMS clean-generic clean-libtool mostlyclean-am
 
 distclean: distclean-am
-	-rm -rf ./$(DEPDIR)
+	-rm -rf ./$(DEPDIR) old/$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -1024,7 +1047,7 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
-	-rm -rf ./$(DEPDIR)
+	-rm -rf ./$(DEPDIR) old/$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
@@ -1066,6 +1089,10 @@ install-exec-hook:
 	$(LN_S) vtfilter-mpi$(EXEEXT) vtfiltergen-mpi$(EXEEXT))
 uninstall-local:
 	rm -f $(DESTDIR)$(bindir)/vtfiltergen-mpi$(EXEEXT)
+
+$(COMMONSOURCES):
+	$(AM_V_at)$(MKDIR_P) `dirname $@`
+	$(LN_S) $(abs_top_srcdir)/tools/vtfilter/$@ $@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

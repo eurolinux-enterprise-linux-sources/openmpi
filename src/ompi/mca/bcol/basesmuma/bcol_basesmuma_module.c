@@ -4,6 +4,8 @@
  * Copyright (c) 2009-2012 Mellanox Technologies.  All rights reserved.
  * Copyright (c) 2012-2014 Los Alamos National Security, LLC. All rights
  *                         reserved.
+ * Copyright (c) 2014      Research Organization for Information Science
+ *                         and Technology (RIST). All rights reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -95,7 +97,7 @@ static void
 mca_bcol_basesmuma_module_destruct(mca_bcol_basesmuma_module_t *sm_module)
 {
     /* local variables */
-    int i;
+    mca_sbgp_base_module_t *sbgp_module = sm_module->super.sbgp_partner_module;
     mca_bcol_basesmuma_component_t *cs = &mca_bcol_basesmuma_component;
 
     /*
@@ -117,10 +119,9 @@ mca_bcol_basesmuma_module_destruct(mca_bcol_basesmuma_module_t *sm_module)
     /* Remove Lmsg Reduce Offsets Array */
     free_lmsg_reduce_offsets_array(sm_module);
 
-
     /* collective topology data */
     if( sm_module->fanout_read_tree) {
-        for(i=0 ; i < sm_module->super.size_of_subgroup ; i++ ) {
+        for (int i = 0 ; i < sm_module->super.size_of_subgroup ; i++ ) {
             if(0 < sm_module->fanout_read_tree[i].n_children ) {
                 free(sm_module->fanout_read_tree[i].children_ranks);
                 sm_module->fanout_read_tree[i].children_ranks=NULL;
@@ -135,7 +136,7 @@ mca_bcol_basesmuma_module_destruct(mca_bcol_basesmuma_module_t *sm_module)
      * size of subgroup) of array reduction_tree
      */
     if( sm_module->reduction_tree) {
-        for(i=0 ; i < sm_module->super.size_of_subgroup ; i++ ) {
+        for (int i = 0 ; i < sm_module->super.size_of_subgroup ; i++ ) {
             if(0 < sm_module->reduction_tree[i].n_children ) {
                 free(sm_module->reduction_tree[i].children_ranks);
                 sm_module->reduction_tree[i].children_ranks=NULL;
@@ -196,7 +197,7 @@ mca_bcol_basesmuma_module_destruct(mca_bcol_basesmuma_module_t *sm_module)
 
 #if 1
     if(sm_module->scatter_kary_tree) {
-        for(i=0 ; i < sm_module->super.size_of_subgroup ; i++ ) {
+        for (int i = 0 ; i < sm_module->super.size_of_subgroup ; i++ ) {
             if(0 < sm_module->scatter_kary_tree[i].n_children) {
                 free(sm_module->scatter_kary_tree[i].children_ranks);
                 sm_module->scatter_kary_tree[i].children_ranks=NULL;
@@ -211,9 +212,40 @@ mca_bcol_basesmuma_module_destruct(mca_bcol_basesmuma_module_t *sm_module)
         sm_module->super.list_n_connected = NULL;
     }
 
+    cleanup_nb_coll_buff_desc(&sm_module->ml_mem.nb_coll_desc,
+                              sm_module->ml_mem.num_banks,
+                              sm_module->ml_mem.num_buffers_per_bank);
+
+    for (int i = 0; i < BCOL_NUM_OF_FUNCTIONS; i++){
+        /* gvm FIX: Go through the list and destroy each item */
+        /* Destroy the function table object for each bcol type list */
+        OPAL_LIST_DESTRUCT((&sm_module->super.bcol_fns_table[i]));
+    }
+
+    if (NULL != sm_module->payload_backing_files_info) {
+        bcol_basesmuma_smcm_release_connections (sm_module, sbgp_module, &cs->sm_connections_list,
+                                                 &sm_module->payload_backing_files_info);
+    }
+
+    if (NULL != sm_module->ctl_backing_files_info) {
+        bcol_basesmuma_smcm_release_connections (sm_module, sbgp_module, &cs->sm_connections_list,
+                                                 &sm_module->ctl_backing_files_info);
+    }
+
+    if (NULL != sm_module->ml_mem.bank_release_counter) {
+        free(sm_module->ml_mem.bank_release_counter);
+        sm_module->ml_mem.bank_release_counter = NULL;
+    }
+
+    if (NULL != sm_module->colls_with_user_data.data_buffs) {
+        free((void *)sm_module->colls_with_user_data.data_buffs);
+        sm_module->colls_with_user_data.data_buffs = NULL;
+    }
+
     /* free the k-nomial allgather tree here */
-
-
+    netpatterns_cleanup_recursive_knomial_allgather_tree_node(&sm_module->knomial_allgather_tree);
+    netpatterns_cleanup_recursive_doubling_tree_node(&sm_module->recursive_doubling_tree);
+    netpatterns_cleanup_recursive_knomial_tree_node(&sm_module->knomial_exchange_tree);
 
     /* done */
 }

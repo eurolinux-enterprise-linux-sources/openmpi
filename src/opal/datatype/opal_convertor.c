@@ -25,10 +25,7 @@
 
 #include <stddef.h>
 #include <stdio.h>
-
-#ifdef HAVE_STDINT_H
 #include <stdint.h>
-#endif
 
 #include "opal/prefetch.h"
 #include "opal/util/arch.h"
@@ -362,13 +359,12 @@ static inline int opal_convertor_create_stack_with_pos_contig( opal_convertor_t*
     if( OPAL_LIKELY(0 == count) ) {
         pStack[1].type     = pElems->elem.common.type;
         pStack[1].count    = pElems->elem.count;
-        pStack[1].disp     = pElems->elem.disp;
     } else {
         pStack[1].type  = OPAL_DATATYPE_UINT1;
         pStack[1].count = pData->size - count;
-        pStack[1].disp  = pData->true_lb + count;
     }
-    pStack[1].index    = 0;  /* useless */
+    pStack[1].disp  = count;
+    pStack[1].index = 0;  /* useless */
 
     pConvertor->bConverted = starting_point;
     pConvertor->stack_pos = 1;
@@ -400,13 +396,16 @@ int opal_convertor_create_stack_at_begining( opal_convertor_t* convertor,
     pStack[0].index = -1;
     pStack[0].count = convertor->count;
     pStack[0].disp  = 0;
+    pStack[0].type  = OPAL_DATATYPE_LOOP;
 
     pStack[1].index = 0;
     pStack[1].disp = 0;
     if( pElems[0].elem.common.type == OPAL_DATATYPE_LOOP ) {
         pStack[1].count = pElems[0].loop.loops;
+        pStack[1].type  = OPAL_DATATYPE_LOOP;
     } else {
         pStack[1].count = pElems[0].elem.count;
+        pStack[1].type  = pElems[0].elem.common.type;
     }
     return OPAL_SUCCESS;
 }
@@ -418,17 +417,19 @@ int32_t opal_convertor_set_position_nocheck( opal_convertor_t* convertor,
     int32_t rc;
 
     /**
-     * If we plan to rollback the convertor then first we have to set it
-     * at the beginning.
+     * create_stack_with_pos_contig always set the position relative to the ZERO
+     * position, so there is no need for special handling. In all other cases,
+     * if we plan to rollback the convertor then first we have to reset it at
+     * the beginning.
      */
-    if( (0 == (*position)) || ((*position) < convertor->bConverted) ) {
-        rc = opal_convertor_create_stack_at_begining( convertor, opal_datatype_local_sizes );
-        if( 0 == (*position) ) return rc;
-    }
     if( OPAL_LIKELY(convertor->flags & OPAL_DATATYPE_FLAG_CONTIGUOUS) ) {
         rc = opal_convertor_create_stack_with_pos_contig( convertor, (*position),
                                                           opal_datatype_local_sizes );
     } else {
+        if( (0 == (*position)) || ((*position) < convertor->bConverted) ) {
+            rc = opal_convertor_create_stack_at_begining( convertor, opal_datatype_local_sizes );
+            if( 0 == (*position) ) return rc;
+        }
         rc = opal_convertor_generic_simple_position( convertor, position );
         /**
          * If we have a non-contigous send convertor don't allow it move in the middle

@@ -1,11 +1,11 @@
 /* -*- Mode: C; c-basic-offset:4 ; indent-tabs-mode:nil -*- */
 /*
- * Copyright (c) 2011      The University of Tennessee and The University
+ * Copyright (c) 2011-2013 The University of Tennessee and The University
  *                         of Tennessee Research Foundation.  All rights
  *                         reserved.
- * Copyright (c) 2011      INRIA.  All rights reserved.
- * Copyright (c) 2011      Université Bordeaux 1
- * Copyright (c) 2013 Cisco Systems, Inc.  All rights reserved.
+ * Copyright (c) 2011-2013 Inria.  All rights reserved.
+ * Copyright (c) 2011-2013 Université Bordeaux 1
+ * Copyright (c) 2013-2014 Cisco Systems, Inc.  All rights reserved.
  * Copyright (c) 2014      Los Alamos National Security, LLC. All rights
  *                         reserved.
  * $COPYRIGHT$
@@ -62,7 +62,6 @@ OMPI_GENERATE_F77_BINDINGS (MPI_DIST_GRAPH_CREATE_ADJACENT,
 #include "ompi/mpi/fortran/mpif-h/profile/defines.h"
 #endif
 
-static const char FUNC_NAME[] = "MPI_DIST_GRAPH_CREATE_ADJACENT";
 
 void ompi_dist_graph_create_adjacent_f(MPI_Fint *comm_old, MPI_Fint *indegree,
                                        MPI_Fint *sources, MPI_Fint *sourceweights,
@@ -73,12 +72,10 @@ void ompi_dist_graph_create_adjacent_f(MPI_Fint *comm_old, MPI_Fint *indegree,
 {
     MPI_Info c_info;
     MPI_Comm c_comm_old, c_comm_graph;
-    const int *c_destweights, *c_sourceweights;
+    int *c_destweights, *c_sourceweights;
 
     OMPI_ARRAY_NAME_DECL(sources);
-    OMPI_ARRAY_NAME_DECL(sourceweights);
     OMPI_ARRAY_NAME_DECL(destinations);
-    OMPI_ARRAY_NAME_DECL(destweights);
 
     c_comm_old = MPI_Comm_f2c(*comm_old);
     c_info = MPI_Info_f2c(*info);

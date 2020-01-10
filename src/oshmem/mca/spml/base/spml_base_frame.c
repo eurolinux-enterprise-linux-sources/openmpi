@@ -22,6 +22,7 @@
 #include "opal/mca/base/base.h"
 
 #include "oshmem/constants.h"
+#include "oshmem/util/oshmem_util.h"
 #include "oshmem/mca/spml/spml.h"
 #include "oshmem/mca/spml/base/base.h"
 #include "oshmem/mca/spml/base/spml_base_request.h"
@@ -105,6 +106,8 @@ static int mca_spml_base_open(mca_base_open_flag_t flags)
 
     OBJ_CONSTRUCT(&mca_spml_base_spml, opal_pointer_array_t);
 
+    oshmem_framework_open_output(&oshmem_spml_base_framework);
+
     /* Open up all available components */
     if (OPAL_SUCCESS != 
         mca_base_framework_components_open(&oshmem_spml_base_framework, flags)) {
@@ -135,7 +138,7 @@ static int mca_spml_base_open(mca_base_open_flag_t flags)
         var_id = mca_base_var_find("oshmem", "spml", NULL, NULL);
         mca_base_var_get_value(var_id, &default_spml, NULL, NULL);
 
-        if( (NULL == default_spml || NULL == default_spml[0] ||
+        if( (NULL == default_spml[0] ||
              0 == strlen(default_spml[0])) || (default_spml[0][0] == '^') ) {
             opal_pointer_array_add(&mca_spml_base_spml, strdup("ikrit"));
             opal_pointer_array_add(&mca_spml_base_spml, strdup("yoda"));

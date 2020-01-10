@@ -3,7 +3,7 @@
  * Copyright (c) 2004-2005 The Trustees of Indiana University and Indiana
  *                         University Research and Technology
  *                         Corporation.  All rights reserved.
- * Copyright (c) 2004-2006 The University of Tennessee and The University
+ * Copyright (c) 2004-2014 The University of Tennessee and The University
  *                         of Tennessee Research Foundation.  All rights
  *                         reserved.
  * Copyright (c) 2004-2005 High Performance Computing Center Stuttgart, 
@@ -14,6 +14,8 @@
  * Copyright (c) 2012      Oak Ridge National Labs.  All rights reserved.
  * Copyright (c) 2013      Los Alamos National Security, LLC. All rights
  *                         reserved.
+ * Copyright (c) 2014      Research Organization for Information Science
+ *                         and Technology (RIST). All rights reserved.
  * $COPYRIGHT$
  * 
  * Additional copyrights may follow
@@ -406,7 +408,7 @@ mca_coll_basic_reduce_scatter_inter(void *sbuf, void *rbuf, int *rcounts,
         /* Generate displacements for the scatterv part */
         disps = (int*) malloc(sizeof(int) * lsize);
         if (NULL == disps) {
- 	    return OMPI_ERR_OUT_OF_RESOURCE;
+            return OMPI_ERR_OUT_OF_RESOURCE;
         }
         disps[0] = 0;
         for (i = 0; i < (lsize - 1); ++i) {
@@ -416,7 +418,8 @@ mca_coll_basic_reduce_scatter_inter(void *sbuf, void *rbuf, int *rcounts,
         tmpbuf = (char *) malloc(totalcounts * extent);
         tmpbuf2 = (char *) malloc(totalcounts * extent);
         if (NULL == tmpbuf || NULL == tmpbuf2) {
-            return OMPI_ERR_OUT_OF_RESOURCE;
+            err = OMPI_ERR_OUT_OF_RESOURCE;
+            goto exit;
         }
 
         /* Do a send-recv between the two root procs. to avoid deadlock */
@@ -434,7 +437,7 @@ mca_coll_basic_reduce_scatter_inter(void *sbuf, void *rbuf, int *rcounts,
             goto exit;
         }
 
-        err = ompi_request_wait_all(1, &req, MPI_STATUS_IGNORE);
+        err = ompi_request_wait( &req, MPI_STATUS_IGNORE);
         if (OMPI_SUCCESS != err) {
             goto exit;
         }

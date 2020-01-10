@@ -83,26 +83,7 @@ am__aclocal_m4_deps = $(top_srcdir)/config/c_get_alignment.m4 \
 	$(top_srcdir)/config/cxx_find_template_parameters.m4 \
 	$(top_srcdir)/config/cxx_find_template_repository.m4 \
 	$(top_srcdir)/config/cxx_have_exceptions.m4 \
-	$(top_srcdir)/config/fortran_check.m4 \
-	$(top_srcdir)/config/fortran_check_abstract.m4 \
-	$(top_srcdir)/config/fortran_check_asynchronous.m4 \
-	$(top_srcdir)/config/fortran_check_bind_c.m4 \
-	$(top_srcdir)/config/fortran_check_f08_assumed_rank.m4 \
-	$(top_srcdir)/config/fortran_check_ignore_tkr.m4 \
-	$(top_srcdir)/config/fortran_check_logical_array.m4 \
-	$(top_srcdir)/config/fortran_check_optional_args.m4 \
-	$(top_srcdir)/config/fortran_check_private.m4 \
-	$(top_srcdir)/config/fortran_check_procedure.m4 \
-	$(top_srcdir)/config/fortran_check_real16_c_equiv.m4 \
-	$(top_srcdir)/config/fortran_check_type.m4 \
-	$(top_srcdir)/config/fortran_find_ext_symbol_convention.m4 \
-	$(top_srcdir)/config/fortran_find_module_include_flag.m4 \
-	$(top_srcdir)/config/fortran_get_alignment.m4 \
-	$(top_srcdir)/config/fortran_get_handle_max.m4 \
-	$(top_srcdir)/config/fortran_get_kind_value.m4 \
-	$(top_srcdir)/config/fortran_get_sizeof.m4 \
-	$(top_srcdir)/config/fortran_get_value_true.m4 \
-	$(top_srcdir)/config/libtool.m4 $(top_srcdir)/config/ltdl.m4 \
+	$(top_srcdir)/config/libtool.m4 \
 	$(top_srcdir)/config/ltoptions.m4 \
 	$(top_srcdir)/config/ltsugar.m4 \
 	$(top_srcdir)/config/ltversion.m4 \
@@ -110,18 +91,19 @@ am__aclocal_m4_deps = $(top_srcdir)/config/c_get_alignment.m4 \
 	$(top_srcdir)/config/ompi_check_broken_qsort.m4 \
 	$(top_srcdir)/config/ompi_check_cma.m4 \
 	$(top_srcdir)/config/ompi_check_compiler_works.m4 \
-	$(top_srcdir)/config/ompi_check_func_lib.m4 \
 	$(top_srcdir)/config/ompi_check_icc.m4 \
+	$(top_srcdir)/config/ompi_check_knem.m4 \
 	$(top_srcdir)/config/ompi_check_libfca.m4 \
 	$(top_srcdir)/config/ompi_check_libhcoll.m4 \
-	$(top_srcdir)/config/ompi_check_mx.m4 \
 	$(top_srcdir)/config/ompi_check_mxm.m4 \
 	$(top_srcdir)/config/ompi_check_openfabrics.m4 \
 	$(top_srcdir)/config/ompi_check_package.m4 \
 	$(top_srcdir)/config/ompi_check_portals4.m4 \
 	$(top_srcdir)/config/ompi_check_ps.m4 \
 	$(top_srcdir)/config/ompi_check_psm.m4 \
+	$(top_srcdir)/config/ompi_check_psm2.m4 \
 	$(top_srcdir)/config/ompi_check_pvfs2.m4 \
+	$(top_srcdir)/config/ompi_check_ucx.m4 \
 	$(top_srcdir)/config/ompi_check_ugni.m4 \
 	$(top_srcdir)/config/ompi_check_vendor.m4 \
 	$(top_srcdir)/config/ompi_check_withdir.m4 \
@@ -135,9 +117,34 @@ am__aclocal_m4_deps = $(top_srcdir)/config/c_get_alignment.m4 \
 	$(top_srcdir)/config/ompi_endpoint_tag.m4 \
 	$(top_srcdir)/config/ompi_ensure_contains_optflags.m4 \
 	$(top_srcdir)/config/ompi_ext.m4 \
+	$(top_srcdir)/config/ompi_find_mpi_aint_count_offset.m4 \
 	$(top_srcdir)/config/ompi_find_type.m4 \
+	$(top_srcdir)/config/ompi_fortran_check.m4 \
+	$(top_srcdir)/config/ompi_fortran_check_abstract.m4 \
+	$(top_srcdir)/config/ompi_fortran_check_asynchronous.m4 \
+	$(top_srcdir)/config/ompi_fortran_check_bind_c.m4 \
+	$(top_srcdir)/config/ompi_fortran_check_c_funloc.m4 \
+	$(top_srcdir)/config/ompi_fortran_check_f08_assumed_rank.m4 \
+	$(top_srcdir)/config/ompi_fortran_check_ignore_tkr.m4 \
+	$(top_srcdir)/config/ompi_fortran_check_interface.m4 \
+	$(top_srcdir)/config/ompi_fortran_check_iso_fortran_env.m4 \
+	$(top_srcdir)/config/ompi_fortran_check_logical_array.m4 \
+	$(top_srcdir)/config/ompi_fortran_check_max_array_rank.m4 \
+	$(top_srcdir)/config/ompi_fortran_check_optional_args.m4 \
+	$(top_srcdir)/config/ompi_fortran_check_private.m4 \
+	$(top_srcdir)/config/ompi_fortran_check_procedure.m4 \
 	$(top_srcdir)/config/ompi_fortran_check_protected.m4 \
-	$(top_srcdir)/config/ompi_fortran_check_ticket_4157.m4 \
+	$(top_srcdir)/config/ompi_fortran_check_real16_c_equiv.m4 \
+	$(top_srcdir)/config/ompi_fortran_check_storage_size.m4 \
+	$(top_srcdir)/config/ompi_fortran_check_type.m4 \
+	$(top_srcdir)/config/ompi_fortran_check_use_only.m4 \
+	$(top_srcdir)/config/ompi_fortran_find_ext_symbol_convention.m4 \
+	$(top_srcdir)/config/ompi_fortran_find_module_include_flag.m4 \
+	$(top_srcdir)/config/ompi_fortran_get_alignment.m4 \
+	$(top_srcdir)/config/ompi_fortran_get_handle_max.m4 \
+	$(top_srcdir)/config/ompi_fortran_get_kind_value.m4 \
+	$(top_srcdir)/config/ompi_fortran_get_sizeof.m4 \
+	$(top_srcdir)/config/ompi_fortran_get_value_true.m4 \
 	$(top_srcdir)/config/ompi_interix.m4 \
 	$(top_srcdir)/config/ompi_lang_link_with_c.m4 \
 	$(top_srcdir)/config/ompi_load_platform.m4 \
@@ -157,6 +164,7 @@ am__aclocal_m4_deps = $(top_srcdir)/config/c_get_alignment.m4 \
 	$(top_srcdir)/config/opal_check_compiler_version.m4 \
 	$(top_srcdir)/config/opal_check_cuda.m4 \
 	$(top_srcdir)/config/opal_check_ident.m4 \
+	$(top_srcdir)/config/opal_check_libfabric.m4 \
 	$(top_srcdir)/config/opal_check_offsetof.m4 \
 	$(top_srcdir)/config/opal_check_os_flavors.m4 \
 	$(top_srcdir)/config/opal_check_pmi.m4 \
@@ -168,10 +176,10 @@ am__aclocal_m4_deps = $(top_srcdir)/config/c_get_alignment.m4 \
 	$(top_srcdir)/config/opal_config_threads.m4 \
 	$(top_srcdir)/config/opal_configure_options.m4 \
 	$(top_srcdir)/config/opal_functions.m4 \
+	$(top_srcdir)/config/opal_search_libs.m4 \
 	$(top_srcdir)/config/opal_setup_cc.m4 \
 	$(top_srcdir)/config/opal_setup_cxx.m4 \
 	$(top_srcdir)/config/opal_setup_java.m4 \
-	$(top_srcdir)/config/opal_setup_libltdl.m4 \
 	$(top_srcdir)/config/opal_setup_wrappers.m4 \
 	$(top_srcdir)/config/orte_check_alps.m4 \
 	$(top_srcdir)/config/orte_check_loadleveler.m4 \
@@ -184,8 +192,10 @@ am__aclocal_m4_deps = $(top_srcdir)/config/c_get_alignment.m4 \
 	$(top_srcdir)/config/orte_setup_debugger_flags.m4 \
 	$(top_srcdir)/config/oshmem_config_files.m4 \
 	$(top_srcdir)/config/oshmem_configure_options.m4 \
+	$(top_srcdir)/config/oshmem_setup_profiling.m4 \
 	$(top_srcdir)/config/autogen_found_items.m4 \
 	$(top_srcdir)/opal/mca/backtrace/configure.m4 \
+	$(top_srcdir)/opal/mca/dl/configure.m4 \
 	$(top_srcdir)/opal/mca/event/configure.m4 \
 	$(top_srcdir)/opal/mca/hwloc/configure.m4 \
 	$(top_srcdir)/opal/mca/installdirs/configure.m4 \
@@ -203,15 +213,17 @@ am__aclocal_m4_deps = $(top_srcdir)/config/c_get_alignment.m4 \
 	$(top_srcdir)/opal/mca/crs/blcr/configure.m4 \
 	$(top_srcdir)/opal/mca/db/pmi/configure.m4 \
 	$(top_srcdir)/opal/mca/db/sqlite/configure.m4 \
+	$(top_srcdir)/opal/mca/dl/libltdl/configure.m4 \
+	$(top_srcdir)/opal/mca/dl/dlopen/configure.m4 \
 	$(top_srcdir)/opal/mca/event/libevent2021/configure.m4 \
 	$(top_srcdir)/opal/mca/event/external/configure.m4 \
-	$(top_srcdir)/opal/mca/hwloc/hwloc172/configure.m4 \
-	$(top_srcdir)/opal/mca/hwloc/hwloc172/hwloc/config/hwloc.m4 \
-	$(top_srcdir)/opal/mca/hwloc/hwloc172/hwloc/config/hwloc_pkg.m4 \
-	$(top_srcdir)/opal/mca/hwloc/hwloc172/hwloc/config/hwloc_check_attributes.m4 \
-	$(top_srcdir)/opal/mca/hwloc/hwloc172/hwloc/config/hwloc_check_visibility.m4 \
-	$(top_srcdir)/opal/mca/hwloc/hwloc172/hwloc/config/hwloc_check_vendor.m4 \
-	$(top_srcdir)/opal/mca/hwloc/hwloc172/hwloc/config/hwloc_components.m4 \
+	$(top_srcdir)/opal/mca/hwloc/hwloc191/configure.m4 \
+	$(top_srcdir)/opal/mca/hwloc/hwloc191/hwloc/config/hwloc.m4 \
+	$(top_srcdir)/opal/mca/hwloc/hwloc191/hwloc/config/hwloc_pkg.m4 \
+	$(top_srcdir)/opal/mca/hwloc/hwloc191/hwloc/config/hwloc_check_attributes.m4 \
+	$(top_srcdir)/opal/mca/hwloc/hwloc191/hwloc/config/hwloc_check_visibility.m4 \
+	$(top_srcdir)/opal/mca/hwloc/hwloc191/hwloc/config/hwloc_check_vendor.m4 \
+	$(top_srcdir)/opal/mca/hwloc/hwloc191/hwloc/config/hwloc_components.m4 \
 	$(top_srcdir)/opal/mca/hwloc/external/configure.m4 \
 	$(top_srcdir)/opal/mca/if/solaris_ipv6/configure.m4 \
 	$(top_srcdir)/opal/mca/if/bsdx_ipv4/configure.m4 \
@@ -256,7 +268,6 @@ am__aclocal_m4_deps = $(top_srcdir)/config/c_get_alignment.m4 \
 	$(top_srcdir)/orte/mca/ras/lsf/configure.m4 \
 	$(top_srcdir)/orte/mca/ras/tm/configure.m4 \
 	$(top_srcdir)/orte/mca/rmaps/mindist/configure.m4 \
-	$(top_srcdir)/orte/mca/rmaps/lama/configure.m4 \
 	$(top_srcdir)/orte/mca/rmaps/rank_file/configure.m4 \
 	$(top_srcdir)/orte/mca/rml/ftrm/configure.m4 \
 	$(top_srcdir)/orte/mca/sensor/resusage/configure.m4 \
@@ -272,9 +283,9 @@ am__aclocal_m4_deps = $(top_srcdir)/config/c_get_alignment.m4 \
 	$(top_srcdir)/ompi/mca/io/configure.m4 \
 	$(top_srcdir)/ompi/mca/rte/configure.m4 \
 	$(top_srcdir)/ompi/mca/sharedfp/configure.m4 \
+	$(top_srcdir)/ompi/mca/common/verbs_usnic/configure.m4 \
 	$(top_srcdir)/ompi/mca/common/ugni/configure.m4 \
 	$(top_srcdir)/ompi/mca/common/sm/configure.m4 \
-	$(top_srcdir)/ompi/mca/common/mx/configure.m4 \
 	$(top_srcdir)/ompi/mca/common/verbs/configure.m4 \
 	$(top_srcdir)/ompi/mca/common/cuda/configure.m4 \
 	$(top_srcdir)/ompi/mca/bml/r2/configure.m4 \
@@ -289,8 +300,10 @@ am__aclocal_m4_deps = $(top_srcdir)/config/c_get_alignment.m4 \
 	$(top_srcdir)/ompi/mca/btl/usnic/configure.m4 \
 	$(top_srcdir)/ompi/mca/coll/hierarch/configure.m4 \
 	$(top_srcdir)/ompi/mca/coll/hcoll/configure.m4 \
+	$(top_srcdir)/ompi/mca/coll/ml/configure.m4 \
 	$(top_srcdir)/ompi/mca/coll/fca/configure.m4 \
 	$(top_srcdir)/ompi/mca/coll/portals4/configure.m4 \
+	$(top_srcdir)/ompi/mca/coll/cuda/configure.m4 \
 	$(top_srcdir)/ompi/mca/crcp/bkmrk/configure.m4 \
 	$(top_srcdir)/ompi/mca/dpm/orte/configure.m4 \
 	$(top_srcdir)/ompi/mca/fbtl/pvfs2/configure.m4 \
@@ -301,26 +314,30 @@ am__aclocal_m4_deps = $(top_srcdir)/config/c_get_alignment.m4 \
 	$(top_srcdir)/ompi/mca/mpool/rgpusm/configure.m4 \
 	$(top_srcdir)/ompi/mca/mpool/gpusm/configure.m4 \
 	$(top_srcdir)/ompi/mca/mtl/psm/configure.m4 \
+	$(top_srcdir)/ompi/mca/mtl/ofi/configure.m4 \
 	$(top_srcdir)/ompi/mca/mtl/mxm/configure.m4 \
 	$(top_srcdir)/ompi/mca/mtl/portals4/configure.m4 \
-	$(top_srcdir)/ompi/mca/mtl/mx/configure.m4 \
-	$(top_srcdir)/ompi/mca/osc/rdma/configure.m4 \
+	$(top_srcdir)/ompi/mca/mtl/psm2/configure.m4 \
+	$(top_srcdir)/ompi/mca/osc/pt2pt/configure.m4 \
 	$(top_srcdir)/ompi/mca/osc/portals4/configure.m4 \
 	$(top_srcdir)/ompi/mca/pml/bfo/configure.m4 \
 	$(top_srcdir)/ompi/mca/pml/crcpw/configure.m4 \
 	$(top_srcdir)/ompi/mca/pml/v/configure.m4 \
+	$(top_srcdir)/ompi/mca/pml/yalla/configure.m4 \
 	$(top_srcdir)/ompi/mca/pml/ob1/configure.m4 \
+	$(top_srcdir)/ompi/mca/pml/ucx/configure.m4 \
 	$(top_srcdir)/ompi/mca/pubsub/pmi/configure.m4 \
 	$(top_srcdir)/ompi/mca/pubsub/orte/configure.m4 \
-	$(top_srcdir)/ompi/mca/rte/pmi/configure.m4 \
 	$(top_srcdir)/ompi/mca/rte/orte/configure.m4 \
 	$(top_srcdir)/ompi/mca/sbgp/basesmsocket/configure.m4 \
 	$(top_srcdir)/ompi/mca/sbgp/p2p/configure.m4 \
 	$(top_srcdir)/oshmem/mca/memheap/configure.m4 \
 	$(top_srcdir)/oshmem/mca/spml/configure.m4 \
 	$(top_srcdir)/oshmem/mca/atomic/mxm/configure.m4 \
+	$(top_srcdir)/oshmem/mca/atomic/ucx/configure.m4 \
 	$(top_srcdir)/oshmem/mca/scoll/fca/configure.m4 \
 	$(top_srcdir)/oshmem/mca/spml/ikrit/configure.m4 \
+	$(top_srcdir)/oshmem/mca/spml/ucx/configure.m4 \
 	$(top_srcdir)/oshmem/mca/sshmem/mmap/configure.m4 \
 	$(top_srcdir)/oshmem/mca/sshmem/verbs/configure.m4 \
 	$(top_srcdir)/oshmem/mca/sshmem/sysv/configure.m4 \
@@ -335,12 +352,10 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/opal/include/opal_config.h \
 	$(top_builddir)/orte/include/orte_config.h \
-	$(top_builddir)/ompi/include/ompi_config.h \
 	$(top_builddir)/ompi/include/mpi.h \
-	$(top_builddir)/oshmem/include/oshmem_config.h \
 	$(top_builddir)/oshmem/include/shmem.h \
-	$(top_builddir)/opal/mca/hwloc/hwloc172/hwloc/include/private/autogen/config.h \
-	$(top_builddir)/opal/mca/hwloc/hwloc172/hwloc/include/hwloc/autogen/config.h
+	$(top_builddir)/opal/mca/hwloc/hwloc191/hwloc/include/private/autogen/config.h \
+	$(top_builddir)/opal/mca/hwloc/hwloc191/hwloc/include/hwloc/autogen/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
@@ -420,7 +435,7 @@ AM_V_at = $(am__v_at_@AM_V@)
 am__v_at_ = $(am__v_at_@AM_DEFAULT_V@)
 am__v_at_0 = @
 am__v_at_1 = 
-DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)/opal/include -I$(top_builddir)/orte/include -I$(top_builddir)/ompi/include -I$(top_builddir)/oshmem/include -I$(top_builddir)/opal/mca/hwloc/hwloc172/hwloc/include/private/autogen -I$(top_builddir)/opal/mca/hwloc/hwloc172/hwloc/include/hwloc/autogen
+DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)/opal/include -I$(top_builddir)/orte/include -I$(top_builddir)/ompi/include -I$(top_builddir)/oshmem/include -I$(top_builddir)/opal/mca/hwloc/hwloc191/hwloc/include/private/autogen -I$(top_builddir)/opal/mca/hwloc/hwloc191/hwloc/include/hwloc/autogen
 depcomp = $(SHELL) $(top_srcdir)/config/depcomp
 am__depfiles_maybe = depfiles
 am__mv = mv -f
@@ -526,10 +541,12 @@ HWLOC_PCIACCESS_CFLAGS = @HWLOC_PCIACCESS_CFLAGS@
 HWLOC_PCIACCESS_LIBS = @HWLOC_PCIACCESS_LIBS@
 HWLOC_PCIUTILS_CFLAGS = @HWLOC_PCIUTILS_CFLAGS@
 HWLOC_PCIUTILS_LIBS = @HWLOC_PCIUTILS_LIBS@
+HWLOC_PLUGINS_DIR = @HWLOC_PLUGINS_DIR@
+HWLOC_PLUGINS_PATH = @HWLOC_PLUGINS_PATH@
 HWLOC_REQUIRES = @HWLOC_REQUIRES@
+HWLOC_X11_LIBS = @HWLOC_X11_LIBS@
 HWLOC_top_builddir = @HWLOC_top_builddir@
 HWLOC_top_srcdir = @HWLOC_top_srcdir@
-INCLTDL = @INCLTDL@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -543,15 +560,11 @@ LDFLAGS = @LDFLAGS@
 LEX = @LEX@
 LEXLIB = @LEXLIB@
 LEX_OUTPUT_ROOT = @LEX_OUTPUT_ROOT@
-LIBLTDL = @LIBLTDL@
-LIBLTDL_SUBDIR = @LIBLTDL_SUBDIR@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
 LN_S = @LN_S@
-LTDLDEPS = @LTDLDEPS@
-LTDLINCL = @LTDLINCL@
 LTLIBOBJS = @LTLIBOBJS@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
@@ -773,6 +786,13 @@ MCA_opal_db_DSO_SUBDIRS = @MCA_opal_db_DSO_SUBDIRS@
 MCA_opal_db_STATIC_COMPONENTS = @MCA_opal_db_STATIC_COMPONENTS@
 MCA_opal_db_STATIC_LTLIBS = @MCA_opal_db_STATIC_LTLIBS@
 MCA_opal_db_STATIC_SUBDIRS = @MCA_opal_db_STATIC_SUBDIRS@
+MCA_opal_dl_ALL_COMPONENTS = @MCA_opal_dl_ALL_COMPONENTS@
+MCA_opal_dl_ALL_SUBDIRS = @MCA_opal_dl_ALL_SUBDIRS@
+MCA_opal_dl_DSO_COMPONENTS = @MCA_opal_dl_DSO_COMPONENTS@
+MCA_opal_dl_DSO_SUBDIRS = @MCA_opal_dl_DSO_SUBDIRS@
+MCA_opal_dl_STATIC_COMPONENTS = @MCA_opal_dl_STATIC_COMPONENTS@
+MCA_opal_dl_STATIC_LTLIBS = @MCA_opal_dl_STATIC_LTLIBS@
+MCA_opal_dl_STATIC_SUBDIRS = @MCA_opal_dl_STATIC_SUBDIRS@
 MCA_opal_event_ALL_COMPONENTS = @MCA_opal_event_ALL_COMPONENTS@
 MCA_opal_event_ALL_SUBDIRS = @MCA_opal_event_ALL_SUBDIRS@
 MCA_opal_event_DSO_COMPONENTS = @MCA_opal_event_DSO_COMPONENTS@
@@ -1058,6 +1078,7 @@ OMPI_F08_SUFFIX = @OMPI_F08_SUFFIX@
 OMPI_FC = @OMPI_FC@
 OMPI_FC_ABSOLUTE = @OMPI_FC_ABSOLUTE@
 OMPI_FC_MODULE_FLAG = @OMPI_FC_MODULE_FLAG@
+OMPI_FORTRAN_BUILD_SIZEOF = @OMPI_FORTRAN_BUILD_SIZEOF@
 OMPI_FORTRAN_CKINDS = @OMPI_FORTRAN_CKINDS@
 OMPI_FORTRAN_EXTRA_SHARED_LIBRARY_FLAGS = @OMPI_FORTRAN_EXTRA_SHARED_LIBRARY_FLAGS@
 OMPI_FORTRAN_F08_PREDECL = @OMPI_FORTRAN_F08_PREDECL@
@@ -1065,12 +1086,19 @@ OMPI_FORTRAN_F08_TYPE = @OMPI_FORTRAN_F08_TYPE@
 OMPI_FORTRAN_HAVE_ABSTRACT = @OMPI_FORTRAN_HAVE_ABSTRACT@
 OMPI_FORTRAN_HAVE_ASYNCHRONOUS = @OMPI_FORTRAN_HAVE_ASYNCHRONOUS@
 OMPI_FORTRAN_HAVE_BIND_C = @OMPI_FORTRAN_HAVE_BIND_C@
+OMPI_FORTRAN_HAVE_C_FUNLOC = @OMPI_FORTRAN_HAVE_C_FUNLOC@
+OMPI_FORTRAN_HAVE_INTERFACE = @OMPI_FORTRAN_HAVE_INTERFACE@
+OMPI_FORTRAN_HAVE_ISO_C_BINDING = @OMPI_FORTRAN_HAVE_ISO_C_BINDING@
+OMPI_FORTRAN_HAVE_ISO_FORTRAN_ENV = @OMPI_FORTRAN_HAVE_ISO_FORTRAN_ENV@
 OMPI_FORTRAN_HAVE_PRIVATE = @OMPI_FORTRAN_HAVE_PRIVATE@
 OMPI_FORTRAN_HAVE_PROCEDURE = @OMPI_FORTRAN_HAVE_PROCEDURE@
 OMPI_FORTRAN_HAVE_PROTECTED = @OMPI_FORTRAN_HAVE_PROTECTED@
+OMPI_FORTRAN_HAVE_STORAGE_SIZE = @OMPI_FORTRAN_HAVE_STORAGE_SIZE@
+OMPI_FORTRAN_HAVE_USE_ONLY = @OMPI_FORTRAN_HAVE_USE_ONLY@
 OMPI_FORTRAN_IGNORE_TKR_PREDECL = @OMPI_FORTRAN_IGNORE_TKR_PREDECL@
 OMPI_FORTRAN_IGNORE_TKR_TYPE = @OMPI_FORTRAN_IGNORE_TKR_TYPE@
 OMPI_FORTRAN_IKINDS = @OMPI_FORTRAN_IKINDS@
+OMPI_FORTRAN_MAX_ARRAY_RANK = @OMPI_FORTRAN_MAX_ARRAY_RANK@
 OMPI_FORTRAN_NEED_WRAPPER_ROUTINES = @OMPI_FORTRAN_NEED_WRAPPER_ROUTINES@
 OMPI_FORTRAN_RKINDS = @OMPI_FORTRAN_RKINDS@
 OMPI_FORTRAN_STATUS_SIZE = @OMPI_FORTRAN_STATUS_SIZE@
@@ -1150,6 +1178,7 @@ OMPI_MPI_COUNT_KIND = @OMPI_MPI_COUNT_KIND@
 OMPI_MPI_INTEGER_KIND = @OMPI_MPI_INTEGER_KIND@
 OMPI_MPI_OFFSET_KIND = @OMPI_MPI_OFFSET_KIND@
 OMPI_MPI_PREFIX = @OMPI_MPI_PREFIX@
+OMPI_PKG_CONFIG_LDFLAGS = @OMPI_PKG_CONFIG_LDFLAGS@
 OMPI_PROVIDE_MPI_FILE_INTERFACE = @OMPI_PROVIDE_MPI_FILE_INTERFACE@
 OMPI_RELEASE_DATE = @OMPI_RELEASE_DATE@
 OMPI_RELEASE_VERSION = @OMPI_RELEASE_VERSION@
@@ -1178,10 +1207,10 @@ OMPI_SIZEOF_FORTRAN_REAL16 = @OMPI_SIZEOF_FORTRAN_REAL16@
 OMPI_SIZEOF_FORTRAN_REAL2 = @OMPI_SIZEOF_FORTRAN_REAL2@
 OMPI_SIZEOF_FORTRAN_REAL4 = @OMPI_SIZEOF_FORTRAN_REAL4@
 OMPI_SIZEOF_FORTRAN_REAL8 = @OMPI_SIZEOF_FORTRAN_REAL8@
+OMPI_TARBALL_VERSION = @OMPI_TARBALL_VERSION@
 OMPI_TOP_BUILDDIR = @OMPI_TOP_BUILDDIR@
 OMPI_TOP_SRCDIR = @OMPI_TOP_SRCDIR@
 OMPI_VERSION = @OMPI_VERSION@
-OMPI_WANT_REPO_REV = @OMPI_WANT_REPO_REV@
 OMPI_WRAPPER_CXX_LIB = @OMPI_WRAPPER_CXX_LIB@
 OMPI_WRAPPER_CXX_REQUIRED_FILE = @OMPI_WRAPPER_CXX_REQUIRED_FILE@
 OMPI_WRAPPER_EXTRA_CFLAGS = @OMPI_WRAPPER_EXTRA_CFLAGS@
@@ -1203,6 +1232,7 @@ OPAL_ASM_SUPPORT_64BIT = @OPAL_ASM_SUPPORT_64BIT@
 OPAL_ASM_TEXT = @OPAL_ASM_TEXT@
 OPAL_ASM_TYPE = @OPAL_ASM_TYPE@
 OPAL_ASSEMBLY_ARCH = @OPAL_ASSEMBLY_ARCH@
+OPAL_ASSEMBLY_BUILTIN = @OPAL_ASSEMBLY_BUILTIN@
 OPAL_ASSEMBLY_FORMAT = @OPAL_ASSEMBLY_FORMAT@
 OPAL_CC_ABSOLUTE = @OPAL_CC_ABSOLUTE@
 OPAL_CONFIGURE_DATE = @OPAL_CONFIGURE_DATE@
@@ -1224,11 +1254,12 @@ OPAL_MAX_PORT_NAME = @OPAL_MAX_PORT_NAME@
 OPAL_MAX_PROCESSOR_NAME = @OPAL_MAX_PROCESSOR_NAME@
 OPAL_MINOR_VERSION = @OPAL_MINOR_VERSION@
 OPAL_PARAM_FROM_PLATFORM = @OPAL_PARAM_FROM_PLATFORM@
+OPAL_PKG_CONFIG_LDFLAGS = @OPAL_PKG_CONFIG_LDFLAGS@
 OPAL_RELEASE_DATE = @OPAL_RELEASE_DATE@
 OPAL_RELEASE_VERSION = @OPAL_RELEASE_VERSION@
 OPAL_REPO_REV = @OPAL_REPO_REV@
+OPAL_TARBALL_VERSION = @OPAL_TARBALL_VERSION@
 OPAL_VERSION = @OPAL_VERSION@
-OPAL_WANT_REPO_REV = @OPAL_WANT_REPO_REV@
 OPAL_WRAPPER_EXTRA_CFLAGS = @OPAL_WRAPPER_EXTRA_CFLAGS@
 OPAL_WRAPPER_EXTRA_CFLAGS_PREFIX = @OPAL_WRAPPER_EXTRA_CFLAGS_PREFIX@
 OPAL_WRAPPER_EXTRA_CPPFLAGS = @OPAL_WRAPPER_EXTRA_CPPFLAGS@
@@ -1240,11 +1271,12 @@ OPAL_WRAPPER_EXTRA_LIBS = @OPAL_WRAPPER_EXTRA_LIBS@
 ORTE_GREEK_VERSION = @ORTE_GREEK_VERSION@
 ORTE_MAJOR_VERSION = @ORTE_MAJOR_VERSION@
 ORTE_MINOR_VERSION = @ORTE_MINOR_VERSION@
+ORTE_PKG_CONFIG_LDFLAGS = @ORTE_PKG_CONFIG_LDFLAGS@
 ORTE_RELEASE_DATE = @ORTE_RELEASE_DATE@
 ORTE_RELEASE_VERSION = @ORTE_RELEASE_VERSION@
 ORTE_REPO_REV = @ORTE_REPO_REV@
+ORTE_TARBALL_VERSION = @ORTE_TARBALL_VERSION@
 ORTE_VERSION = @ORTE_VERSION@
-ORTE_WANT_REPO_REV = @ORTE_WANT_REPO_REV@
 ORTE_WRAPPER_EXTRA_CFLAGS = @ORTE_WRAPPER_EXTRA_CFLAGS@
 ORTE_WRAPPER_EXTRA_CFLAGS_PREFIX = @ORTE_WRAPPER_EXTRA_CFLAGS_PREFIX@
 ORTE_WRAPPER_EXTRA_CPPFLAGS = @ORTE_WRAPPER_EXTRA_CPPFLAGS@
@@ -1261,8 +1293,8 @@ OSHMEM_MINOR_VERSION = @OSHMEM_MINOR_VERSION@
 OSHMEM_RELEASE_DATE = @OSHMEM_RELEASE_DATE@
 OSHMEM_RELEASE_VERSION = @OSHMEM_RELEASE_VERSION@
 OSHMEM_REPO_REV = @OSHMEM_REPO_REV@
+OSHMEM_TARBALL_VERSION = @OSHMEM_TARBALL_VERSION@
 OSHMEM_VERSION = @OSHMEM_VERSION@
-OSHMEM_WANT_REPO_REV = @OSHMEM_WANT_REPO_REV@
 OTOOL = @OTOOL@
 OTOOL64 = @OTOOL64@
 PACKAGE = @PACKAGE@
@@ -1283,6 +1315,11 @@ SHELL = @SHELL@
 STRIP = @STRIP@
 VERSION = @VERSION@
 WRAPPER_CC = @WRAPPER_CC@
+XMKMF = @XMKMF@
+X_CFLAGS = @X_CFLAGS@
+X_EXTRA_LIBS = @X_EXTRA_LIBS@
+X_LIBS = @X_LIBS@
+X_PRE_LIBS = @X_PRE_LIBS@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -1302,6 +1339,10 @@ atomic_mxm_CFLAGS = @atomic_mxm_CFLAGS@
 atomic_mxm_CPPFLAGS = @atomic_mxm_CPPFLAGS@
 atomic_mxm_LDFLAGS = @atomic_mxm_LDFLAGS@
 atomic_mxm_LIBS = @atomic_mxm_LIBS@
+atomic_ucx_CFLAGS = @atomic_ucx_CFLAGS@
+atomic_ucx_CPPFLAGS = @atomic_ucx_CPPFLAGS@
+atomic_ucx_LDFLAGS = @atomic_ucx_LDFLAGS@
+atomic_ucx_LIBS = @atomic_ucx_LIBS@
 bindir = @bindir@
 btl_openib_CFLAGS = @btl_openib_CFLAGS@
 btl_openib_CPPFLAGS = @btl_openib_CPPFLAGS@
@@ -1317,10 +1358,6 @@ btl_sm_CPPFLAGS = @btl_sm_CPPFLAGS@
 btl_ugni_CPPFLAGS = @btl_ugni_CPPFLAGS@
 btl_ugni_LDFLAGS = @btl_ugni_LDFLAGS@
 btl_ugni_LIBS = @btl_ugni_LIBS@
-btl_usnic_CFLAGS = @btl_usnic_CFLAGS@
-btl_usnic_CPPFLAGS = @btl_usnic_CPPFLAGS@
-btl_usnic_LDFLAGS = @btl_usnic_LDFLAGS@
-btl_usnic_LIBS = @btl_usnic_LIBS@
 btl_vader_CFLAGS = @btl_vader_CFLAGS@
 btl_vader_CPPFLAGS = @btl_vader_CPPFLAGS@
 btl_vader_LDFLAGS = @btl_vader_LDFLAGS@
@@ -1336,21 +1373,14 @@ coll_fca_CPPFLAGS = @coll_fca_CPPFLAGS@
 coll_fca_HOME = @coll_fca_HOME@
 coll_fca_LDFLAGS = @coll_fca_LDFLAGS@
 coll_fca_LIBS = @coll_fca_LIBS@
-coll_fca_extra_CPPFLAGS = @coll_fca_extra_CPPFLAGS@
 coll_hcoll_CFLAGS = @coll_hcoll_CFLAGS@
 coll_hcoll_CPPFLAGS = @coll_hcoll_CPPFLAGS@
-coll_hcoll_HOME = @coll_hcoll_HOME@
 coll_hcoll_LDFLAGS = @coll_hcoll_LDFLAGS@
 coll_hcoll_LIBS = @coll_hcoll_LIBS@
-coll_hcoll_extra_CPPFLAGS = @coll_hcoll_extra_CPPFLAGS@
 coll_portals4_CPPFLAGS = @coll_portals4_CPPFLAGS@
 coll_portals4_LDFLAGS = @coll_portals4_LDFLAGS@
 coll_portals4_LIBS = @coll_portals4_LIBS@
 common_cuda_CPPFLAGS = @common_cuda_CPPFLAGS@
-common_mx_CFLAGS = @common_mx_CFLAGS@
-common_mx_CPPFLAGS = @common_mx_CPPFLAGS@
-common_mx_LDFLAGS = @common_mx_LDFLAGS@
-common_mx_LIBS = @common_mx_LIBS@
 common_pmi_CPPFLAGS = @common_pmi_CPPFLAGS@
 common_pmi_LDFLAGS = @common_pmi_LDFLAGS@
 common_pmi_LIBS = @common_pmi_LIBS@
@@ -1361,6 +1391,9 @@ common_verbs_CFLAGS = @common_verbs_CFLAGS@
 common_verbs_CPPFLAGS = @common_verbs_CPPFLAGS@
 common_verbs_LDFLAGS = @common_verbs_LDFLAGS@
 common_verbs_LIBS = @common_verbs_LIBS@
+common_verbs_usnic_CPPFLAGS = @common_verbs_usnic_CPPFLAGS@
+common_verbs_usnic_LDFLAGS = @common_verbs_usnic_LDFLAGS@
+common_verbs_usnic_LIBS = @common_verbs_usnic_LIBS@
 datadir = @datadir@
 datarootdir = @datarootdir@
 db_pmi_CPPFLAGS = @db_pmi_CPPFLAGS@
@@ -1411,6 +1444,7 @@ libmca_common_sm_so_version = @libmca_common_sm_so_version@
 libmca_common_ugni_so_version = @libmca_common_ugni_so_version@
 libmca_common_verbs_so_version = @libmca_common_verbs_so_version@
 libmca_opal_common_hwloc_so_version = @libmca_opal_common_hwloc_so_version@
+libmca_opal_common_libfabric_so_version = @libmca_opal_common_libfabric_so_version@
 libmca_opal_common_pmi_so_version = @libmca_opal_common_pmi_so_version@
 libmpi_cxx_so_version = @libmpi_cxx_so_version@
 libmpi_java_so_version = @libmpi_java_so_version@
@@ -1431,10 +1465,6 @@ mkdir_p = @mkdir_p@
 mpool_udreg_CPPFLAGS = @mpool_udreg_CPPFLAGS@
 mpool_udreg_LDFLAGS = @mpool_udreg_LDFLAGS@
 mpool_udreg_LIBS = @mpool_udreg_LIBS@
-mtl_mx_CFLAGS = @mtl_mx_CFLAGS@
-mtl_mx_CPPFLAGS = @mtl_mx_CPPFLAGS@
-mtl_mx_LDFLAGS = @mtl_mx_LDFLAGS@
-mtl_mx_LIBS = @mtl_mx_LIBS@
 mtl_mxm_CFLAGS = @mtl_mxm_CFLAGS@
 mtl_mxm_CPPFLAGS = @mtl_mxm_CPPFLAGS@
 mtl_mxm_LDFLAGS = @mtl_mxm_LDFLAGS@
@@ -1442,24 +1472,38 @@ mtl_mxm_LIBS = @mtl_mxm_LIBS@
 mtl_portals4_CPPFLAGS = @mtl_portals4_CPPFLAGS@
 mtl_portals4_LDFLAGS = @mtl_portals4_LDFLAGS@
 mtl_portals4_LIBS = @mtl_portals4_LIBS@
+mtl_psm2_CFLAGS = @mtl_psm2_CFLAGS@
+mtl_psm2_CPPFLAGS = @mtl_psm2_CPPFLAGS@
+mtl_psm2_LDFLAGS = @mtl_psm2_LDFLAGS@
+mtl_psm2_LIBS = @mtl_psm2_LIBS@
 mtl_psm_CFLAGS = @mtl_psm_CFLAGS@
 mtl_psm_CPPFLAGS = @mtl_psm_CPPFLAGS@
 mtl_psm_LDFLAGS = @mtl_psm_LDFLAGS@
 mtl_psm_LIBS = @mtl_psm_LIBS@
 oldincludedir = @oldincludedir@
+ompi_btl_usnic_CPPFLAGS = @ompi_btl_usnic_CPPFLAGS@
+ompi_btl_usnic_LDFLAGS = @ompi_btl_usnic_LDFLAGS@
+ompi_btl_usnic_LIBS = @ompi_btl_usnic_LIBS@
+ompi_mtl_ofi_CPPFLAGS = @ompi_mtl_ofi_CPPFLAGS@
+ompi_mtl_ofi_LDFLAGS = @ompi_mtl_ofi_LDFLAGS@
+ompi_mtl_ofi_LIBS = @ompi_mtl_ofi_LIBS@
 ompidatadir = @ompidatadir@
 ompiincludedir = @ompiincludedir@
 ompilibdir = @ompilibdir@
 opal_datatype_cuda_CPPFLAGS = @opal_datatype_cuda_CPPFLAGS@
+opal_dl_dlopen_LIBS = @opal_dl_dlopen_LIBS@
+opal_dl_libltdl_CPPFLAGS = @opal_dl_libltdl_CPPFLAGS@
+opal_dl_libltdl_LDFLAGS = @opal_dl_libltdl_LDFLAGS@
+opal_dl_libltdl_LIBS = @opal_dl_libltdl_LIBS@
 opal_event_external_CPPFLAGS = @opal_event_external_CPPFLAGS@
 opal_event_external_LDFLAGS = @opal_event_external_LDFLAGS@
 opal_event_external_LIBS = @opal_event_external_LIBS@
 opal_hwloc_external_LDFLAGS = @opal_hwloc_external_LDFLAGS@
 opal_hwloc_external_LIBS = @opal_hwloc_external_LIBS@
-opal_hwloc_hwloc172_CFLAGS = @opal_hwloc_hwloc172_CFLAGS@
-opal_hwloc_hwloc172_CPPFLAGS = @opal_hwloc_hwloc172_CPPFLAGS@
-opal_hwloc_hwloc172_LDFLAGS = @opal_hwloc_hwloc172_LDFLAGS@
-opal_hwloc_hwloc172_LIBS = @opal_hwloc_hwloc172_LIBS@
+opal_hwloc_hwloc191_CFLAGS = @opal_hwloc_hwloc191_CFLAGS@
+opal_hwloc_hwloc191_CPPFLAGS = @opal_hwloc_hwloc191_CPPFLAGS@
+opal_hwloc_hwloc191_LDFLAGS = @opal_hwloc_hwloc191_LDFLAGS@
+opal_hwloc_hwloc191_LIBS = @opal_hwloc_hwloc191_LIBS@
 opal_memchecker_valgrind_CPPFLAGS = @opal_memchecker_valgrind_CPPFLAGS@
 osc_portals4_CPPFLAGS = @osc_portals4_CPPFLAGS@
 osc_portals4_LDFLAGS = @osc_portals4_LDFLAGS@
@@ -1478,6 +1522,12 @@ plm_slurm_LIBS = @plm_slurm_LIBS@
 plm_tm_CPPFLAGS = @plm_tm_CPPFLAGS@
 plm_tm_LDFLAGS = @plm_tm_LDFLAGS@
 plm_tm_LIBS = @plm_tm_LIBS@
+pml_ucx_CPPFLAGS = @pml_ucx_CPPFLAGS@
+pml_ucx_LDFLAGS = @pml_ucx_LDFLAGS@
+pml_ucx_LIBS = @pml_ucx_LIBS@
+pml_yalla_CPPFLAGS = @pml_yalla_CPPFLAGS@
+pml_yalla_LDFLAGS = @pml_yalla_LDFLAGS@
+pml_yalla_LIBS = @pml_yalla_LIBS@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
@@ -1497,9 +1547,6 @@ ras_slurm_LIBS = @ras_slurm_LIBS@
 ras_tm_CPPFLAGS = @ras_tm_CPPFLAGS@
 ras_tm_LDFLAGS = @ras_tm_LDFLAGS@
 ras_tm_LIBS = @ras_tm_LIBS@
-rte_pmi_CPPFLAGS = @rte_pmi_CPPFLAGS@
-rte_pmi_LDFLAGS = @rte_pmi_LDFLAGS@
-rte_pmi_LIBS = @rte_pmi_LIBS@
 sbindir = @sbindir@
 scoll_fca_CFLAGS = @scoll_fca_CFLAGS@
 scoll_fca_CPPFLAGS = @scoll_fca_CPPFLAGS@
@@ -1514,6 +1561,10 @@ spml_ikrit_CFLAGS = @spml_ikrit_CFLAGS@
 spml_ikrit_CPPFLAGS = @spml_ikrit_CPPFLAGS@
 spml_ikrit_LDFLAGS = @spml_ikrit_LDFLAGS@
 spml_ikrit_LIBS = @spml_ikrit_LIBS@
+spml_ucx_CFLAGS = @spml_ucx_CFLAGS@
+spml_ucx_CPPFLAGS = @spml_ucx_CPPFLAGS@
+spml_ucx_LDFLAGS = @spml_ucx_LDFLAGS@
+spml_ucx_LIBS = @spml_ucx_LIBS@
 srcdir = @srcdir@
 sysconfdir = @sysconfdir@
 target = @target@

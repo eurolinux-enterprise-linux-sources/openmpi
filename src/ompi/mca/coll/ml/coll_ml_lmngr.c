@@ -1,6 +1,12 @@
+/* -*- Mode: C; c-basic-offset:4 ; indent-tabs-mode:nil -*- */
 /*
  * Copyright (c) 2009-2012 Oak Ridge National Laboratory.  All rights reserved.
  * Copyright (c) 2009-2012 Mellanox Technologies.  All rights reserved.
+ * Copyright (c) 2014      Los Alamos National Security, LLC. All rights
+ *                         reserved.
+ * Copyright (c) 2014      Research Organization for Information Science
+ *                         and Technology (RIST). All rights reserved.
+ * Copyright (c) 2014      Intel, Inc. All rights reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -19,6 +25,7 @@
 #include "opal/align.h"
 #include "opal_stdint.h"
 #endif
+#include "opal/util/sys_limits.h"
 
 /* Constructor for list memory manager */
 static void construct_lmngr(mca_coll_ml_lmngr_t *lmngr)
@@ -36,6 +43,7 @@ static void construct_lmngr(mca_coll_ml_lmngr_t *lmngr)
     lmngr->list_block_size = cm->lmngr_block_size;
     lmngr->list_alignment = cm->lmngr_alignment;
     lmngr->list_size = cm->lmngr_size;
+    lmngr->n_resources = 0;
     lmngr->base_addr = NULL; /* If the base addr is not null, the struct was initilized
                                 and memory was allocated */
     /* Not sure that lock is required */
@@ -54,14 +62,13 @@ static void destruct_lmngr(mca_coll_ml_lmngr_t *lmngr)
 
     ML_VERBOSE(6, ("Destructing list manager %p", (void *)lmngr));
 
-    while(!opal_list_is_empty(&lmngr->blocks_list)) {
-        item = opal_list_remove_first(&lmngr->blocks_list);
-        OBJ_DESTRUCT(item);
+    while (NULL != (item = opal_list_remove_first(&lmngr->blocks_list))) {
+        OBJ_RELEASE(item);
     }
 
     OBJ_DESTRUCT(&lmngr->blocks_list);
 
-    if (NULL != lmngr->base_addr) {
+    if (NULL != lmngr->alloc_base) {
         for( i = 0; i < max_nc; i++ ) {
             nc = lmngr->net_context[i];
             rc = nc->deregister_memory_fn(nc->context_data,
@@ -71,15 +78,17 @@ static void destruct_lmngr(mca_coll_ml_lmngr_t *lmngr)
             }
         }
 
-        ML_VERBOSE(10, ("Release base addr %p", lmngr->base_addr));
+        ML_VERBOSE(10, ("Release base addr %p", lmngr->alloc_base));
 
-        free(lmngr->base_addr);
+        free(lmngr->alloc_base);
+        lmngr->alloc_base = NULL;
         lmngr->base_addr = NULL;
     }
 
     lmngr->list_block_size = 0;
     lmngr->list_alignment = 0;
     lmngr->list_size = 0;
+    lmngr->n_resources = 0;
 
     OBJ_DESTRUCT(&lmngr->mem_lock);
 }
@@ -145,7 +154,7 @@ int mca_coll_ml_lmngr_reg(void)
                                           MCA_BASE_VAR_SCOPE_READONLY,
                                           &mca_coll_ml_component.lmngr_block_size));
 
-    cm->lmngr_alignment = 4 * 1024;
+    cm->lmngr_alignment = opal_getpagesize();
     CHECK(mca_base_component_var_register(&mca_coll_ml_component.super.collm_version,
                                           "memory_manager_alignment", "Memory manager alignment",
                                           MCA_BASE_VAR_TYPE_SIZE_T, NULL, 0, 0,
@@ -200,18 +209,19 @@ static int mca_coll_ml_lmngr_init(mca_coll_ml_lmngr_t *lmngr)
     if((errno = posix_memalign(&lmngr->base_addr, 
                     lmngr->list_alignment, 
                     lmngr->list_size * lmngr->list_block_size)) != 0) {
-        ML_ERROR(("Failed to allocate memory: %s [%d]", errno, strerror(errno)));
+        ML_ERROR(("Failed to allocate memory: %d [%s]", errno, strerror(errno)));
         return OMPI_ERROR;
     }
+    lmngr->alloc_base = lmngr->base_addr;
 #else
-    lmngr->base_addr = 
+    lmngr->alloc_base =
         malloc(lmngr->list_size * lmngr->list_block_size + lmngr->list_alignment);
-    if(NULL == lmngr->base_addr) {
-        ML_ERROR(("Failed to allocate memory: %s [%d]", errno, strerror(errno)));
+    if(NULL == lmngr->alloc_base) {
+        ML_ERROR(("Failed to allocate memory: %d [%s]", errno, strerror(errno)));
         return OMPI_ERROR;
     }
 
-    lmngr->base_addr = (void*)OPAL_ALIGN((uintptr_t)lmngr->base_addr, 
+    lmngr->base_addr = (void*)OPAL_ALIGN((uintptr_t)lmngr->alloc_base,
             lmngr->list_alignment, uintptr_t);
 #endif
     
@@ -222,7 +232,7 @@ static int mca_coll_ml_lmngr_init(mca_coll_ml_lmngr_t *lmngr)
         ML_VERBOSE(7, ("Call registration for resource index %d", i));
         rc = lmngr_register(lmngr, nc);
         if (OMPI_SUCCESS != rc) {
-            ML_ERROR(("Failed to lmngr register: %s [%d]", errno, strerror(errno)));
+            ML_ERROR(("Failed to lmngr register: %d [%s]", errno, strerror(errno)));
             return rc;
         }
     }
@@ -252,17 +262,17 @@ mca_bcol_base_lmngr_block_t* mca_coll_ml_lmngr_alloc (
 
     /* Check if the list manager was initialized */
     if(OPAL_UNLIKELY(NULL == lmngr->base_addr)) {
-        ML_VERBOSE(7 ,("Starting memory initialization\n"));
+        ML_VERBOSE(7 ,("Starting memory initialization"));
         rc = mca_coll_ml_lmngr_init(lmngr);
         if (OMPI_SUCCESS != rc) {
-            ML_ERROR(("Failed to init memory\n"));
+            ML_ERROR(("Failed to init memory"));
             return NULL;
         }
     }
 
     if(OPAL_UNLIKELY(opal_list_is_empty(list))) {
         /* Upper layer need to handle the NULL */
-        ML_ERROR(("List manager is empty.\n"));
+        ML_VERBOSE(1, ("List manager is empty."));
         return NULL;
     }
 
@@ -289,7 +299,7 @@ int mca_coll_ml_lmngr_append_nc(mca_coll_ml_lmngr_t *lmngr, bcol_base_network_co
        if we do have - do not do anything, just return success
      */
     if (OPAL_UNLIKELY(MCA_COLL_ML_MAX_REG_INFO == lmngr->n_resources)) {
-        ML_ERROR(("MPI overflows maximum supported network contexts is %d"));
+        ML_ERROR(("MPI overflows maximum supported network contexts is %d", MCA_COLL_ML_MAX_REG_INFO));
         return OMPI_ERROR;
     }
 

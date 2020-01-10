@@ -1,3 +1,4 @@
+/* -*- Mode: C; c-basic-offset:4 ; indent-tabs-mode:nil -*- */
 /*
  * Copyright (c) 2004-2006 The Trustees of Indiana University and Indiana
  *                         University Research and Technology
@@ -11,6 +12,8 @@
  *                         All rights reserved.
  * Copyright (c) 2006      QLogic Corporation. All rights reserved.
  * Copyright (c) 2013      Intel, Inc. All rights reserved
+ * Copyright (c) 2014      Los Alamos National Security, LLC. All rights
+ *                         reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -32,27 +35,26 @@
 #include "mtl_psm_request.h"
 
 mca_mtl_psm_module_t ompi_mtl_psm = {
-    {
-        8191,         /* max cid - 2^13 - 1 */
-        (1UL << 30),  /* max tag value - must allow negatives */
-        0,            /* request reserve space */
-        0,            /* flags */
+    .super = {
+        /* NTH: PSM supports 16 bit context ids */
+        .mtl_max_contextid = (1UL << 16) - 1,
+        .mtl_max_tag = (1UL << 30),  /* must allow negatives */
         
-        ompi_mtl_psm_add_procs,
-        ompi_mtl_psm_del_procs,
-        ompi_mtl_psm_finalize,
+        .mtl_add_procs = ompi_mtl_psm_add_procs,
+        .mtl_del_procs = ompi_mtl_psm_del_procs,
+        .mtl_finalize = ompi_mtl_psm_finalize,
         
-        ompi_mtl_psm_send,
-        ompi_mtl_psm_isend,
+        .mtl_send = ompi_mtl_psm_send,
+        .mtl_isend = ompi_mtl_psm_isend,
         
-        ompi_mtl_psm_irecv,
-        ompi_mtl_psm_iprobe,
-        ompi_mtl_psm_imrecv,
-        ompi_mtl_psm_improbe,
+        .mtl_irecv = ompi_mtl_psm_irecv,
+        .mtl_iprobe = ompi_mtl_psm_iprobe,
+        .mtl_imrecv = ompi_mtl_psm_imrecv,
+        .mtl_improbe = ompi_mtl_psm_improbe,
 
-        ompi_mtl_psm_cancel,
-        ompi_mtl_psm_add_comm,
-        ompi_mtl_psm_del_comm
+        .mtl_cancel = ompi_mtl_psm_cancel,
+        .mtl_add_comm = ompi_mtl_psm_add_comm,
+        .mtl_del_comm = ompi_mtl_psm_del_comm
     }    
 };
 
@@ -253,6 +255,7 @@ ompi_mtl_psm_add_procs(struct mca_mtl_base_module_t *mtl,
     int i,j; 
     int rc;
     psm_epid_t   *epids_in = NULL;
+    int *mask_in = NULL;
     psm_epid_t	 *epid;
     psm_epaddr_t *epaddrs_out = NULL;
     psm_error_t  *errs_out = NULL, err;
@@ -271,6 +274,10 @@ ompi_mtl_psm_add_procs(struct mca_mtl_base_module_t *mtl,
     if (epids_in == NULL) {
 	goto bail;
     }
+    mask_in = (int *) malloc(nprocs * sizeof(int));
+    if (mask_in == NULL) {
+	goto bail;
+    }
     epaddrs_out = (psm_epaddr_t *) malloc(nprocs * sizeof(psm_epaddr_t));
     if (epaddrs_out == NULL) {
 	goto bail;
@@ -279,12 +286,19 @@ ompi_mtl_psm_add_procs(struct mca_mtl_base_module_t *mtl,
 
     /* Get the epids for all the processes from modex */
     for (i = 0; i < (int) nprocs; i++) {
+        if (NULL != procs[i]->proc_endpoints[OMPI_PROC_ENDPOINT_TAG_MTL]) {
+            /* Already connected: don't connect again */
+            mask_in[i] = 0;
+            continue;
+        }
+
 	rc = ompi_modex_recv(&mca_mtl_psm_component.super.mtl_version, 
 				     procs[i], (void**)&epid, &size);
 	if (rc != OMPI_SUCCESS || size != sizeof(psm_epid_t)) {
 	  return OMPI_ERROR;
 	}
 	epids_in[i] = *epid;
+        mask_in[i] = 1;
     }
 
     timeout_in_secs = max(ompi_mtl_psm.connect_timeout, 0.5 * nprocs);
@@ -294,7 +308,7 @@ ompi_mtl_psm_add_procs(struct mca_mtl_base_module_t *mtl,
     err = psm_ep_connect(ompi_mtl_psm.ep,
 			 nprocs,
 			 epids_in,
-			 NULL, /* connect all */
+			 mask_in,
 			 errs_out,
 			 epaddrs_out,
 			 timeout_in_secs * 1e9);
@@ -305,6 +319,10 @@ ompi_mtl_psm_add_procs(struct mca_mtl_base_module_t *mtl,
 			psm_error_get_string(err));
 	}
 	for (i = 0; i < (int) nprocs; i++) {
+            if (0 == mask_in[i]) {
+                    continue;
+            }
+
 	    psm_error_t thiserr = errs_out[i];
 	    errstr = (char *) ompi_mtl_psm_connect_error_msg(thiserr);
 	    if (proc_errors[thiserr] == 0) {
@@ -331,6 +349,10 @@ ompi_mtl_psm_add_procs(struct mca_mtl_base_module_t *mtl,
 		
 	/* Fill in endpoint data */
 	for (i = 0; i < (int) nprocs; i++) { 
+            if (0 == mask_in[i]) {
+                    continue;
+            }
+
             mca_mtl_psm_endpoint_t *endpoint = 
 		(mca_mtl_psm_endpoint_t *) OBJ_NEW(mca_mtl_psm_endpoint_t);
 	    endpoint->peer_epid = epids_in[i];
@@ -344,6 +366,9 @@ ompi_mtl_psm_add_procs(struct mca_mtl_base_module_t *mtl,
 bail:
     if (epids_in != NULL) {
 	free(epids_in);
+    }
+    if (mask_in != NULL) {
+        free(mask_in);
     }
     if (errs_out != NULL) {
 	free(errs_out);

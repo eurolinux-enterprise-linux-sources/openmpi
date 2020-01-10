@@ -1,6 +1,8 @@
 # -*- makefile -*-
 #
-# Copyright (c) 2006-2012 Cisco Systems, Inc.  All rights reserved.
+# Copyright (c) 2006-2015 Cisco Systems, Inc.  All rights reserved.
+# Copyright (c) 2015      Research Organization for Information Science
+#                         and Technology (RIST). All rights reserved.
 #
 # $COPYRIGHT$
 # 
@@ -8,6 +10,8 @@
 # 
 # $HEADER$
 #
+
+include $(top_srcdir)/Makefile.man-page-rules
 
 # This Makefile is only relevant if we're building the ignore-TKR "use
 # mpi" MPI bindings.
@@ -23,21 +27,70 @@ lib_LTLIBRARIES = libmpi_usempi_ignore_tkr.la
 mpi-ignore-tkr-interfaces.h: mpi-ignore-tkr-interfaces.h.in
 mpi-ignore-tkr-file-interfaces.h: mpi-ignore-tkr-file-interfaces.h.in
 
+mpi-ignore-tkr.lo: $(top_srcdir)/ompi/mpi/fortran/base/attr-fn-int-callback-interfaces.h
+mpi-ignore-tkr.lo: $(top_srcdir)/ompi/mpi/fortran/base/conversion-fn-null-int-interface.h
 mpi-ignore-tkr.lo: mpi-ignore-tkr-interfaces.h
 mpi-ignore-tkr.lo: mpi-ignore-tkr-file-interfaces.h
+mpi-ignore-tkr.lo: mpi-ignore-tkr-sizeof.h
+mpi-ignore-tkr.lo: mpi-ignore-tkr-sizeof.f90
 mpi-ignore-tkr.lo: mpi-ignore-tkr.F90
 
 libmpi_usempi_ignore_tkr_la_SOURCES = \
         mpi-ignore-tkr.F90
-# These files are generated; do not distribute them
 nodist_libmpi_usempi_ignore_tkr_la_SOURCES = \
         mpi-ignore-tkr-interfaces.h \
         mpi-ignore-tkr-file-interfaces.h
 
+if BUILD_FORTRAN_SIZEOF
+# These files are generated; do not distribute them
+nodist_libmpi_usempi_ignore_tkr_la_SOURCES += \
+        mpi-ignore-tkr-sizeof.h \
+        mpi-ignore-tkr-sizeof.f90
+endif
+
+# Note that we invoke some OPAL functions directly in
+# libmpi_usempi_ignore_tkr.la, so we need to link in the OPAL library
+# directly (pulling it in indirectly via libmpi.la does not work on
+# all platforms).
+libmpi_usempi_ignore_tkr_la_LIBADD = \
+        $(OMPI_MPIEXT_USEMPI_LIBS) \
+        $(OMPI_TOP_BUILDDIR)/opal/libopen-pal.la
+libmpi_usempi_ignore_tkr_la_LDFLAGS = \
+        -version-info $(libmpi_usempi_ignore_tkr_so_version) \
+        $(OMPI_FORTRAN_EXTRA_SHARED_LIBRARY_FLAGS)
+
 #
-# Clean up all module files
+# mpi-ignore-tkr-sizeof.* are generated based on some results from
+# configure tests.
 #
 
+sizeof_pl=$(top_srcdir)/ompi/mpi/fortran/base/gen-mpi-sizeof.pl
+
+mpi-ignore-tkr-sizeof.h: $(top_builddir)/config.status
+mpi-ignore-tkr-sizeof.h: $(sizeof_pl)
+mpi-ignore-tkr-sizeof.h:
+	$(OMPI_V_GEN) $(sizeof_pl) \
+	    --header=$@ --ierror=mandatory \
+	    --maxrank=$(OMPI_FORTRAN_MAX_ARRAY_RANK) \
+	    --generate=$(OMPI_FORTRAN_BUILD_SIZEOF) \
+	    --real16=$(OMPI_HAVE_FORTRAN_REAL16) \
+	    --complex32=$(OMPI_HAVE_FORTRAN_COMPLEX32)
+
+mpi-ignore-tkr-sizeof.f90: $(top_builddir)/config.status
+mpi-ignore-tkr-sizeof.f90: $(sizeof_pl)
+mpi-ignore-tkr-sizeof.f90:
+	$(OMPI_V_GEN) $(sizeof_pl) \
+	    --impl=$@ --ierror=mandatory --mpi --pmpi \
+	    --maxrank=$(OMPI_FORTRAN_MAX_ARRAY_RANK) \
+	    --generate=$(OMPI_FORTRAN_BUILD_SIZEOF) \
+	    --real16=$(OMPI_HAVE_FORTRAN_REAL16) \
+	    --complex32=$(OMPI_HAVE_FORTRAN_COMPLEX32)
+
+#
+# Clean up generated and module files
+#
+
+CLEANFILES += mpi-ignore-tkr-sizeof.h mpi-ignore-tkr-sizeof.f90
 MOSTLYCLEANFILES = *.mod
 
 # Install the generated .mod files.  Unfortunately, each F90 compiler

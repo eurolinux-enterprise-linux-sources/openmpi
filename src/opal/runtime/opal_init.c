@@ -25,6 +25,10 @@
 
 /** @file **/
 
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+
 #include "opal_config.h"
 
 #include "opal/util/malloc.h"
@@ -70,6 +74,7 @@
 const char opal_version_string[] = OPAL_IDENT_STRING;
 
 int opal_initialized = 0;
+bool opal_init_called = false;
 int opal_util_initialized = 0;
 /* We have to put a guess in here in case hwloc is not available.  If
    hwloc is available, this value will be overwritten when the
@@ -110,7 +115,7 @@ opal_err2str(int errnum, const char **errmsg)
         retval = "Not supported";
         break;
     case OPAL_ERR_INTERUPTED:
-        retval = "Interupted";
+        retval = "Interrupted";
         break;
     case OPAL_ERR_WOULD_BLOCK:
         retval = "Would block";
@@ -254,6 +259,18 @@ opal_init_util(int* pargc, char*** pargv)
         return OPAL_SUCCESS;
     }
 
+#if OPAL_NO_LIB_DESTRUCTOR
+    if (opal_init_called) {
+        /* can't use show_help here */
+        fprintf (stderr, "opal_init_util: attempted to initialize after finalize without compiler "
+                 "support for either __attribute__(destructor) or linker support for -fini -- process "
+                 "will likely abort\n");
+        return OPAL_ERR_NOT_SUPPORTED;
+    }
+#endif
+
+    opal_init_called = true;
+
     /* initialize the memory allocator */
     opal_malloc_init();
 
@@ -284,11 +301,6 @@ opal_init_util(int* pargc, char*** pargv)
         goto return_error;
     }
 
-    if (OPAL_SUCCESS != (ret = opal_net_init())) {
-        error = "opal_net_init";
-        goto return_error;
-    }
-
     /* Setup the parameter system */
     if (OPAL_SUCCESS != (ret = mca_base_param_init())) {
         error = "mca_base_param_init";
@@ -298,6 +310,11 @@ opal_init_util(int* pargc, char*** pargv)
     /* register params for opal */
     if (OPAL_SUCCESS != (ret = opal_register_params())) {
         error = "opal_register_params";
+        goto return_error;
+    }
+
+    if (OPAL_SUCCESS != (ret = opal_net_init())) {
+        error = "opal_net_init";
         goto return_error;
     }
 

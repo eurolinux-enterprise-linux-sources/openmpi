@@ -1,22 +1,24 @@
+/* -*- Mode: C; c-basic-offset:4 ; indent-tabs-mode:nil -*- */
 /*
  * Copyright (c) 2004-2005 The Trustees of Indiana University and Indiana
  *                         University Research and Technology
  *                         Corporation.  All rights reserved.
- * Copyright (c) 2004-2013 The University of Tennessee and The University
+ * Copyright (c) 2004-2014 The University of Tennessee and The University
  *                         of Tennessee Research Foundation.  All rights
  *                         reserved.
- * Copyright (c) 2004-2005 High Performance Computing Center Stuttgart, 
+ * Copyright (c) 2004-2005 High Performance Computing Center Stuttgart,
  *                         University of Stuttgart.  All rights reserved.
  * Copyright (c) 2004-2005 The Regents of the University of California.
  *                         All rights reserved.
- * Copyright (c) 2007      Los Alamos National Security, LLC.  All rights
- *                         reserved. 
+ * Copyright (c) 2007-2015 Los Alamos National Security, LLC.  All rights
+ *                         reserved.
  * Copyright (c) 2010-2012 Oracle and/or its affiliates.  All rights reserved.
  * Copyright (c) 2011      Sandia National Laboratories. All rights reserved.
+ * Copyright (c) 2014 Cisco Systems, Inc.  All rights reserved.
  * $COPYRIGHT$
- * 
+ *
  * Additional copyrights may follow
- * 
+ *
  * $HEADER$
  */
 
@@ -26,6 +28,8 @@
 #include "pml_ob1_recvfrag.h"
 #include "ompi/peruse/peruse-internal.h"
 #include "ompi/message/message.h"
+
+mca_pml_ob1_recv_request_t *mca_pml_ob1_recvreq = NULL;
 
 int mca_pml_ob1_irecv_init(void *addr,
                            size_t count,
@@ -43,10 +47,10 @@ int mca_pml_ob1_irecv_init(void *addr,
     MCA_PML_OB1_RECV_REQUEST_INIT(recvreq,
                                    addr,
                                    count, datatype, src, tag, comm, true);
-    
+
     PERUSE_TRACE_COMM_EVENT (PERUSE_COMM_REQ_ACTIVATE,
                              &((recvreq)->req_recv.req_base),
-                             PERUSE_RECV);                              
+                             PERUSE_RECV);
 
     *request = (ompi_request_t *) recvreq;
     return OMPI_SUCCESS;
@@ -87,18 +91,27 @@ int mca_pml_ob1_recv(void *addr,
                      struct ompi_communicator_t *comm,
                      ompi_status_public_t * status)
 {
+    mca_pml_ob1_recv_request_t *recvreq = NULL;
     int rc;
-    mca_pml_ob1_recv_request_t *recvreq;
-    MCA_PML_OB1_RECV_REQUEST_ALLOC(recvreq);
-    if (NULL == recvreq)
-        return OMPI_ERR_TEMP_OUT_OF_RESOURCE;
 
-    MCA_PML_OB1_RECV_REQUEST_INIT(recvreq,
-                                   addr,
-                                   count, datatype, src, tag, comm, false);
+#if !OMPI_ENABLE_THREAD_MULTIPLE
+    recvreq = mca_pml_ob1_recvreq;
+    if( OPAL_UNLIKELY(NULL == recvreq) )
+#endif  /* !OMPI_ENABLE_THREAD_MULTIPLE */
+        {
+            MCA_PML_OB1_RECV_REQUEST_ALLOC(recvreq);
+            if (NULL == recvreq)
+                return OMPI_ERR_TEMP_OUT_OF_RESOURCE;
+#if !OMPI_ENABLE_THREAD_MULTIPLE
+            mca_pml_ob1_recvreq = recvreq;
+#endif  /* !OMPI_ENABLE_THREAD_MULTIPLE */
+        }
+
+    MCA_PML_OB1_RECV_REQUEST_INIT(recvreq, addr, count, datatype,
+                                  src, tag, comm, false);
 
     PERUSE_TRACE_COMM_EVENT (PERUSE_COMM_REQ_ACTIVATE,
-                             &((recvreq)->req_recv.req_base),
+                             &(recvreq->req_recv.req_base),
                              PERUSE_RECV);
 
     MCA_PML_OB1_RECV_REQUEST_START(recvreq);
@@ -107,8 +120,15 @@ int mca_pml_ob1_recv(void *addr,
     if (NULL != status) {  /* return status */
         *status = recvreq->req_recv.req_base.req_ompi.req_status;
     }
+
     rc = recvreq->req_recv.req_base.req_ompi.req_status.MPI_ERROR;
-    ompi_request_free( (ompi_request_t**)&recvreq );
+
+#if OMPI_ENABLE_THREAD_MULTIPLE
+    MCA_PML_OB1_RECV_REQUEST_RETURN(recvreq);
+#else
+    mca_pml_ob1_recv_request_fini (recvreq);
+#endif
+
     return rc;
 }
 
@@ -128,7 +148,7 @@ mca_pml_ob1_imrecv( void *buf,
     mca_pml_ob1_comm_proc_t* proc;
     mca_pml_ob1_comm_t* ob1_comm;
     uint64_t seq;
-    
+
     /* get the request from the message and the frag from the request
        before we overwrite everything */
     recvreq = (mca_pml_ob1_recv_request_t*) (*message)->req_ptr;
@@ -152,7 +172,7 @@ mca_pml_ob1_imrecv( void *buf,
     recvreq->req_recv.req_base.req_type = MCA_PML_REQUEST_RECV;
     MCA_PML_OB1_RECV_REQUEST_INIT(recvreq,
                                   buf,
-                                  count, datatype, 
+                                  count, datatype,
                                   src, tag, comm, false);
     OBJ_RELEASE(comm);
 
@@ -199,7 +219,7 @@ mca_pml_ob1_imrecv( void *buf,
         assert(0);
     }
     MCA_PML_OB1_RECV_FRAG_RETURN(frag);
-    
+
     ompi_message_return(*message);
     *message = MPI_MESSAGE_NULL;
     *request = (ompi_request_t *) recvreq;
@@ -247,7 +267,7 @@ mca_pml_ob1_mrecv( void *buf,
     recvreq->req_recv.req_base.req_type = MCA_PML_REQUEST_RECV;
     MCA_PML_OB1_RECV_REQUEST_INIT(recvreq,
                                   buf,
-                                  count, datatype, 
+                                  count, datatype,
                                   src, tag, comm, false);
     OBJ_RELEASE(comm);
 
@@ -292,7 +312,7 @@ mca_pml_ob1_mrecv( void *buf,
     default:
         assert(0);
     }
-    
+
     ompi_message_return(*message);
     *message = MPI_MESSAGE_NULL;
     ompi_request_wait_completion(&(recvreq->req_recv.req_base.req_ompi));

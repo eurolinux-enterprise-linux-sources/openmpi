@@ -102,10 +102,12 @@ int opal_hwloc_unpack(opal_buffer_t *buffer, void *dest,
         /* since we are loading this from an external source, we have to
          * explicitly set a flag so hwloc sets things up correctly
          */
-        if (0 != hwloc_topology_set_flags(t, HWLOC_TOPOLOGY_FLAG_IS_THISSYSTEM | HWLOC_TOPOLOGY_FLAG_IO_DEVICES)) {
-            free(xmlbuffer);
+        if (0 != hwloc_topology_set_flags(t, (HWLOC_TOPOLOGY_FLAG_IS_THISSYSTEM |
+                                              HWLOC_TOPOLOGY_FLAG_WHOLE_SYSTEM |
+                                              HWLOC_TOPOLOGY_FLAG_IO_DEVICES))) {
             rc = OPAL_ERROR;
             hwloc_topology_destroy(t);
+            free(xmlbuffer);
             goto cleanup;
         }
         /* now load the topology */
@@ -133,6 +135,11 @@ int opal_hwloc_unpack(opal_buffer_t *buffer, void *dest,
         }
         cnt = sizeof(struct hwloc_topology_membind_support);
         if (OPAL_SUCCESS != (rc = opal_dss.unpack(buffer, support->membind, &cnt, OPAL_BYTE))) {
+            goto cleanup;
+        }
+
+        /* filter the cpus thru any default cpu set */
+        if (OPAL_SUCCESS != (rc = opal_hwloc_base_filter_cpus(t))) {
             goto cleanup;
         }
 
@@ -193,7 +200,7 @@ int opal_hwloc_compare(const hwloc_topology_t topo1,
     int l1, l2;
     int s;
     struct hwloc_topology_support *s1, *s2;
-
+    
     /* stop stupid compiler warnings */
     t1 = (hwloc_topology_t)topo1;
     t2 = (hwloc_topology_t)topo2;
@@ -205,10 +212,13 @@ int opal_hwloc_compare(const hwloc_topology_t topo1,
         return OPAL_VALUE1_GREATER;
     } else if (d2 > d1) {
         return OPAL_VALUE2_GREATER;
-    }
+    }    
 
     /* do the comparison the "cheat" way - get an xml representation
-     * of each tree, and strcmp!
+     * of each tree, and strcmp! This will work fine for inventory
+     * comparisons, but might not meet the need for comparing topology
+     * where we really need to do a tree-wise search so we only compare
+     * the things we care about, and ignore stuff like MAC addresses
      */
     if (0 != hwloc_topology_export_xmlbuffer(t1, &x1, &l1)) {
         return OPAL_EQUAL;
@@ -226,7 +236,7 @@ int opal_hwloc_compare(const hwloc_topology_t topo1,
     } else if (s < 0) {
         return OPAL_VALUE2_GREATER;
     }
-
+    
     /* compare the available support - hwloc unfortunately does
      * not include this info in its xml support!
      */

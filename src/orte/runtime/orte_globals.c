@@ -71,6 +71,7 @@ char *orte_local_cpu_model = NULL;
 char *orte_basename = NULL;
 bool orte_coprocessors_detected = false;
 opal_hash_table_t *orte_coprocessors = NULL;
+char *orte_topo_signature = NULL;
 
 /* ORTE OOB port flags */
 bool orte_static_ports = false;
@@ -484,14 +485,15 @@ char* orte_get_proc_hostname(orte_process_name_t *proc)
     char *hostname;
     int rc;
 
+    /* don't bother error logging any not-found situations
+     * as the layer above us will have something to say
+     * about it */
     if (ORTE_PROC_IS_DAEMON || ORTE_PROC_IS_HNP) {
         /* look it up on our arrays */
         if (NULL == (proct = orte_get_proc_object(proc))) {
-            ORTE_ERROR_LOG(ORTE_ERR_NOT_FOUND);
             return NULL;
         }
         if (NULL == proct->node || NULL == proct->node->name) {
-            ORTE_ERROR_LOG(ORTE_ERR_NOT_FOUND);
             return NULL;
         }
         return proct->node->name;
@@ -501,7 +503,6 @@ char* orte_get_proc_hostname(orte_process_name_t *proc)
     if (ORTE_SUCCESS != (rc = opal_db.fetch_pointer((opal_identifier_t*)proc,
                                                     ORTE_DB_HOSTNAME,
                                                     (void**)&hostname, OPAL_STRING))) {
-        ORTE_ERROR_LOG(rc);
         return NULL;
     }
     return hostname;
@@ -716,6 +717,7 @@ static void orte_job_construct(orte_job_t* job)
                             ORTE_GLOBAL_ARRAY_BLOCK_SIZE);
     job->map = NULL;
     job->bookmark = NULL;
+    job->bkmark_obj = 0;
     job->state = ORTE_JOB_STATE_UNDEF;
     job->restart = false;
 
@@ -1059,3 +1061,23 @@ OBJ_CLASS_INSTANCE(orte_job_map_t,
                    opal_object_t,
                    orte_job_map_construct,
                    orte_job_map_destruct);
+
+#if OPAL_HAVE_HWLOC
+static void tcon(orte_topology_t *t)
+{
+    t->topo = NULL;
+    t->sig = NULL;
+}
+static void tdes(orte_topology_t *t)
+{
+    if (NULL != t->topo) {
+        hwloc_topology_destroy(t->topo);
+    }
+    if (NULL != t->sig) {
+        free(t->sig);
+    }
+}
+OBJ_CLASS_INSTANCE(orte_topology_t,
+                   opal_object_t,
+                   tcon, tdes);
+#endif

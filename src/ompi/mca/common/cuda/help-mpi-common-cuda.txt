@@ -1,10 +1,11 @@
 # -*- text -*-
 #
 # Copyright (c) 2011-2014 NVIDIA.  All rights reserved.
+# Copyright (c) 2015 Cisco Systems, Inc.  All rights reserved.
 # $COPYRIGHT$
-# 
+#
 # Additional copyrights may follow
-# 
+#
 # $HEADER$
 #
 [cuCtxGetCurrent failed not initialized]
@@ -42,12 +43,6 @@ The call to cuMemHostRegister(%p, %d, 0) failed.
   cuMemHostRegister return value:  %d
   Memory Pool:  %s
 #
-[cuMemHostUnregister failed]
-The call to cuMemHostUnregister(%p) failed.
-  Host:  %s
-  cuMemHostUnregister return value:  %d
-  Memory Pool:  %s
-#
 [cuIpcGetMemHandle failed]
 The call to cuIpcGetMemHandle failed. This means the GPU RDMA protocol
 cannot be used.
@@ -82,10 +77,12 @@ of the node will clear the problem.
 [cuIpcCloseMemHandle failed]
 The call to cuIpcCloseMemHandle failed. This is a warning and the program 
 will continue to run.
-  cuIpcOpenMemHandle return value:   %d
-  address: %p
-Check the cuda.h file for what the return value means. Perhaps a reboot
-of the node will clear the problem.
+  Hostname:                         %s
+  cuIpcCloseMemHandle return value:  %d
+  address:                          %p
+Check the cuda.h file for what the return value means. A possible cause
+for this is not enough free device memory.  Try to reduce the device
+memory footprint of your application.
 #
 [cuMemcpyAsync failed]
 The call to cuMemcpyAsync failed. This is a unrecoverable error and will
@@ -150,18 +147,14 @@ Open MPI was compiled without dynamic library support (e.g., with the
 
 If you need CUDA support, reconfigure Open MPI with dynamic library support enabled.
 #
-[unknown ltdl error]
-While attempting to load the supporting libcuda.so library, an error
-occurred.  This really should rarely happen.  Please notify the Open
-MPI developers. 
-   Function:     %s
-   Return Value: %d
-   Error string: %s
-#
 [dlopen failed]
 The library attempted to open the following supporting CUDA libraries, 
 but each of them failed.  CUDA-aware support is disabled.
 %s
+If you are not interested in CUDA-aware support, then run with 
+--mca mpi_cuda_support 0 to suppress this message.  If you are interested
+in CUDA-aware support, then try setting LD_LIBRARY_PATH to the location
+of libcuda.so.1 to get passed this issue.
 #
 [dlsym failed]
 An error occurred while trying to map in the address of a function.
@@ -185,10 +178,21 @@ continue, but report this error to the Open MPI developers.
   Address:                              %p
 Check the cuda.h file for what the return value means.
 #
-[cuEventSynchronize failed]
-The call to cuEventSynchronize failed. This is highly unusual and should
+[cuStreamSynchronize failed]
+The call to cuStreamSynchronize failed. This is highly unusual and should
 not happen.  Please report this error to the Open MPI developers.
   Hostname:                             %s
-  cuEventSynchronize return value:      %d
+  cuStreamSynchronize return value:     %d
 Check the cuda.h file for what the return value means.
 #
+[cuMemcpy failed]
+The call to cuMemcpy failed. This is highly unusual and should
+not happen.  Please report this error to the Open MPI developers.
+  Hostname:                  %s
+  cuMemcpy return value:     %d
+Check the cuda.h file for what the return value means.
+#
+[No memory]
+A call to allocate memory within the CUDA support failed.  This is
+an unrecoverable error and will cause the program to abort.
+  Hostname:  %s

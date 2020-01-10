@@ -11,7 +11,7 @@
  *                         All rights reserved.
  * Copyright (c) 2006-2013 Los Alamos National Security, LLC. 
  *                         All rights reserved.
- * Copyright (c) 2009-2012 Cisco Systems, Inc.  All rights reserved.
+ * Copyright (c) 2009-2015 Cisco Systems, Inc.  All rights reserved.
  * Copyright (c) 2011      Oak Ridge National Labs.  All rights reserved.
  * Copyright (c) 2013-2014 Intel, Inc.  All rights reserved.
  * $COPYRIGHT$
@@ -55,6 +55,7 @@
 #include "opal/util/if.h"
 #include "opal/util/net.h"
 #include "opal/util/argv.h"
+#include "opal/util/fd.h"
 #include "opal/class/opal_hash_table.h"
 #include "opal/class/opal_list.h"
 
@@ -121,11 +122,25 @@ int orte_oob_tcp_start_listening(void)
     }
 #endif
 
-    /* if I am the HNP, create a separate event base for the
-     * listening thread so we can harvest connection requests
-     * as rapidly as possible
+    /* if I am the HNP, start a listening thread so we can
+     * harvest connection requests as rapidly as possible
      */
     if (ORTE_PROC_IS_HNP) {
+        if (0 > pipe(mca_oob_tcp_component.stop_thread)) {
+            ORTE_ERROR_LOG(ORTE_ERR_OUT_OF_RESOURCE);
+            return ORTE_ERR_OUT_OF_RESOURCE;
+        }
+
+        /* Make sure the pipe FDs are set to close-on-exec so that
+           they don't leak into children */
+        if (opal_fd_set_cloexec(mca_oob_tcp_component.stop_thread[0]) != OPAL_SUCCESS ||
+            opal_fd_set_cloexec(mca_oob_tcp_component.stop_thread[1]) != OPAL_SUCCESS) {
+            close(mca_oob_tcp_component.stop_thread[0]);
+            close(mca_oob_tcp_component.stop_thread[1]);
+            ORTE_ERROR_LOG(ORTE_ERR_IN_ERRNO);
+            return ORTE_ERR_IN_ERRNO;
+        }
+
         mca_oob_tcp_component.listen_thread_active = true;
         mca_oob_tcp_component.listen_thread.t_run = listen_thread;
         mca_oob_tcp_component.listen_thread.t_arg = NULL;
@@ -289,9 +304,6 @@ static int create_listen(void)
             return ORTE_ERR_IN_ERRNO;
         }
 
-        /* setup socket options */
-        orte_oob_tcp_set_socket_options(sd);
-
         /* Enable/disable reusing ports */
         if (orte_static_ports) {
             flags = 1;
@@ -307,6 +319,17 @@ static int create_listen(void)
             return ORTE_ERROR;
         }
     
+        /* Set the socket to close-on-exec so that no children inherit
+           this FD */
+        if (opal_fd_set_cloexec(sd) != OPAL_SUCCESS) {
+            opal_output(0, "mca_oob_tcp_create_listen: unable to set the "
+                        "listening socket to CLOEXEC (%s:%d)\n",
+                        strerror(opal_socket_errno), opal_socket_errno);
+            CLOSE_THE_SOCKET(sd);
+            opal_argv_free(ports);
+            return ORTE_ERROR;
+        }
+
         if (bind(sd, (struct sockaddr*)&inaddr, addrlen) < 0) {
             if( (EADDRINUSE == opal_socket_errno) || (EADDRNOTAVAIL == opal_socket_errno) ) {
                 continue;
@@ -520,9 +543,16 @@ static int create_listen6(void)
             }
             return ORTE_ERR_IN_ERRNO;
         }
-
-        /* setup socket options */
-        orte_oob_tcp_set_socket_options(sd);
+        /* Set the socket to close-on-exec so that no children inherit
+           this FD */
+        if (opal_fd_set_cloexec(sd) != OPAL_SUCCESS) {
+            opal_output(0, "mca_oob_tcp_create_listen6: unable to set the "
+                        "listening socket to CLOEXEC (%s:%d)\n",
+                        strerror(opal_socket_errno), opal_socket_errno);
+            CLOSE_THE_SOCKET(sd);
+            opal_argv_free(ports);
+            return ORTE_ERROR;
+        }
 
         /* Enable/disable reusing ports */
         if (orte_static_ports) {
@@ -641,15 +671,24 @@ static void* listen_thread(opal_object_t *obj)
             FD_SET(listener->sd, &readfds);
             max = (listener->sd > max) ? listener->sd : max;
         }
+        /* add the stop_thread fd */
+        FD_SET(mca_oob_tcp_component.stop_thread[0], &readfds);
+        max = (mca_oob_tcp_component.stop_thread[0] > max) ? mca_oob_tcp_component.stop_thread[0] : max;
+
         /* set timeout interval */
         timeout.tv_sec = mca_oob_tcp_component.listen_thread_tv.tv_sec;
         timeout.tv_usec = mca_oob_tcp_component.listen_thread_tv.tv_usec;
 
-        /* Block in a select for a short (10ms) amount of time to
-         * avoid hammering the cpu.  If a connection
+        /* Block in a select to avoid hammering the cpu.  If a connection
          * comes in, we'll get woken up right away.
          */
         rc = select(max + 1, &readfds, NULL, NULL, &timeout);
+        if (!mca_oob_tcp_component.listen_thread_active) {
+            /* we've been asked to terminate */
+            close(mca_oob_tcp_component.stop_thread[0]);
+            close(mca_oob_tcp_component.stop_thread[1]);
+            return NULL;
+        }
         if (rc < 0) {
             if (EAGAIN != opal_socket_errno && EINTR != opal_socket_errno) {
                 perror("select");
@@ -692,20 +731,43 @@ static void* listen_thread(opal_object_t *obj)
                                                 (struct sockaddr*)&(pending_connection->addr),
                                                 &addrlen);
                 if (pending_connection->fd < 0) {
-                    if (opal_socket_errno != EAGAIN || 
-                        opal_socket_errno != EWOULDBLOCK) {
-                        CLOSE_THE_SOCKET(pending_connection->fd);
-                        if (EMFILE == opal_socket_errno) {
-                            ORTE_ERROR_LOG(ORTE_ERR_SYS_LIMITS_SOCKETS);
-                            orte_show_help("help-orterun.txt", "orterun:sys-limit-sockets", true);
-                        } else {
-                            opal_output(0, "mca_oob_tcp_accept: accept() failed: %s (%d).",
-                                        strerror(opal_socket_errno), opal_socket_errno);
-                        }
-                        OBJ_RELEASE(pending_connection);
+                    OBJ_RELEASE(pending_connection);
+
+                    /* Non-fatal errors */
+                    if (EAGAIN == opal_socket_errno ||
+                        EWOULDBLOCK == opal_socket_errno) {
+                        continue;
+                    }
+
+                    /* If we run out of file descriptors, log an extra
+                       warning (so that the user can know to fix this
+                       problem) and abandon all hope. */
+                    else if (EMFILE == opal_socket_errno) {
+                        CLOSE_THE_SOCKET(sd);
+                        ORTE_ERROR_LOG(ORTE_ERR_SYS_LIMITS_SOCKETS);
+                        orte_show_help("help-oob-tcp.txt",
+                                       "accept failed",
+                                       true,
+                                       orte_process_info.nodename,
+                                       opal_socket_errno,
+                                       strerror(opal_socket_errno),
+                                       "Out of file descriptors");
                         goto done;
                     }
-                    continue;
+
+                    /* For all other cases, close the socket, print a
+                       warning but try to continue */
+                    else {
+                        CLOSE_THE_SOCKET(sd);
+                        orte_show_help("help-oob-tcp.txt",
+                                       "accept failed",
+                                       true,
+                                       orte_process_info.nodename,
+                                       opal_socket_errno,
+                                       strerror(opal_socket_errno),
+                                       "Unknown cause; job will try to continue");
+                        continue;
+                    }
                 }
 
                 opal_output_verbose(OOB_TCP_DEBUG_CONNECT, orte_oob_base_framework.framework_output,
@@ -755,11 +817,6 @@ static void* listen_thread(opal_object_t *obj)
 static void connection_handler(int sd, short flags, void* cbdata)
 {
     mca_oob_tcp_pending_connection_t *new_connection;
-    int i;
-    mca_oob_tcp_module_t *mod;
-    bool found;
-    struct sockaddr modaddr;
-    uint32_t netmask;
 
     new_connection = (mca_oob_tcp_pending_connection_t*)cbdata;
 
@@ -771,41 +828,9 @@ static void connection_handler(int sd, short flags, void* cbdata)
                         opal_net_get_hostname((struct sockaddr*) &new_connection->addr),
                         opal_net_get_port((struct sockaddr*) &new_connection->addr));
 
-    /* cycle across all interfaces until we find the one that
-     * "owns" this connection - i.e., it is handling the
-     * incoming address space
-     */
-    found = false;
-    for(i = opal_ifbegin(); i >= 0; i = opal_ifnext(i)){
-        /* see if the incoming address is within the address space
-         * of this interface
-         */
-        if (OPAL_SUCCESS != opal_ifindextoaddr(i, &modaddr, sizeof(modaddr))) {
-            continue;
-        }
-        if (OPAL_SUCCESS != opal_ifindextomask(i, &netmask, sizeof(netmask))) {
-            continue;
-        }
-        if (opal_net_samenetwork((struct sockaddr*)&new_connection->addr, &modaddr, netmask)) {
-            /* lookup the corresponding kernel index of this interface */
-            i = opal_ifindextokindex(i);
-            /* get the module */
-            if (NULL == (mod = (mca_oob_tcp_module_t*)opal_pointer_array_get_item(&mca_oob_tcp_component.modules, i))) {
-                found = false;
-                break;
-            }
-            /* process the connection */
-            mod->api.accept_connection((struct mca_oob_tcp_module_t*)mod, new_connection->fd,
-                                       (struct sockaddr*) &(new_connection->addr));
-            found = true;
-            break;
-        }
-    }
-    if (!found) {
-        opal_output(0, "%s CONNECTION REQUEST ON UNKNOWN INTERFACE",
-                    ORTE_NAME_PRINT(ORTE_PROC_MY_NAME));
-    }
-
+    /* process the connection */
+    mca_oob_tcp_module.api.accept_connection(new_connection->fd,
+                                             (struct sockaddr*) &(new_connection->addr));
     /* cleanup */
     OBJ_RELEASE(new_connection);
 }
@@ -818,11 +843,6 @@ static void connection_event_handler(int incoming_sd, short flags, void* cbdata)
     struct sockaddr addr;
     opal_socklen_t addrlen = sizeof(struct sockaddr);
     int sd;
-    int i;
-    mca_oob_tcp_module_t *mod;
-    bool found;
-    struct sockaddr modaddr;
-    uint32_t netmask;
 
     sd = accept(incoming_sd, (struct sockaddr*)&addr, &addrlen);
     opal_output_verbose(OOB_TCP_DEBUG_CONNECT, orte_oob_base_framework.framework_output,
@@ -833,61 +853,47 @@ static void connection_event_handler(int incoming_sd, short flags, void* cbdata)
                         opal_net_get_hostname((struct sockaddr*) &addr),
                         opal_net_get_port((struct sockaddr*) &addr));
     if (sd < 0) {
-        if (EINTR == opal_socket_errno) {
+        /* Non-fatal errors */
+        if (EINTR == opal_socket_errno ||
+            EAGAIN == opal_socket_errno ||
+            EWOULDBLOCK == opal_socket_errno) {
             return;
         }
-        if (opal_socket_errno != EAGAIN && opal_socket_errno != EWOULDBLOCK) {
-            if (EMFILE == opal_socket_errno) {
-                /*
-                 * Close incoming_sd so that orte_show_help will have a file
-                 * descriptor with which to open the help file.  We will be
-                 * exiting anyway, so we don't need to keep it open.
-                 */
-                CLOSE_THE_SOCKET(incoming_sd);
-                ORTE_ERROR_LOG(ORTE_ERR_SYS_LIMITS_SOCKETS);
-                orte_show_help("help-orterun.txt", "orterun:sys-limit-sockets", true);
-            } else {
-                opal_output(0, "mca_oob_tcp_accept: accept() failed: %s (%d).", 
-                            strerror(opal_socket_errno), opal_socket_errno);
-            }
+
+        /* If we run out of file descriptors, log an extra warning (so
+           that the user can know to fix this problem) and abandon all
+           hope. */
+        else if (EMFILE == opal_socket_errno) {
+            CLOSE_THE_SOCKET(incoming_sd);
+            ORTE_ERROR_LOG(ORTE_ERR_SYS_LIMITS_SOCKETS);
+            orte_show_help("help-oob-tcp.txt",
+                           "accept failed",
+                           true,
+                           orte_process_info.nodename,
+                           opal_socket_errno,
+                           strerror(opal_socket_errno),
+                           "Out of file descriptors");
             orte_errmgr.abort(ORTE_ERROR_DEFAULT_EXIT_CODE, NULL);
+            return;
         }
-        return;
+
+        /* For all other cases, close the socket, print a warning but
+           try to continue */
+        else {
+            CLOSE_THE_SOCKET(incoming_sd);
+            orte_show_help("help-oob-tcp.txt",
+                           "accept failed",
+                           true,
+                           orte_process_info.nodename,
+                           opal_socket_errno,
+                           strerror(opal_socket_errno),
+                           "Unknown cause; job will try to continue");
+            return;
+        }
     }
 
-    /* cycle across all interfaces untile we find the one that
-     * "owns" this connection - i.e., it is handling the
-     * incoming address space
-     */
-    found = false;
-    for(i = opal_ifbegin(); i >= 0; i = opal_ifnext(i)){
-        /* see if the incoming address is within the address space
-         * of this interface
-         */
-        if (OPAL_SUCCESS != opal_ifindextoaddr(i, &modaddr, sizeof(modaddr))) {
-            continue;
-        }
-        if (OPAL_SUCCESS != opal_ifindextomask(i, &netmask, sizeof(netmask))) {
-            continue;
-        }
-        if (opal_net_samenetwork((struct sockaddr*)&addr, &modaddr, netmask)) {
-            /* lookup the corresponding kernel index of this interface */
-            i = opal_ifindextokindex(i);
-            /* get the module */
-            if (NULL == (mod = (mca_oob_tcp_module_t*)opal_pointer_array_get_item(&mca_oob_tcp_component.modules, i))) {
-                found = false;
-                break;
-            }
-            /* process the connection */
-            mod->api.accept_connection((struct mca_oob_tcp_module_t*)mod, sd, &addr);
-            found = true;
-            break;
-        }
-    }
-    if (!found) {
-        opal_output(0, "%s CONNECTION REQUEST ON UNKNOWN INTERFACE",
-                    ORTE_NAME_PRINT(ORTE_PROC_MY_NAME));
-    }
+    /* process the connection */
+    mca_oob_tcp_module.api.accept_connection(sd, &addr);
 }
 
 

@@ -5,7 +5,7 @@
  * Copyright (c) 2011      Cisco Systems, Inc.  All rights reserved.
  * Copyright (c) 2011-2013 Los Alamos National Security, LLC. All
  *                         rights reserved.
- * Copyright (c) 2013      Intel, Inc.  All rights reserved.
+ * Copyright (c) 2013-2014 Intel, Inc.  All rights reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -23,6 +23,8 @@
 #include <pmi2.h>
 #endif
 
+#include "opal/util/show_help.h"
+#include "opal/util/error.h"
 #include "common_pmi.h"
 
 static int mca_common_pmi_init_count = 0;
@@ -37,20 +39,32 @@ bool mca_common_pmi_init (void) {
 #if WANT_PMI2_SUPPORT
     {
         int spawned, size, rank, appnum;
+        int rc;
+
+        size = -1;
+        rank = -1;
+        appnum = -1;
+
 
         /* if we can't startup PMI, we can't be used */
         if (PMI2_Initialized ()) {
             return true;
         }
 
-        if (PMI_SUCCESS == PMI2_Init(&spawned, &size, &rank, &appnum)) {
-            mca_common_pmi_init_size = size;
-            mca_common_pmi_init_rank = rank;
+        if (PMI2_SUCCESS != (rc = PMI2_Init(&spawned, &size, &rank, &appnum))) {
+            opal_show_help("help-common-pmi.txt", "pmi2-init-failed", true, rc);
             mca_common_pmi_init_count--;
-            return true;
-        } else {
             return false;
         }
+        if (size < 0 || rank < 0 ) {
+            opal_show_help("help-common-pmi.txt", "pmi2-init-returned-bad-values", true);
+            mca_common_pmi_init_count--;
+            return false;
+        }
+        mca_common_pmi_init_size = size;
+        mca_common_pmi_init_rank = rank;
+        mca_common_pmi_init_count--;
+        return true;
     }
 #else
     {
@@ -145,4 +159,46 @@ bool mca_common_pmi_size(int *size) {
 #endif
     *size = mca_common_pmi_init_size;
     return true;
+}
+
+int *mca_common_pmi_local_ranks(int my_rank, int *local_rank_count) {
+    int rc;
+    int *local_ranks = NULL;
+    *local_rank_count = 0;
+#if WANT_PMI2_SUPPORT
+    {
+        char *pmapping = (char*)malloc(PMI2_MAX_VALLEN);
+        int found;
+        int my_node;
+
+        rc = PMI2_Info_GetJobAttr("PMI_process_mapping", pmapping, PMI2_MAX_VALLEN, &found);
+        if (!found || PMI_SUCCESS != rc) { /* can't check PMI2_SUCCESS as some folks (i.e., Cray) don't define it */
+            OPAL_PMI_ERROR(rc, "PMI_Info_GetJobAttr(PMI_process_mapping)");
+            return NULL;
+        }
+
+        local_ranks = mca_common_pmi2_parse_pmap(pmapping, my_rank, &my_node, local_rank_count);
+        free(pmapping);
+        return local_ranks;
+    }
+#else
+    rc = PMI_Get_clique_size (local_rank_count);
+    if (PMI_SUCCESS != rc) {
+        OPAL_PMI_ERROR(rc, "PMI_Get_clique_size");
+        return NULL;
+    }
+
+    local_ranks = calloc (*local_rank_count, sizeof (int));
+    if (NULL == local_ranks) {
+        OPAL_ERROR_LOG(OPAL_ERR_OUT_OF_RESOURCE);
+        return NULL;
+    }
+
+    rc = PMI_Get_clique_ranks (local_ranks, *local_rank_count);
+    if (PMI_SUCCESS != rc) {
+        OPAL_PMI_ERROR(rc, "PMI_Get_clique_ranks");
+        return NULL;
+    }
+    return local_ranks;
+#endif
 }

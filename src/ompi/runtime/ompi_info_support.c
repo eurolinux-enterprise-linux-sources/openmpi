@@ -10,9 +10,9 @@
  *                         University of Stuttgart.  All rights reserved.
  * Copyright (c) 2004-2005 The Regents of the University of California.
  *                         All rights reserved.
- * Copyright (c) 2007-2012 Cisco Systems, Inc.  All rights reserved.
+ * Copyright (c) 2007-2014 Cisco Systems, Inc.  All rights reserved.
  * Copyright (c) 2011-2012 University of Houston. All rights reserved.
- * Copyright (c) 2010-2013 Los Alamos National Security, LLC.
+ * Copyright (c) 2010-2015 Los Alamos National Security, LLC.
  *                         All rights reserved.
  * $COPYRIGHT$
  *
@@ -41,7 +41,7 @@
 const char *ompi_info_type_ompi = "ompi";
 const char *ompi_info_type_base = "base";
 
-static bool ompi_info_registered = false;
+static int ompi_info_registered = 0;
 
 void ompi_info_register_types(opal_pointer_array_t *mca_types)
 {
@@ -61,11 +61,9 @@ int ompi_info_register_framework_params(opal_pointer_array_t *component_map)
 {
     int rc;
 
-    if (ompi_info_registered) {
+    if (ompi_info_registered++) {
         return OMPI_SUCCESS;
     }
-
-    ompi_info_registered = true;
 
     /* Register the MPI layer's MCA parameters */
     if (OMPI_SUCCESS != (rc = ompi_mpi_register_params())) {
@@ -92,6 +90,11 @@ void ompi_info_close_components(void)
 {
     int i;
 
+    assert(ompi_info_registered);
+    if (--ompi_info_registered) {
+        return;
+    }
+
     /* Note that the order of shutdown here doesn't matter because
      * we aren't *using* any components -- none were selected, so
      * there are no dependencies between the frameworks.  We list
@@ -109,6 +112,8 @@ void ompi_info_close_components(void)
     /* close the ORTE components */
     (void) orte_info_close_components();
 #endif
+
+    (void) opal_info_close_components();
 }
 
 void ompi_info_show_ompi_version(const char *scope)
@@ -120,7 +125,7 @@ void ompi_info_show_ompi_version(const char *scope)
                                       OMPI_MAJOR_VERSION, OMPI_MINOR_VERSION,
                                       OMPI_RELEASE_VERSION,
                                       OMPI_GREEK_VERSION,
-                                      OMPI_WANT_REPO_REV, OMPI_REPO_REV);
+                                      OMPI_REPO_REV);
     opal_info_out("Open MPI", tmp, tmp2);
     free(tmp);
     free(tmp2);
@@ -141,7 +146,7 @@ void ompi_info_show_ompi_version(const char *scope)
 
     tmp2 = opal_info_make_version_str(scope,
                                       MPI_VERSION, MPI_SUBVERSION,
-                                      0, "", 0, "");
+                                      0, "", "");
     opal_info_out("MPI API", "mpi-api:version:full", tmp2);
     free(tmp2);
 

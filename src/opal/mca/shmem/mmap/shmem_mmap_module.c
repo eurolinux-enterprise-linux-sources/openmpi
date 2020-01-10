@@ -1,3 +1,4 @@
+/* -*- Mode: C; c-basic-offset:4 ; indent-tabs-mode:nil -*- */
 /*
  * Copyright (c) 2004-2008 The Trustees of Indiana University and Indiana
  *                         University Research and Technology
@@ -9,9 +10,9 @@
  *                         University of Stuttgart.  All rights reserved.
  * Copyright (c) 2004-2005 The Regents of the University of California.
  *                         All rights reserved.
- * Copyright (c) 2007-2011 Cisco Systems, Inc.  All rights reserved.
+ * Copyright (c) 2007-2015 Cisco Systems, Inc.  All rights reserved.
  * Copyright (c) 2008      Sun Microsystems, Inc.  All rights reserved.
- * Copyright (c) 2010-2013 Los Alamos National Security, LLC.
+ * Copyright (c) 2010-2014 Los Alamos National Security, LLC.
  *                         All rights reserved.
  *
  * $COPYRIGHT$
@@ -92,15 +93,14 @@ module_finalize(void);
  * mmap shmem module
  */
 opal_shmem_mmap_module_t opal_shmem_mmap_module = {
-    /* super */
-    {
-        module_init,
-        segment_create,
-        ds_copy,
-        segment_attach,
-        segment_detach,
-        segment_unlink,
-        module_finalize
+    .super = {
+        .module_init = module_init,
+        .segment_create = segment_create,
+        .ds_copy = ds_copy,
+        .segment_attach = segment_attach,
+        .segment_detach = segment_detach,
+        .unlink = segment_unlink,
+        .module_finalize = module_finalize
     }
 };
 
@@ -418,8 +418,7 @@ segment_attach(opal_shmem_ds_t *ds_buf)
     pid_t my_pid = getpid();
 
     if (my_pid != ds_buf->seg_cpid) {
-        if (-1 == (ds_buf->seg_id = open(ds_buf->seg_name, O_CREAT | O_RDWR,
-                                         0600))) {
+        if (-1 == (ds_buf->seg_id = open(ds_buf->seg_name, O_RDWR))) {
             int err = errno;
             char hn[MAXHOSTNAMELEN];
             gethostname(hn, MAXHOSTNAMELEN - 1);

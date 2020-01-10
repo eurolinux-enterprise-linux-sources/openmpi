@@ -4,6 +4,8 @@
  * Copyright (c) 2009-2012 Mellanox Technologies.  All rights reserved.
  * Copyright (c) 2014      Los Alamos National Security, LLC. All rights
  *                         reserved.
+ * Copyright (c) 2014      Research Organization for Information Science
+ *                         and Technology (RIST). All rights reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -63,24 +65,23 @@ static int mca_coll_ml_build_allreduce_schedule(
     }
 
     *coll_desc = (mca_coll_ml_collective_operation_description_t *)
-        malloc(sizeof(mca_coll_ml_collective_operation_description_t));
+        calloc(1, sizeof(mca_coll_ml_collective_operation_description_t));
     schedule = *coll_desc;
     if (NULL == schedule) {
-        ML_ERROR(("Can't allocate memory.\n"));
-        ret = OMPI_ERR_OUT_OF_RESOURCE;
-        goto Allreduce_Setup_Error;
+        ML_ERROR(("Can't allocate memory."));
+        return OMPI_ERR_OUT_OF_RESOURCE;
     }
 
-    scratch_indx = (int *) malloc(sizeof(int) * (n_hiers * 2));
+    scratch_indx = (int *) calloc(n_hiers * 2, sizeof (int));
     if (NULL == scratch_indx) {
-        ML_ERROR(("Can't allocate memory.\n"));
+        ML_ERROR(("Can't allocate memory."));
         ret = OMPI_ERR_OUT_OF_RESOURCE;
         goto Allreduce_Setup_Error;
     }
 
     scratch_num = (int *) malloc(sizeof(int) * (n_hiers * 2));
     if (NULL == scratch_num) {
-        ML_ERROR(("Can't allocate memory.\n"));
+        ML_ERROR(("Can't allocate memory."));
         ret = OMPI_ERR_OUT_OF_RESOURCE;
         goto Allreduce_Setup_Error;
     }
@@ -91,7 +92,6 @@ static int mca_coll_ml_build_allreduce_schedule(
         if (IS_BCOL_TYPE_IDENTICAL(prev_bcol, GET_BCOL(topo_info, i))) {
             scratch_indx[cnt] = scratch_indx[cnt - 1] + 1;
         } else {
-            scratch_indx[cnt] = 0;
             prev_bcol = GET_BCOL(topo_info, i);
         }
     }
@@ -101,7 +101,6 @@ static int mca_coll_ml_build_allreduce_schedule(
         if (IS_BCOL_TYPE_IDENTICAL(prev_bcol, GET_BCOL(topo_info, n_hiers - 1))) {
             scratch_indx[cnt] = scratch_indx[cnt - 1] + 1;
         } else {
-            scratch_indx[cnt] = 0;
             prev_bcol = GET_BCOL(topo_info, n_hiers - 1);
         }
 
@@ -113,7 +112,6 @@ static int mca_coll_ml_build_allreduce_schedule(
         if (IS_BCOL_TYPE_IDENTICAL(prev_bcol, GET_BCOL(topo_info, i))) {
             scratch_indx[cnt] = scratch_indx[cnt - 1] + 1;
         } else {
-            scratch_indx[cnt] = 0;
             prev_bcol = GET_BCOL(topo_info, i);
         }
     }
@@ -145,7 +143,7 @@ static int mca_coll_ml_build_allreduce_schedule(
             calloc(nbcol_functions, sizeof(struct mca_coll_ml_compound_functions_t));
 
     if (NULL == schedule->component_functions) {
-        ML_ERROR(("Can't allocate memory.\n"));
+        ML_ERROR(("Can't allocate memory."));
         ret = OMPI_ERR_OUT_OF_RESOURCE;
         goto Allreduce_Setup_Error;
     }
@@ -164,6 +162,7 @@ static int mca_coll_ml_build_allreduce_schedule(
             bcol_module->filtered_fns_table[DATA_SRC_KNOWN][NON_BLOCKING][BCOL_REDUCE][bcol_func_index][0][0];
         if (NULL == comp_fn->bcol_function) {
             /* if there isn't a bcol function for this then we can't continue */
+            ret = OMPI_ERR_NOT_SUPPORTED;
             goto Allreduce_Setup_Error;
         }
 
@@ -193,6 +192,7 @@ static int mca_coll_ml_build_allreduce_schedule(
             bcol_module->filtered_fns_table[DATA_SRC_KNOWN][NON_BLOCKING][BCOL_ALLREDUCE][bcol_func_index][0][0];
         if (NULL == comp_fn->bcol_function) {
             /* if there isn't a bcol function for this then we can't continue */
+            ret = OMPI_ERR_NOT_SUPPORTED;
             goto Allreduce_Setup_Error;
         }
 
@@ -223,6 +223,7 @@ static int mca_coll_ml_build_allreduce_schedule(
             bcol_module->filtered_fns_table[DATA_SRC_KNOWN][NON_BLOCKING][BCOL_BCAST][bcol_func_index][0][0];
         if (NULL == comp_fn->bcol_function) {
             /* if there isn't a bcol function for this then we can't continue */
+            ret = OMPI_ERR_NOT_SUPPORTED;
             goto Allreduce_Setup_Error;
         }
 
@@ -277,6 +278,8 @@ Allreduce_Setup_Error:
     if (NULL != schedule->component_functions) {
         free(schedule->component_functions);
     }
+    *coll_desc = NULL;
+    free (schedule);
 
     return ret;
 }
@@ -362,4 +365,70 @@ int ml_coll_hier_allreduce_setup_new(mca_coll_ml_module_t *ml_module)
     }
 
     return OMPI_SUCCESS;
+}
+
+void ml_coll_hier_allreduce_cleanup_new(mca_coll_ml_module_t *ml_module)
+{
+    /* Hierarchy Setup */
+    int topo_index;
+    int alg;
+    mca_coll_ml_topology_t *topo_info = ml_module->topo_list;
+
+    alg = mca_coll_ml_component.coll_config[ML_ALLREDUCE][ML_SMALL_MSG].algorithm_id;
+    topo_index = ml_module->collectives_topology_map[ML_ALLREDUCE][alg];
+    if (ML_UNDEFINED == alg || ML_UNDEFINED == topo_index) {
+        ML_ERROR(("No topology index or algorithm was defined"));
+        topo_info->hierarchical_algorithms[ML_ALLREDUCE] = NULL;
+        return;
+    }
+
+    if (NULL == ml_module->coll_ml_allreduce_functions[alg]) {
+        return;
+    }
+
+    free(ml_module->coll_ml_allreduce_functions[alg]->component_functions);
+    ml_module->coll_ml_allreduce_functions[alg]->component_functions = NULL;
+    free(ml_module->coll_ml_allreduce_functions[alg]);
+    ml_module->coll_ml_allreduce_functions[alg] = NULL;
+
+    alg = mca_coll_ml_component.coll_config[ML_ALLREDUCE][ML_LARGE_MSG].algorithm_id;
+    topo_index = ml_module->collectives_topology_map[ML_ALLREDUCE][alg];
+    if (ML_UNDEFINED == alg || ML_UNDEFINED == topo_index) {
+        ML_ERROR(("No topology index or algorithm was defined"));
+        topo_info->hierarchical_algorithms[ML_ALLREDUCE] = NULL;
+        return;
+    }
+
+    free(ml_module->coll_ml_allreduce_functions[alg]->component_functions);
+    ml_module->coll_ml_allreduce_functions[alg]->component_functions = NULL;
+    free(ml_module->coll_ml_allreduce_functions[alg]);
+    ml_module->coll_ml_allreduce_functions[alg] = NULL;
+
+    if (true == mca_coll_ml_component.need_allreduce_support) {
+        topo_index = ml_module->collectives_topology_map[ML_ALLREDUCE][ML_SMALL_DATA_EXTRA_TOPO_ALLREDUCE];
+        if (ML_UNDEFINED == topo_index) {
+            ML_ERROR(("No topology index was defined"));
+            topo_info->hierarchical_algorithms[ML_ALLREDUCE] = NULL;
+            return;
+        }
+
+        alg = ML_SMALL_DATA_EXTRA_TOPO_ALLREDUCE;
+        free(ml_module->coll_ml_allreduce_functions[alg]->component_functions);
+        ml_module->coll_ml_allreduce_functions[alg]->component_functions = NULL;
+        free(ml_module->coll_ml_allreduce_functions[alg]);
+        ml_module->coll_ml_allreduce_functions[alg] = NULL;
+
+        topo_index = ml_module->collectives_topology_map[ML_ALLREDUCE][ML_LARGE_DATA_EXTRA_TOPO_ALLREDUCE];
+        if (ML_UNDEFINED == topo_index) {
+            ML_ERROR(("No topology index was defined"));
+            topo_info->hierarchical_algorithms[ML_ALLREDUCE] = NULL;
+            return;
+        }
+
+        alg = ML_LARGE_DATA_EXTRA_TOPO_ALLREDUCE;
+        free(ml_module->coll_ml_allreduce_functions[alg]->component_functions);
+        ml_module->coll_ml_allreduce_functions[alg]->component_functions = NULL;
+        free(ml_module->coll_ml_allreduce_functions[alg]);
+        ml_module->coll_ml_allreduce_functions[alg] = NULL;
+    }
 }

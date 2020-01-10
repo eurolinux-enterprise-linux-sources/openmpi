@@ -9,7 +9,8 @@
  *                         University of Stuttgart.  All rights reserved.
  * Copyright (c) 2004-2006 The Regents of the University of California.
  *                         All rights reserved.
- * Copyright (c) 2011-2014 NVIDIA Corporation.  All rights reserved.
+ * Copyright (c) 2011-2015 NVIDIA Corporation.  All rights reserved.
+ * Copyright (c) 2015 Cisco Systems, Inc.  All rights reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -33,8 +34,8 @@
 #include "opal/datatype/opal_convertor.h"
 #include "opal/datatype/opal_datatype_cuda.h"
 #include "opal/util/output.h"
-#include "opal/util/lt_interface.h"
 #include "opal/util/show_help.h"
+#include "opal/mca/dl/base/base.h"
 #include "ompi/mca/mpool/base/base.h"
 #include "ompi/mca/rte/rte.h"
 #include "ompi/runtime/params.h"
@@ -52,12 +53,15 @@
 
 #define OMPI_CUDA_DLSYM(libhandle, funcName)                                         \
 do {                                                                                 \
-    *(void **)(&cuFunc.funcName) = opal_lt_dlsym(libhandle, STRINGIFY(funcName));    \
-    if (NULL == cuFunc.funcName) {                                                   \
+ char *err_msg;                                                                      \
+ void *ptr;                                                                          \
+ if (OPAL_SUCCESS !=                                                                 \
+     opal_dl_lookup(libhandle, STRINGIFY(funcName), &ptr, &err_msg)) {               \
         opal_show_help("help-mpi-common-cuda.txt", "dlsym failed", true,             \
-                       STRINGIFY(funcName), opal_lt_dlerror());                      \
+                       STRINGIFY(funcName), err_msg);                                \
         return 1;                                                                    \
     } else {                                                                         \
+        *(void **)(&cuFunc.funcName) = ptr;                                          \
         opal_output_verbose(15, mca_common_cuda_output,                              \
                             "CUDA: successful dlsym of %s",                          \
                             STRINGIFY(funcName));                                    \
@@ -96,11 +100,16 @@ struct cudaFunctionTable {
 #endif /* OPAL_CUDA_GDR_SUPPORT */
     int (*cuCtxSetCurrent)(CUcontext);
     int (*cuEventSynchronize)(CUevent);
+    int (*cuStreamSynchronize)(CUstream);
+    int (*cuStreamDestroy)(CUstream);
+#if OPAL_CUDA_GET_ATTRIBUTES
+    int (*cuPointerGetAttributes)(unsigned int, CUpointer_attribute *, void **, CUdeviceptr);
+#endif /* OPAL_CUDA_GET_ATTRIBUTES */
 } cudaFunctionTable;
 typedef struct cudaFunctionTable cudaFunctionTable_t;
 cudaFunctionTable_t cuFunc;
 
-static bool stage_one_init_complete = false;
+static int stage_one_init_ref_count = 0;
 static bool stage_three_init_complete = false;
 static bool common_cuda_initialized = false;
 static int mca_common_cuda_verbose;
@@ -113,10 +122,9 @@ static CUstream ipcStream;
 static CUstream dtohStream;
 static CUstream htodStream;
 static CUstream memcpyStream;
-static CUevent  memcpyEvent;
 
 /* Functions called by opal layer - plugged into opal function table */
-static int mca_common_cuda_is_gpu_buffer(const void*);
+static int mca_common_cuda_is_gpu_buffer(const void*, opal_convertor_t*);
 static int mca_common_cuda_memmove(void*, void*, size_t);
 static int mca_common_cuda_cu_memcpy_async(void*, const void*, size_t, opal_convertor_t*);
 static int mca_common_cuda_cu_memcpy(void*, const void*, size_t);
@@ -145,15 +153,15 @@ static int mca_common_cuda_cumemcpy_timing;
 
 /* Array of CUDA events to be queried for IPC stream, sending side and
  * receiving side. */
-CUevent *cuda_event_ipc_array;
-CUevent *cuda_event_dtoh_array;
-CUevent *cuda_event_htod_array;
+CUevent *cuda_event_ipc_array = NULL;
+CUevent *cuda_event_dtoh_array = NULL;
+CUevent *cuda_event_htod_array = NULL;
 
 /* Array of fragments currently being moved by cuda async non-blocking
  * operations */
-struct mca_btl_base_descriptor_t **cuda_event_ipc_frag_array;
-struct mca_btl_base_descriptor_t **cuda_event_dtoh_frag_array;
-struct mca_btl_base_descriptor_t **cuda_event_htod_frag_array;
+struct mca_btl_base_descriptor_t **cuda_event_ipc_frag_array = NULL;
+struct mca_btl_base_descriptor_t **cuda_event_dtoh_frag_array = NULL;
+struct mca_btl_base_descriptor_t **cuda_event_htod_frag_array = NULL;
 
 /* First free/available location in cuda_event_status_array */
 int cuda_event_ipc_first_avail, cuda_event_dtoh_first_avail, cuda_event_htod_first_avail;
@@ -171,7 +179,14 @@ static int cuda_event_dtoh_most = 0;
 static int cuda_event_htod_most = 0;
 
 /* Handle to libcuda.so */
-opal_lt_dlhandle libcuda_handle;
+opal_dl_handle_t *libcuda_handle = NULL;
+
+/* Unused variable that we register at init time and unregister at fini time.
+ * This is used to detect if user has done a device reset prior to MPI_Finalize.
+ * This is a workaround to avoid SEGVs.
+ */
+static int checkmem;
+static int ctx_ok = 1;
 
 #define CUDA_COMMON_TIMING 0
 #if OPAL_ENABLE_DEBUG
@@ -224,8 +239,9 @@ static int mca_common_cuda_init(opal_common_cuda_function_table_t *ftable)
 
 /**
  * This is the first stage of initialization.  This function is
- * triggered when there are memory registration requests from various
- * BTLs.  This function will register some mca variables and then open
+ * called explicitly by any BTLs that can support CUDA-aware.
+ * It is called during the component open phase of initialization.
+ * This function will register some mca variables and then open
  * and load the symbols needed from the CUDA driver library. Look for
  * the SONAME of the library which is libcuda.so.1.  In most cases,
  * this will result in the library found.  However, there are some
@@ -235,9 +251,7 @@ static int mca_common_cuda_init(opal_common_cuda_function_table_t *ftable)
  */
 int mca_common_cuda_stage_one_init(void)
 {
-    opal_lt_dladvise advise;
     int retval, i, j;
-    int advise_support = 1;
     char *cudalibs[] = {"libcuda.so.1", NULL};
     char *searchpaths[] = {"", "/usr/lib64", NULL};
     char **errmsgs = NULL;
@@ -245,10 +259,13 @@ int mca_common_cuda_stage_one_init(void)
     int errsize;
     bool stage_one_init_passed = false;
 
-    if (true == stage_one_init_complete) {
-        return 0;
+    stage_one_init_ref_count++;
+    if (stage_one_init_ref_count > 1) {
+        opal_output_verbose(10, mca_common_cuda_output,
+                            "CUDA: stage_one_init_ref_count is now %d, no need to init",
+                            stage_one_init_ref_count);
+        return OPAL_SUCCESS;
     }
-    stage_one_init_complete = true;
 
     /* Set different levels of verbosity in the cuda related code. */
     mca_common_cuda_verbose = 0;
@@ -300,9 +317,9 @@ int mca_common_cuda_stage_one_init(void)
 #endif /* OPAL_CUDA_SUPPORT_41 */
 
     /* Use this flag to test cuMemcpyAsync vs cuMemcpy */
-    mca_common_cuda_cumemcpy_async = 0;
+    mca_common_cuda_cumemcpy_async = 1;
     (void) mca_base_var_register("ompi", "mpi", "common_cuda", "cumemcpy_async",
-                                 "Set to 0 to force CUDA cuMemcpy instead of cuMemcpyAsync/cuEventRecord/cuEventSynchronize",
+                                 "Set to 0 to force CUDA cuMemcpy instead of cuMemcpyAsync/cuStreamSynchronize",
                                  MCA_BASE_VAR_TYPE_INT, NULL, 0, 0,
                                  OPAL_INFO_LVL_5,
                                  MCA_BASE_VAR_SCOPE_READONLY,
@@ -322,133 +339,93 @@ int mca_common_cuda_stage_one_init(void)
     mca_common_cuda_output = opal_output_open(NULL);
     opal_output_set_verbosity(mca_common_cuda_output, mca_common_cuda_verbose);
 
+    opal_output_verbose(10, mca_common_cuda_output,
+                        "CUDA: stage_one_init_ref_count is now %d, initializing",
+                        stage_one_init_ref_count);
+
     /* First check if the support is enabled.  In the case that the user has
      * turned it off, we do not need to continue with any CUDA specific
      * initialization.  Do this after MCA parameter registration. */
     if (!ompi_mpi_cuda_support) {
         return 1;
     }
-
-    if (0 != (retval = opal_lt_dlinit())) {
-        if (OPAL_ERR_NOT_SUPPORTED == retval) {
-            opal_show_help("help-mpi-common-cuda.txt", "dlopen disabled", true);
-        } else {
-            opal_show_help("help-mpi-common-cuda.txt", "unknown ltdl error", true,
-                           "opal_lt_dlinit", retval, opal_lt_dlerror());
-        }
+    if (!OPAL_HAVE_DL_SUPPORT) {
+        opal_show_help("help-mpi-common-cuda.txt", "dlopen disabled", true);
         return 1;
-    }
-
-    /* Initialize the lt_dladvise structure.  If this does not work, we can
-     * proceed without the support.  Things should still work.  */
-    if (0 != (retval = opal_lt_dladvise_init(&advise))) {
-        if (OPAL_ERR_NOT_SUPPORTED == retval) {
-            advise_support = 0;
-        } else {
-            opal_show_help("help-mpi-common-cuda.txt", "unknown ltdl error", true,
-                           "opal_lt_dladvise_init", retval, opal_lt_dlerror());
-            return 1;
-        }
     }
 
     /* Now walk through all the potential names libcuda and find one
      * that works.  If it does, all is good.  If not, print out all
      * the messages about why things failed.  This code was careful
      * to try and save away all error messages if the loading ultimately
-     * failed to help with debugging.  
+     * failed to help with debugging.
      * NOTE: On the first loop we just utilize the default loading
      * paths from the system.  For the second loop, set /usr/lib64 to
      * the search path and try again.  This is done to handle the case
-     * where we have both 32 and 64 bit libcuda.so libraries installed.
-     * Even when running in 64-bit mode, the /usr/lib direcotry
-     * is searched first and we may find a 32-bit libcuda.so.1 library.
-     * Loading of this library will fail as libtool does not handle having
-     * the wrong ABI in the search path (unlike ld or ld.so).  Note that
-     * we only set this search path after the original search.  This is
-     * so that LD_LIBRARY_PATH and run path settings are respected.
-     * Setting this search path overrides them (rather then being appended). */
-    if (advise_support) {
-        if (0 != (retval = opal_lt_dladvise_global(&advise))) {
-            opal_show_help("help-mpi-common-cuda.txt", "unknown ltdl error", true,
-                           "opal_lt_dladvise_global", retval, opal_lt_dlerror());
-            opal_lt_dladvise_destroy(&advise);
-            return 1;
-        }
-        j = 0;
-        while (searchpaths[j] != NULL) {
-            /* Set explicit search path if entry is not empty string */
-            if (strcmp("", searchpaths[j])) {
-                opal_lt_dlsetsearchpath(searchpaths[j]);
-            }
-            i = 0;
-            while (cudalibs[i] != NULL) {
-                const char *str;
-                libcuda_handle = opal_lt_dlopenadvise(cudalibs[i], advise);
-                if (NULL == libcuda_handle) {
-                    str = opal_lt_dlerror();
-                    if (NULL != str) {
-                        opal_argv_append(&errsize, &errmsgs, str);
-                    } else {
-                        opal_argv_append(&errsize, &errmsgs, "lt_dlerror() returned NULL.");
-                    }
-                    opal_output_verbose(10, mca_common_cuda_output,
-                                        "CUDA: Library open error: %s",
-                                        errmsgs[errsize-1]);
-                } else {
-                    opal_output_verbose(10, mca_common_cuda_output,
-                                        "CUDA: Library successfully opened %s",
-                                        cudalibs[i]);
-                    stage_one_init_passed = true;
-                    break;
-                }
-                i++;
-            }
-            if (true == stage_one_init_passed) break; /* Break out of outer loop */
-            j++;
-        }
-        opal_lt_dladvise_destroy(&advise);
-    } else {
-        j = 0;
-        /* No lt_dladvise support.  This should rarely happen. */
-        while (searchpaths[j] != NULL) {
-            /* Set explicit search path if entry is not empty string */
-            if (strcmp("", searchpaths[j])) {
-                opal_lt_dlsetsearchpath(searchpaths[j]);
-            }
-            i = 0;
-            while (cudalibs[i] != NULL) {
-                const char *str;
-                libcuda_handle = opal_lt_dlopen(cudalibs[i]);
-                if (NULL == libcuda_handle) {
-                    str = opal_lt_dlerror();
-                    if (NULL != str) {
-                        opal_argv_append(&errsize, &errmsgs, str);
-                    } else {
-                        opal_argv_append(&errsize, &errmsgs, "lt_dlerror() returned NULL.");
-                    }
+     * where we have both 32 and 64 bit libcuda.so libraries
+     * installed.  Even when running in 64-bit mode, the /usr/lib
+     * directory is searched first and we may find a 32-bit
+     * libcuda.so.1 library.  Loading of this library will fail as the
+     * OPAL DL framework does not handle having the wrong ABI in the
+     * search path (unlike ld or ld.so).  Note that we only set this
+     * search path after the original search.  This is so that
+     * LD_LIBRARY_PATH and run path settings are respected.  Setting
+     * this search path overrides them (rather then being
+     * appended). */
+    j = 0;
+    while (searchpaths[j] != NULL) {
+        i = 0;
+        while (cudalibs[i] != NULL) {
+            char *filename = NULL;
+            char *str = NULL;
 
-                    opal_output_verbose(10, mca_common_cuda_output,
-                                        "CUDA: Library open error: %s",
-                                        errmsgs[errsize-1]);
-
-                } else {
-                    opal_output_verbose(10, mca_common_cuda_output,
-                                        "CUDA: Library successfully opened %s",
-                                        cudalibs[i]);
-                    stage_one_init_passed = true;
-                    break;
-                }
-                i++;
+            /* If there's a non-empty search path, prepend it
+               to the library filename */
+            if (strlen(searchpaths[j]) > 0) {
+                asprintf(&filename, "%s/%s", searchpaths[j], cudalibs[i]);
+            } else {
+                filename = strdup(cudalibs[i]);
             }
-            if (true == stage_one_init_passed) break; /* Break out of outer loop */
-            j++;
+            if (NULL == filename) {
+                opal_show_help("help-mpi-common-cuda.txt", "No memory",
+                               true, ompi_process_info.nodename);
+                return 1;
+            }
+
+            retval = opal_dl_open(filename, false, false,
+                                  &libcuda_handle, &str);
+            if (OPAL_SUCCESS != retval || NULL == libcuda_handle) {
+                if (NULL != str) {
+                    opal_argv_append(&errsize, &errmsgs, str);
+                } else {
+                    opal_argv_append(&errsize, &errmsgs,
+                                     "opal_dl_open() returned NULL.");
+                }
+                opal_output_verbose(10, mca_common_cuda_output,
+                                    "CUDA: Library open error: %s",
+                                    errmsgs[errsize-1]);
+            } else {
+                opal_output_verbose(10, mca_common_cuda_output,
+                                    "CUDA: Library successfully opened %s",
+                                    cudalibs[i]);
+                stage_one_init_passed = true;
+                break;
+            }
+            i++;
+
+            free(filename);
         }
+        if (true == stage_one_init_passed) {
+            break; /* Break out of outer loop */
+        }
+        j++;
     }
 
     if (true != stage_one_init_passed) {
         errmsg = opal_argv_join(errmsgs, '\n');
         opal_show_help("help-mpi-common-cuda.txt", "dlopen failed", true,
                        errmsg);
+        ompi_mpi_cuda_support = 0;
     }
     opal_argv_free(errmsgs);
     free(errmsg);
@@ -491,6 +468,11 @@ int mca_common_cuda_stage_one_init(void)
 #endif /* OPAL_CUDA_GDR_SUPPORT */
     OMPI_CUDA_DLSYM(libcuda_handle, cuCtxSetCurrent);
     OMPI_CUDA_DLSYM(libcuda_handle, cuEventSynchronize);
+    OMPI_CUDA_DLSYM(libcuda_handle, cuStreamSynchronize);
+    OMPI_CUDA_DLSYM(libcuda_handle, cuStreamDestroy);
+#if OPAL_CUDA_GET_ATTRIBUTES
+    OMPI_CUDA_DLSYM(libcuda_handle, cuPointerGetAttributes);
+#endif /* OPAL_CUDA_GET_ATTRIBUTES */
     return 0;
 }
 
@@ -499,7 +481,8 @@ int mca_common_cuda_stage_one_init(void)
  * This is the last phase of initialization.  This is triggered when we examine
  * a buffer pointer and determine it is a GPU buffer.  We then assume the user
  * has selected their GPU and we can go ahead with all the CUDA related 
- * initializations. 
+ * initializations.   If we get an error, just return.  Cleanup of resources
+ * will happen when fini is called.
  */
 static int mca_common_cuda_stage_three_init(void)
 {
@@ -569,8 +552,6 @@ static int mca_common_cuda_stage_three_init(void)
 #if OPAL_CUDA_SUPPORT_41
     if (true == mca_common_cuda_enabled) {
         /* Set up an array to store outstanding IPC async copy events */
-        cuda_event_ipc_array = NULL;
-        cuda_event_ipc_frag_array = NULL;
         cuda_event_ipc_num_used = 0;
         cuda_event_ipc_first_avail = 0;
         cuda_event_ipc_first_used = 0;
@@ -578,7 +559,7 @@ static int mca_common_cuda_stage_three_init(void)
         cuda_event_ipc_array = (CUevent *) malloc(sizeof(CUevent) * cuda_event_max);
         if (NULL == cuda_event_ipc_array) {
             opal_show_help("help-mpi-common-cuda.txt", "No memory",
-                           true, errno, strerror(errno));
+                           true, ompi_process_info.nodename);
             return OMPI_ERROR;
         }
 
@@ -598,7 +579,7 @@ static int mca_common_cuda_stage_three_init(void)
             malloc(sizeof(struct mca_btl_base_descriptor_t *) * cuda_event_max);
         if (NULL == cuda_event_ipc_frag_array) {
             opal_show_help("help-mpi-common-cuda.txt", "No memory",
-                           true, errno, strerror(errno));
+                           true, ompi_process_info.nodename);
             return OMPI_ERROR;
         }
     }
@@ -607,8 +588,6 @@ static int mca_common_cuda_stage_three_init(void)
     if (true == mca_common_cuda_enabled) {
         /* Set up an array to store outstanding async dtoh events.  Used on the
          * sending side for asynchronous copies. */
-        cuda_event_dtoh_array = NULL;
-        cuda_event_dtoh_frag_array = NULL;
         cuda_event_dtoh_num_used = 0;
         cuda_event_dtoh_first_avail = 0;
         cuda_event_dtoh_first_used = 0;
@@ -616,7 +595,7 @@ static int mca_common_cuda_stage_three_init(void)
         cuda_event_dtoh_array = (CUevent *) malloc(sizeof(CUevent) * cuda_event_max);
         if (NULL == cuda_event_dtoh_array) {
             opal_show_help("help-mpi-common-cuda.txt", "No memory",
-                           true, errno, strerror(errno));
+                           true, ompi_process_info.nodename);
             return OMPI_ERROR;
         }
 
@@ -636,14 +615,12 @@ static int mca_common_cuda_stage_three_init(void)
             malloc(sizeof(struct mca_btl_base_descriptor_t *) * cuda_event_max);
         if (NULL == cuda_event_dtoh_frag_array) {
             opal_show_help("help-mpi-common-cuda.txt", "No memory",
-                           true, errno, strerror(errno));
+                           true, ompi_process_info.nodename);
             return OMPI_ERROR;
         }
 
         /* Set up an array to store outstanding async htod events.  Used on the
          * receiving side for asynchronous copies. */
-        cuda_event_htod_array = NULL;
-        cuda_event_htod_frag_array = NULL;
         cuda_event_htod_num_used = 0;
         cuda_event_htod_first_avail = 0;
         cuda_event_htod_first_used = 0;
@@ -651,7 +628,7 @@ static int mca_common_cuda_stage_three_init(void)
         cuda_event_htod_array = (CUevent *) malloc(sizeof(CUevent) * cuda_event_max);
         if (NULL == cuda_event_htod_array) {
             opal_show_help("help-mpi-common-cuda.txt", "No memory",
-                           true, errno, strerror(errno));
+                           true, ompi_process_info.nodename);
             return OMPI_ERROR;
         }
 
@@ -671,7 +648,7 @@ static int mca_common_cuda_stage_three_init(void)
             malloc(sizeof(struct mca_btl_base_descriptor_t *) * cuda_event_max);
         if (NULL == cuda_event_htod_frag_array) {
             opal_show_help("help-mpi-common-cuda.txt", "No memory",
-                           true, errno, strerror(errno));
+                           true, ompi_process_info.nodename);
             return OMPI_ERROR;
         }
     }
@@ -733,13 +710,18 @@ static int mca_common_cuda_stage_three_init(void)
                            true, ompi_process_info.nodename, res);
             return OMPI_ERROR;
         }
-        /* Create event for use in cuMemcpyAsync synchronous copies */
-        res = cuFunc.cuEventCreate(&memcpyEvent, 0);
-        if (OPAL_UNLIKELY(res != CUDA_SUCCESS)) { 
-            opal_show_help("help-mpi-common-cuda.txt", "cuEventCreate failed",
-                           true, ompi_process_info.nodename, res);
-            return OMPI_ERROR;
-        }
+    }
+
+    res = cuFunc.cuMemHostRegister(&checkmem, sizeof(int), 0);
+    if (res != CUDA_SUCCESS) {
+        /* If registering the memory fails, print a message and continue.
+         * This is not a fatal error. */
+        opal_show_help("help-mpi-common-cuda.txt", "cuMemHostRegister during init failed",
+                       true, &checkmem, sizeof(int),
+                       ompi_process_info.nodename, res, "checkmem");
+    } else {
+        opal_output_verbose(20, mca_common_cuda_output,
+                            "CUDA: cuMemHostRegister OK on test region");
     }
 
     opal_output_verbose(30, mca_common_cuda_output,
@@ -748,6 +730,122 @@ static int mca_common_cuda_stage_three_init(void)
     return OMPI_SUCCESS;
 }
 
+/**
+ * Cleanup all CUDA resources.
+ *
+ * Note: Still figuring out how to get cuMemHostUnregister called from the smcuda sm
+ * mpool.  Looks like with the memory pool from openib (grdma), the unregistering is 
+ * called as the free list is destructed.  Not true for the sm mpool.  This means we
+ * are currently still leaking some host memory we registered with CUDA.
+ */
+void mca_common_cuda_fini(void)
+{
+    int i;
+    CUresult res;
+
+    if (false == common_cuda_initialized) {
+        stage_one_init_ref_count--;
+        opal_output_verbose(20, mca_common_cuda_output,
+                            "CUDA: mca_common_cuda_fini, never completed initialization so "
+                            "skipping fini, ref_count is now %d", stage_one_init_ref_count);
+        return;
+    }
+    
+    if (0 == stage_one_init_ref_count) {
+        opal_output_verbose(20, mca_common_cuda_output,
+                            "CUDA: mca_common_cuda_fini, ref_count=%d, fini is already complete",
+                            stage_one_init_ref_count);
+        return;
+    }
+
+    if (1 == stage_one_init_ref_count) {
+        opal_output_verbose(20, mca_common_cuda_output,
+                            "CUDA: mca_common_cuda_fini, ref_count=%d, cleaning up started",
+                            stage_one_init_ref_count);
+
+        /* This call is in here to make sure the context is still valid.
+         * This was the one way of checking which did not cause problems
+         * while calling into the CUDA library.  This check will detect if
+         * a user has called cudaDeviceReset prior to MPI_Finalize. If so,
+         * then this call will fail and we skip cleaning up CUDA resources. */
+        res = cuFunc.cuMemHostUnregister(&checkmem);
+        if (CUDA_SUCCESS != res) {
+            ctx_ok = 0;
+        }
+        opal_output_verbose(20, mca_common_cuda_output,
+                            "CUDA: mca_common_cuda_fini, cuMemHostUnregister returned %d, ctx_ok=%d",
+                            res, ctx_ok);
+      
+        if (NULL != cuda_event_ipc_array) {
+            if (ctx_ok) {
+                for (i = 0; i < cuda_event_max; i++) {
+                    if (NULL != cuda_event_ipc_array[i]) {
+                        cuFunc.cuEventDestroy(cuda_event_ipc_array[i]);
+                    }
+                } 
+            }
+            free(cuda_event_ipc_array);
+        }
+        if (NULL != cuda_event_htod_array) {
+            if (ctx_ok) {
+                for (i = 0; i < cuda_event_max; i++) {
+                    if (NULL != cuda_event_htod_array[i]) {
+                      cuFunc.cuEventDestroy(cuda_event_htod_array[i]);
+                    }
+                }
+            }
+            free(cuda_event_htod_array);
+        }
+
+        if (NULL != cuda_event_dtoh_array) {
+            if (ctx_ok) {
+                for (i = 0; i < cuda_event_max; i++) {
+                    if (NULL != cuda_event_dtoh_array[i]) {
+                        cuFunc.cuEventDestroy(cuda_event_dtoh_array[i]);
+                    }
+                }
+            }
+            free(cuda_event_dtoh_array);
+        }
+
+        if (NULL != cuda_event_ipc_frag_array) {
+            free(cuda_event_ipc_frag_array);
+        }
+        if (NULL != cuda_event_htod_frag_array) {
+            free(cuda_event_htod_frag_array);
+        }
+        if (NULL != cuda_event_dtoh_frag_array) {
+            free(cuda_event_dtoh_frag_array);
+        }
+        if ((NULL != ipcStream) && ctx_ok) {
+            cuFunc.cuStreamDestroy(ipcStream);
+        }
+        if ((NULL != dtohStream) && ctx_ok) {
+            cuFunc.cuStreamDestroy(dtohStream);
+        }
+        if ((NULL != htodStream) && ctx_ok) {
+            cuFunc.cuStreamDestroy(htodStream);
+        }
+        if ((NULL != memcpyStream) && ctx_ok) {
+            cuFunc.cuStreamDestroy(memcpyStream);
+        }
+        if (NULL != libcuda_handle) {
+	  opal_dl_close(libcuda_handle);
+        }
+
+        opal_output_verbose(20, mca_common_cuda_output,
+                            "CUDA: mca_common_cuda_fini, ref_count=%d, cleaning up all done",
+                            stage_one_init_ref_count);
+
+        opal_output_close(mca_common_cuda_output);
+
+    } else {
+        opal_output_verbose(20, mca_common_cuda_output,
+                            "CUDA: mca_common_cuda_fini, ref_count=%d, cuda still in use",
+                            stage_one_init_ref_count);
+    }
+    stage_one_init_ref_count--;
+}    
 
 /**
  * Call the CUDA register function so we pin the memory in the CUDA
@@ -759,17 +857,6 @@ void mca_common_cuda_register(void *ptr, size_t amount, char *msg) {
     /* Always first check if the support is enabled.  If not, just return */
     if (!ompi_mpi_cuda_support)
         return;
-
-    /* Registering memory during BTL initialization will be the first call
-     * into the cuda common code, so this is where we do the first
-     * initialization function. If the first stage fails, then disable
-     * support and return. */
-    if (!stage_one_init_complete) {
-        if (0 != mca_common_cuda_stage_one_init()) {
-            ompi_mpi_cuda_support = 0;
-            return;
-        }
-    }
 
     if (!common_cuda_initialized) {
         common_cuda_mem_regs_t *regptr;
@@ -824,11 +911,12 @@ void mca_common_cuda_unregister(void *ptr, char *msg) {
     if (mca_common_cuda_enabled && mca_common_cuda_register_memory) {
         res = cuFunc.cuMemHostUnregister(ptr);
         if (OPAL_UNLIKELY(res != CUDA_SUCCESS)) {
-            /* If unregistering the memory fails, print a message and continue.
-             * This is not a fatal error. */
-            opal_show_help("help-mpi-common-cuda.txt", "cuMemHostUnregister failed",
-                           true, ptr,
-                           ompi_process_info.nodename, res, msg);
+            /* If unregistering the memory fails, just continue.  This is during
+             * shutdown.  Only print when running in verbose mode. */
+            opal_output_verbose(20, mca_common_cuda_output,
+                                "CUDA: cuMemHostUnregister failed: ptr=%p, res=%d, mpool=%s",
+                                ptr, res, msg);
+
         } else {
             opal_output_verbose(20, mca_common_cuda_output,
                                 "CUDA: cuMemHostUnregister OK on mpool %s: "
@@ -972,7 +1060,7 @@ int cuda_openmemhandle(void *base, size_t size, mca_mpool_base_registration_t *n
     }
     if (OPAL_UNLIKELY(CUDA_SUCCESS != result)) {
         opal_show_help("help-mpi-common-cuda.txt", "cuIpcOpenMemHandle failed",
-                       true, result, base);
+                       true, ompi_process_info.nodename, result, base);
         /* Currently, this is a non-recoverable error */
         return OMPI_ERROR;
     } else {
@@ -993,15 +1081,19 @@ int cuda_closememhandle(void *reg_data, mca_mpool_base_registration_t *reg)
     CUresult result;
     mca_mpool_common_cuda_reg_t *cuda_reg = (mca_mpool_common_cuda_reg_t*)reg;
 
-    result = cuFunc.cuIpcCloseMemHandle((CUdeviceptr)cuda_reg->base.alloc_base);
-    if (OPAL_UNLIKELY(CUDA_SUCCESS != result)) {
-        opal_show_help("help-mpi-common-cuda.txt", "cuIpcCloseMemHandle failed",
-                       true, result, cuda_reg->base.alloc_base);
-        /* We will just continue on and hope things continue to work. */
-    } else {
-        opal_output_verbose(10, mca_common_cuda_output,
-                            "CUDA: cuIpcCloseMemHandle passed: base=%p",
-                            cuda_reg->base.alloc_base);
+    /* Only attempt to close if we have valid context.  This can change if a call
+     * to the fini function is made and we discover context is gone. */
+    if (ctx_ok) {
+        result = cuFunc.cuIpcCloseMemHandle((CUdeviceptr)cuda_reg->base.alloc_base);
+        if (OPAL_UNLIKELY(CUDA_SUCCESS != result)) {
+            opal_show_help("help-mpi-common-cuda.txt", "cuIpcCloseMemHandle failed",
+                           true, result, cuda_reg->base.alloc_base);
+            /* We will just continue on and hope things continue to work. */
+        } else {
+            opal_output_verbose(10, mca_common_cuda_output,
+                                "CUDA: cuIpcCloseMemHandle passed: base=%p",
+                                cuda_reg->base.alloc_base);
+        }
         CUDA_DUMP_MEMHANDLE((100, cuda_reg->memHandle, "cuIpcCloseMemHandle"));
     }
 
@@ -1032,13 +1124,16 @@ void mca_common_cuda_destruct_event(uint64_t *event)
 {
     CUresult result;
 
-    result = cuFunc.cuEventDestroy((CUevent)event);
-    if (OPAL_UNLIKELY(CUDA_SUCCESS != result)) {
-        opal_show_help("help-mpi-common-cuda.txt", "cuEventDestroy failed",
-                       true, result);
+    /* Only attempt to destroy if we have valid context.  This can change if a call
+     * to the fini function is made and we discover context is gone. */
+    if (ctx_ok) {
+        result = cuFunc.cuEventDestroy((CUevent)event);
+        if (OPAL_UNLIKELY(CUDA_SUCCESS != result)) {
+            opal_show_help("help-mpi-common-cuda.txt", "cuEventDestroy failed",
+                           true, result);
+        }
     }
 }
-
 
 /*
  * Put remote event on stream to ensure that the the start of the
@@ -1553,13 +1648,44 @@ static float mydifftime(struct timespec ts_start, struct timespec ts_end) {
 #endif /* OPAL_CUDA_SUPPORT_41 */
 
 /* Routines that get plugged into the opal datatype code */
-static int mca_common_cuda_is_gpu_buffer(const void *pUserBuf)
+static int mca_common_cuda_is_gpu_buffer(const void *pUserBuf, opal_convertor_t *convertor)
 {
     int res;
-    CUmemorytype memType;
+    CUmemorytype memType = 0;
     CUdeviceptr dbuf = (CUdeviceptr)pUserBuf;
     CUcontext ctx = NULL;
+#if OPAL_CUDA_GET_ATTRIBUTES
+    uint32_t isManaged = 0;
+    /* With CUDA 7.0, we can get multiple attributes with a single call */
+    CUpointer_attribute attributes[3] = {CU_POINTER_ATTRIBUTE_MEMORY_TYPE,
+                                         CU_POINTER_ATTRIBUTE_CONTEXT,
+                                         CU_POINTER_ATTRIBUTE_IS_MANAGED};
+    void *attrdata[] = {(void *)&memType, (void *)&ctx, (void *)&isManaged};
 
+    res = cuFunc.cuPointerGetAttributes(3, attributes, attrdata, dbuf);
+
+    /* Mark unified memory buffers with a flag.  This will allow all unified
+     * memory to be forced through host buffers.  Note that this memory can
+     * be either host or device so we need to set this flag prior to that check. */
+    if (1 == isManaged) {
+        if (NULL != convertor) {
+            convertor->flags |= CONVERTOR_CUDA_UNIFIED;
+        }
+    }
+    if (res != CUDA_SUCCESS) {
+        /* If we cannot determine it is device pointer,
+         * just assume it is not. */
+        return 0;
+    } else if (memType == CU_MEMORYTYPE_HOST) {
+        /* Host memory, nothing to do here */
+        return 0;
+    } else if (memType == 0) {
+        /* This can happen when CUDA is initialized but dbuf is not valid CUDA pointer */
+        return 0;
+    }
+    /* Must be a device pointer */
+    assert(memType == CU_MEMORYTYPE_DEVICE);
+#else /* OPAL_CUDA_GET_ATTRIBUTES */
     res = cuFunc.cuPointerGetAttribute(&memType,
                                        CU_POINTER_ATTRIBUTE_MEMORY_TYPE, dbuf);
     if (res != CUDA_SUCCESS) {
@@ -1582,6 +1708,7 @@ static int mca_common_cuda_is_gpu_buffer(const void *pUserBuf)
      * and set the current context to that.  It is rare that we will not
      * have a context. */
     res = cuFunc.cuCtxGetCurrent(&ctx);
+#endif /* OPAL_CUDA_GET_ATTRIBUTES */
     if (OPAL_UNLIKELY(NULL == ctx)) {
         if (CUDA_SUCCESS == res) {
             res = cuFunc.cuPointerGetAttribute(&ctx,
@@ -1652,15 +1779,9 @@ static int mca_common_cuda_cu_memcpy(void *dest, const void *src, size_t size)
                            true, dest, src, size, result);
             return OMPI_ERROR;
         }
-        result = cuFunc.cuEventRecord(memcpyEvent, memcpyStream);
+        result = cuFunc.cuStreamSynchronize(memcpyStream);
         if (OPAL_UNLIKELY(CUDA_SUCCESS != result)) {
-            opal_show_help("help-mpi-common-cuda.txt", "cuEventRecord failed",
-                           true, ompi_process_info.nodename, result);
-            return 0;
-        }
-        result = cuFunc.cuEventSynchronize(memcpyEvent);
-        if (OPAL_UNLIKELY(CUDA_SUCCESS != result)) {
-            opal_show_help("help-mpi-common-cuda.txt", "cuEventSynchronize failed",
+            opal_show_help("help-mpi-common-cuda.txt", "cuStreamSynchronize failed",
                            true, ompi_process_info.nodename, result);
             return OMPI_ERROR;
         }
@@ -1668,7 +1789,7 @@ static int mca_common_cuda_cu_memcpy(void *dest, const void *src, size_t size)
          result = cuFunc.cuMemcpy((CUdeviceptr)dest, (CUdeviceptr)src, size);
          if (OPAL_UNLIKELY(CUDA_SUCCESS != result)) {
              opal_show_help("help-mpi-common-cuda.txt", "cuMemcpy failed",
-                            true, result);
+                            true, ompi_process_info.nodename, result);
              return OMPI_ERROR;
          }
     }
@@ -1707,15 +1828,9 @@ static int mca_common_cuda_memmove(void *dest, void *src, size_t size)
                            true, dest, tmp, size, result);
             return OMPI_ERROR;
         }
-        result = cuFunc.cuEventRecord(memcpyEvent, memcpyStream);
+        result = cuFunc.cuStreamSynchronize(memcpyStream);
         if (OPAL_UNLIKELY(CUDA_SUCCESS != result)) {
-            opal_show_help("help-mpi-common-cuda.txt", "cuEventRecord failed",
-                           true, ompi_process_info.nodename, result);
-            return OMPI_ERROR;
-        }
-        result = cuFunc.cuEventSynchronize(memcpyEvent);
-        if (OPAL_UNLIKELY(CUDA_SUCCESS != result)) {
-            opal_show_help("help-mpi-common-cuda.txt", "cuEventSynchronize failed",
+            opal_show_help("help-mpi-common-cuda.txt", "cuStreamSynchronize failed",
                            true, ompi_process_info.nodename, result);
             return OMPI_ERROR;
         }

@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2013      Mellanox Technologies, Inc.
+ * Copyright (c) 2013-2015 Mellanox Technologies, Inc.
  *                         All rights reserved.
  * $COPYRIGHT$
- * 
+ *
  * Additional copyrights may follow
  * 
  * $HEADER$
@@ -16,6 +16,15 @@
 
 #include "oshmem/proc/proc.h"
 
+#if OSHMEM_PROFILING
+#include "oshmem/include/pshmem.h"
+#pragma weak shmem_n_pes = pshmem_n_pes
+#pragma weak shmem_my_pe = pshmem_my_pe
+#pragma weak _num_pes = p_num_pes
+#pragma weak _my_pe = p_my_pe
+#include "oshmem/shmem/c/profile/defines.h"
+#endif
+
 int _num_pes(void)
 {
     RUNTIME_CHECK_INIT();
@@ -28,7 +37,6 @@ int _my_pe(void)
     return oshmem_my_proc_id();
 }
 
-#if !defined(OSHMEM_PROFILING) || (OSHMEM_PROFILING == 0)
 int shmem_n_pes(void)
 {
     RUNTIME_CHECK_INIT();
@@ -52,4 +60,3 @@ int my_pe(void)
     RUNTIME_CHECK_INIT();
     return oshmem_my_proc_id();
 }
-#endif /* OSHMEM_PROFILING */

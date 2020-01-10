@@ -16,12 +16,21 @@
 #include "oshmem/include/shmem.h"
 #include "oshmem/runtime/runtime.h"
 
-#if !defined(OSHMEM_PROFILING) || (OSHMEM_PROFILING == 0)
-int shmem_finalize(void)
+#if OSHMEM_PROFILING
+#include "oshmem/include/pshmem.h"
+#pragma weak shmem_finalize = pshmem_finalize
+#include "oshmem/shmem/c/profile/defines.h"
+#endif
+
+extern int oshmem_shmem_globalexit_status;
+
+void shmem_finalize(void)
 {
     OPAL_CR_FINALIZE_LIBRARY();
-
-    return oshmem_shmem_finalize();
+    if (oshmem_shmem_globalexit_status != 0)
+    {
+        return;
+    }
+    oshmem_shmem_finalize();
 }
-#endif /* OSHMEM_PROFILING */
 

@@ -1,4 +1,26 @@
 /*
+ * Copyright (c) 2004-2007 The Trustees of Indiana University and Indiana
+ *                         University Research and Technology
+ *                         Corporation.  All rights reserved.
+ * Copyright (c) 2004-2005 The University of Tennessee and The University
+ *                         of Tennessee Research Foundation.  All rights
+ *                         reserved.
+ * Copyright (c) 2004-2005 High Performance Computing Center Stuttgart, 
+ *                         University of Stuttgart.  All rights reserved.
+ * Copyright (c) 2004-2005 The Regents of the University of California.
+ *                         All rights reserved.
+ * $COPYRIGHT$
+ * 
+ * Additional copyrights may follow
+ * 
+ * $HEADER$
+ */
+/*
+ * This file is almost a complete re-write for Open MPI compared to the
+ * original mpiJava package. Its license and copyright are listed below.
+ * See <path to ompi/mpi/java/README> for more information.
+ */
+/*
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
     You may obtain a copy of the License at
@@ -51,24 +73,6 @@ MPI_Datatype Dts[] = { MPI_DATATYPE_NULL,  /* NULL */
                        MPI_C_FLOAT_COMPLEX,
                        MPI_C_DOUBLE_COMPLEX
 };
-
-void ompi_java_init_native_Datatype(JNIEnv *env)
-{
-    /* Initialization that can only be done after MPI_Init() has
-     * been called.  Called from `mpi_MPI.c'.
-     */
-
-    int i, rc;
-    ompi_java.dtSizes[0] = 0;
-
-    for(i = 1; i < 12; i++)
-    {
-        rc = MPI_Type_size(Dts[i], &(ompi_java.dtSizes[i]));
-
-        if(ompi_java_exceptionCheck(env, rc))
-            return;
-    }
-}
 
 JNIEXPORT void JNICALL Java_mpi_Datatype_init(JNIEnv *e, jclass clazz)
 {

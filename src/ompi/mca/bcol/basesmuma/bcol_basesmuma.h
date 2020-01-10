@@ -5,6 +5,8 @@
  * Copyright (c) 2013-2014 Los Alamos National Security, LLC. All rights
  *                         reserved.
  * Copyright (c) 2014      Cisco Systems, Inc.  All rights reserved.
+ * Copyright (c) 2014      Research Organization for Information Science
+ *                         and Technology (RIST). All rights reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -1152,6 +1154,11 @@ int bcol_basesmuma_smcm_allgather_connection(
                                              bcol_basesmuma_smcm_file_t input, char *base_fname,
                                              bool map_all);
 
+/* clean up the backing files associated with a basesmuma bcol module */
+int bcol_basesmuma_smcm_release_connections (mca_bcol_basesmuma_module_t *sm_bcol_module,
+                                             mca_sbgp_base_module_t *sbgp_module, opal_list_t *peer_list,
+                                             bcol_basesmuma_smcm_proc_item_t ***back_files);
+
 /*
  * this function initializes the internal scratch buffers and control
  * structures that will be used by the module
@@ -1174,6 +1181,12 @@ int bcol_basesmuma_bank_init_opti(struct mca_bcol_base_memory_block_desc_t *payl
         uint32_t data_offset,
         mca_bcol_base_module_t *bcol_module,
         void *reg_data);
+
+/* cleanup nb_coll_buff_desc */
+void cleanup_nb_coll_buff_desc(mca_bcol_basesmuma_nb_coll_buff_desc_t **desc,
+                                  uint32_t num_banks,
+                                  uint32_t num_buffers_per_bank);
+
 
 /* used for shared memory offset exchange */
 int base_bcol_basesmuma_exchange_offsets(

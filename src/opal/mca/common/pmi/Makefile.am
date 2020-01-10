@@ -2,7 +2,8 @@
 # Copyright (c) 2011      Cisco Systems, Inc.  All rights reserved.
 # Copyright (c) 2012      Sandia National Laboratories. All rights reserved.
 # Copyright (c) 2013      Los Alamos National Security, LLC.  All rights
-#                         reserved. 
+#                         reserved.
+# Copyright (c) 2014      Intel, Inc. All rights reserved
 # $COPYRIGHT$
 # 
 # Additional copyrights may follow
@@ -24,6 +25,8 @@
 
 AM_CPPFLAGS = $(common_pmi_CPPFLAGS)
 
+dist_ompidata_DATA = help-common-pmi.txt
+
 # control whether building an installed library or a convenience
 # (noinst) library
 if MCA_BUILD_opal_common_pmi_DSO
@@ -37,5 +40,8 @@ endif
 lib_LTLIBRARIES = $(component_install)
 noinst_LTLIBRARIES = $(component_noinst)
 libmca_common_pmi_la_SOURCES = common_pmi.h common_pmi.c
+if WANT_PMI2_SUPPORT
+libmca_common_pmi_la_SOURCES += pmi2_pmap_parser.c
+endif
 libmca_common_pmi_la_LDFLAGS = $(common_pmi_LDFLAGS) -version-info $(libmca_opal_common_pmi_so_version)
 libmca_common_pmi_la_LIBADD = $(common_pmi_LIBS)

@@ -1162,6 +1162,9 @@ int mca_coll_fca_get_fca_lib(struct ompi_communicator_t *comm)
     spec->rank_id = ompi_comm_rank(MPI_COMM_WORLD);
     spec->progress.func = mca_coll_fca_progress_cb;
     spec->progress.arg = NULL;
+#ifdef FCA_SA_MKEY
+    spec->config.device.sa_mkey = FCA_SA_MKEY;
+#endif
     ret = fca_init(spec, &mca_coll_fca_component.fca_context);
     if (ret < 0) {
         FCA_ERROR("Failed to initialize FCA: %s", fca_strerror(ret));
@@ -1437,7 +1440,7 @@ static int fca_open(void)
     }
 
     /* initialize hash table */
-    if(mca_coll_fca_component.fca_enable_hash && mca_coll_fca_component.fca_enable_hash) {
+    if(mca_coll_fca_component.fca_enable_hash) {
         int i = 0;
         mca_coll_fca_component.fca_hash = malloc(mca_coll_fca_component.fca_hash_size * sizeof(opal_list_t *));
         for(i = 0; i< mca_coll_fca_component.fca_hash_size; i++) {
@@ -1461,7 +1464,7 @@ static int fca_close(void)
     }
 
     
-    if(mca_coll_fca_component.fca_enable_hash && mca_coll_fca_component.fca_enable_hash) {
+    if(mca_coll_fca_component.fca_enable_hash) {
         int i = 0;
         mca_coll_fca_c_cache_item_t *item;
         for(i = 0; i< mca_coll_fca_component.fca_hash_size; i++) {

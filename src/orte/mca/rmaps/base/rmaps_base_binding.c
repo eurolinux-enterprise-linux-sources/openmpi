@@ -12,7 +12,9 @@
  * Copyright (c) 2011      Cisco Systems, Inc.  All rights reserved.
  * Copyright (c) 2011-2012 Los Alamos National Security, LLC.
  *                         All rights reserved.
- * Copyright (c) 2013-2014 Intel, Inc. All rights reserved
+ * Copyright (c) 2013-2015 Intel, Inc. All rights reserved
+ * Copyright (c) 2015      Research Organization for Information Science
+ *                         and Technology (RIST). All rights reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -101,6 +103,23 @@ static void reset_usage(orte_node_t *node, orte_jobid_t jobid)
     }
 }
 
+static void unbind_procs(orte_job_t *jdata)
+{
+    int j;
+    orte_proc_t *proc;
+
+    for (j=0; j < jdata->procs->size; j++) {
+        if (NULL == (proc = (orte_proc_t*)opal_pointer_array_get_item(jdata->procs, j))) {
+            continue;
+        }
+        proc->bind_location = NULL;
+        if (NULL != proc->cpu_bitmap) {
+            free(proc->cpu_bitmap);
+            proc->cpu_bitmap = NULL;
+        }
+    }
+}
+         
 static int bind_upwards(orte_job_t *jdata,
                         orte_node_t *node,
                         hwloc_obj_type_t target,
@@ -178,12 +197,22 @@ static int bind_upwards(orte_job_t *jdata,
                  * and it wasn't a default binding policy (i.e., the user requested it)
                  */
                 if (ncpus < data->num_bound &&
-                    !OPAL_BIND_OVERLOAD_ALLOWED(jdata->map->binding) &&
-                    OPAL_BINDING_POLICY_IS_SET(jdata->map->binding)) {
-                    orte_show_help("help-orte-rmaps-base.txt", "rmaps:binding-overload", true,
-                                   opal_hwloc_base_print_binding(map->binding), node->name,
-                                   data->num_bound, ncpus);
-                    return ORTE_ERR_SILENT;
+                    !OPAL_BIND_OVERLOAD_ALLOWED(jdata->map->binding)) {
+                    if (OPAL_BINDING_POLICY_IS_SET(jdata->map->binding)) {
+                        /* if the user specified a binding policy, then we cannot meet
+                         * it since overload isn't allowed, so error out - have the
+                         * message indicate that setting overload allowed will remove
+                         * this restriction */
+                        orte_show_help("help-orte-rmaps-base.txt", "rmaps:binding-overload", true,
+                                       opal_hwloc_base_print_binding(map->binding), node->name,
+                                       data->num_bound, ncpus);
+                        return ORTE_ERR_SILENT;
+                    } else {
+                        /* if we have the default binding policy, then just don't bind */
+                        OPAL_SET_BINDING_POLICY(map->binding, OPAL_BIND_TO_NONE);
+                        unbind_procs(jdata);
+                        return ORTE_SUCCESS;
+                    }
                 }
                 /* bind it here */
                 cpus = opal_hwloc_base_get_available_cpus(node->topology, obj);
@@ -295,20 +324,21 @@ static int bind_downwards(orte_job_t *jdata,
             if (ncpus < data->num_bound &&
                 !OPAL_BIND_OVERLOAD_ALLOWED(jdata->map->binding)) {
                 if (OPAL_BINDING_POLICY_IS_SET(jdata->map->binding)) {
+                    /* if the user specified a binding policy, then we cannot meet
+                     * it since overload isn't allowed, so error out - have the
+                     * message indicate that setting overload allowed will remove
+                     * this restriction */
                     orte_show_help("help-orte-rmaps-base.txt", "rmaps:binding-overload", true,
                                    opal_hwloc_base_print_binding(map->binding), node->name,
                                    data->num_bound, ncpus);
                     hwloc_bitmap_free(totalcpuset);
                     return ORTE_ERR_SILENT;
                 } else {
-                    /* if this is the default binding policy, then just don't
-                     * bind this proc
-                     */
-                    data->num_bound--;  // maintain count
-                    /* show the proc as not bound */
-                    proc->bind_location = NULL;
+                    /* if we have the default binding policy, then just don't bind */
+                    OPAL_SET_BINDING_POLICY(map->binding, OPAL_BIND_TO_NONE);
+                    unbind_procs(jdata);
                     hwloc_bitmap_zero(totalcpuset);
-                    break;
+                    return ORTE_SUCCESS;
                 }
             }
             /* bind the proc here */
@@ -320,6 +350,10 @@ static int bind_downwards(orte_job_t *jdata,
             nxt_obj = trg_obj->next_cousin;
         } while (total_cpus < orte_rmaps_base.cpus_per_rank);
         hwloc_bitmap_list_asprintf(&proc->cpu_bitmap, totalcpuset);
+        opal_output_verbose(5, orte_rmaps_base_framework.framework_output,
+                            "%s PROC %s BITMAP %s",
+                            ORTE_NAME_PRINT(ORTE_PROC_MY_NAME),
+                            ORTE_NAME_PRINT(&proc->name), proc->cpu_bitmap);
         if (4 < opal_output_get_verbosity(orte_rmaps_base_framework.framework_output)) {
             char tmp1[1024], tmp2[1024];
             if (OPAL_ERR_NOT_BOUND == opal_hwloc_base_cset2str(tmp1, sizeof(tmp1),
@@ -359,6 +393,8 @@ static int bind_in_place(orte_job_t *jdata,
     unsigned int idx, ncpus;
     struct hwloc_topology_support *support;
     opal_hwloc_obj_data_t *data;
+    hwloc_obj_t sib;
+    bool found;
 
     opal_output_verbose(5, orte_rmaps_base_framework.framework_output,
                         "mca:rmaps: bind in place for job %s with bindings %s",
@@ -450,33 +486,78 @@ static int bind_in_place(orte_job_t *jdata,
             if (UINT_MAX == (idx = opal_hwloc_base_get_obj_idx(node->topology, proc->locale, OPAL_HWLOC_AVAILABLE))) {
                 return ORTE_ERR_SILENT;
             }
-            /* track the number bound */
             data = (opal_hwloc_obj_data_t*)proc->locale->userdata;
-            data->num_bound++;
-             opal_output_verbose(5, orte_rmaps_base_framework.framework_output,
-                                "BINDING PROC %s TO %s NUMBER %u",
-                                ORTE_NAME_PRINT(&proc->name),
-                                hwloc_obj_type_string(proc->locale->type), idx);
             /* get the number of cpus under this location */
             if (0 == (ncpus = opal_hwloc_base_get_npus(node->topology, proc->locale))) {
                 orte_show_help("help-orte-rmaps-base.txt", "rmaps:no-available-cpus", true, node->name);
                 return ORTE_ERR_SILENT;
             }
-            /* error out if adding a proc would cause overload and that wasn't allowed,
-             * and it wasn't a default binding policy (i.e., the user requested it)
-             */
-            if (ncpus < data->num_bound &&
-                !OPAL_BIND_OVERLOAD_ALLOWED(jdata->map->binding) &&
-                OPAL_BINDING_POLICY_IS_SET(jdata->map->binding)) {
-                orte_show_help("help-orte-rmaps-base.txt", "rmaps:binding-overload", true,
-                               opal_hwloc_base_print_binding(map->binding), node->name,
-                               data->num_bound, ncpus);
-                return ORTE_ERR_SILENT;
+            /* if we don't have enough cpus to support this additional proc, try
+             * shifting the location to a cousin that can support it - the important
+             * thing is that we maintain the same level in the topology */
+            if (ncpus < (data->num_bound+1)) {
+                opal_output_verbose(5, orte_rmaps_base_framework.framework_output,
+                                    "%s bind_in_place: searching right",
+                                    ORTE_NAME_PRINT(ORTE_PROC_MY_NAME));
+                sib = proc->locale;
+                found = false;
+                while (NULL != (sib = sib->next_cousin)) {
+                    data = (opal_hwloc_obj_data_t*)sib->userdata;
+                    ncpus = opal_hwloc_base_get_npus(node->topology, sib);
+                    if (data->num_bound < ncpus) {
+                        found = true;
+                        proc->locale = sib;
+                        break;
+                    }
+                }
+                if (!found) {
+                    /* try the other direction */
+                    opal_output_verbose(5, orte_rmaps_base_framework.framework_output,
+                                        "%s bind_in_place: searching left",
+                                        ORTE_NAME_PRINT(ORTE_PROC_MY_NAME));
+                    sib = proc->locale;
+                    while (NULL != (sib = sib->prev_cousin)) {
+                        data = (opal_hwloc_obj_data_t*)sib->userdata;
+                        ncpus = opal_hwloc_base_get_npus(node->topology, sib);
+                        if (data->num_bound < ncpus) {
+                            found = true;
+                            proc->locale = sib;
+                            break;
+                        }
+                    }
+                }
+                if (!found) {
+                    /* no place to put this - see if overload is allowed */
+                    if (!OPAL_BIND_OVERLOAD_ALLOWED(jdata->map->binding)) {
+                        if (OPAL_BINDING_POLICY_IS_SET(jdata->map->binding)) {
+                            /* if the user specified a binding policy, then we cannot meet
+                             * it since overload isn't allowed, so error out - have the
+                             * message indicate that setting overload allowed will remove
+                             * this restriction */
+                            orte_show_help("help-orte-rmaps-base.txt", "rmaps:binding-overload", true,
+                                           opal_hwloc_base_print_binding(map->binding), node->name,
+                                           data->num_bound, ncpus);
+                            return ORTE_ERR_SILENT;
+                        } else {
+                            /* if we have the default binding policy, then just don't bind */
+                            OPAL_SET_BINDING_POLICY(map->binding, OPAL_BIND_TO_NONE);
+                            unbind_procs(jdata);
+                            return ORTE_SUCCESS;
+                        }
+                    }
+                }
             }
+            /* track the number bound */
+            data = (opal_hwloc_obj_data_t*)proc->locale->userdata;  // just in case it changed
+            data->num_bound++;
+            opal_output_verbose(5, orte_rmaps_base_framework.framework_output,
+                                "BINDING PROC %s TO %s NUMBER %u",
+                                ORTE_NAME_PRINT(&proc->name),
+                                hwloc_obj_type_string(proc->locale->type), idx);
             /* bind the proc here */
             cpus = opal_hwloc_base_get_available_cpus(node->topology, proc->locale);
             hwloc_bitmap_list_asprintf(&proc->cpu_bitmap, cpus);
-            /* record the location */
+            /* update the location, in case it changed */
             proc->bind_location = proc->locale;
             opal_output_verbose(5, orte_rmaps_base_framework.framework_output,
                                 "%s BOUND PROC %s TO %s[%s:%u] on node %s",
@@ -596,9 +677,9 @@ int orte_rmaps_base_compute_bindings(orte_job_t *jdata)
     int bind_depth, map_depth;
 
     opal_output_verbose(5, orte_rmaps_base_framework.framework_output,
-                        "mca:rmaps: compute bindings for job %s with policy %s",
+                        "mca:rmaps: compute bindings for job %s with policy %s[%x]",
                         ORTE_JOBID_PRINT(jdata->jobid),
-                        opal_hwloc_base_print_binding(jdata->map->binding));
+                        opal_hwloc_base_print_binding(jdata->map->binding), jdata->map->binding);
 
     map = ORTE_GET_MAPPING_POLICY(jdata->map->mapping);
     bind = OPAL_GET_BINDING_POLICY(jdata->map->binding);
@@ -662,6 +743,7 @@ int orte_rmaps_base_compute_bindings(orte_job_t *jdata)
     switch (map) {
     case ORTE_MAPPING_BYNODE:
     case ORTE_MAPPING_BYSLOT:
+    case ORTE_MAPPING_SEQ:
         hwm = HWLOC_OBJ_MACHINE;
         break;
     case ORTE_MAPPING_BYDIST:

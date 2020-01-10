@@ -14,6 +14,9 @@
  * Copyright (c) 2013      Los Alamos National Security, LLC. All Rights
  *                         reserved.
  * Copyright (c) 2013      FUJITSU LIMITED.  All rights reserved.
+ * Copyright (c) 2014      Research Organization for Information Science
+ *                         and Technology (RIST). All rights reserved.
+ * Copyright (c) 2015      Intel, Inc. All rights reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -56,16 +59,17 @@ mca_coll_tuned_alltoallv_intra_basic_inplace(void *rbuf, const int *rcounts, con
     int i, j, size, rank, err=MPI_SUCCESS;
     MPI_Request *preq;
     char *tmp_buffer;
-    size_t max_size;
+    size_t max_size, rdtype_size;
     ptrdiff_t ext;
 
     /* Initialize. */
 
     size = ompi_comm_size(comm);
     rank = ompi_comm_rank(comm);
+    ompi_datatype_type_size(rdtype, &rdtype_size);
 
     /* If only one process, we're done. */
-    if (1 == size) {
+    if (1 == size || 0 == rdtype_size) {
         return MPI_SUCCESS;
     }
 
@@ -124,7 +128,7 @@ mca_coll_tuned_alltoallv_intra_basic_inplace(void *rbuf, const int *rcounts, con
             }
 
             /* Wait for the requests to complete */
-            err = ompi_request_wait_all (2, tuned_module->tuned_data->mcct_reqs, MPI_STATUS_IGNORE);
+            err = ompi_request_wait_all (2, tuned_module->tuned_data->mcct_reqs, MPI_STATUSES_IGNORE);
             if (MPI_SUCCESS != err) { goto error_hndl; }
 
             /* Free the requests. */
@@ -190,9 +194,9 @@ ompi_coll_tuned_alltoallv_intra_pairwise(void *sbuf, int *scounts, int *sdisps,
     return MPI_SUCCESS;
  
  err_hndl:
-    OPAL_OUTPUT((ompi_coll_tuned_stream,
+    opal_output_verbose(COLL_TUNED_VERBOSITY, ompi_coll_tuned_stream,
                  "%s:%4d\tError occurred %d, rank %2d at step %d", __FILE__, line, 
-                 err, rank, step));
+                 err, rank, step);
     return err;
 }
 

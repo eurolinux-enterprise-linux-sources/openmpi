@@ -1,4 +1,26 @@
 /*
+ * Copyright (c) 2004-2007 The Trustees of Indiana University and Indiana
+ *                         University Research and Technology
+ *                         Corporation.  All rights reserved.
+ * Copyright (c) 2004-2005 The University of Tennessee and The University
+ *                         of Tennessee Research Foundation.  All rights
+ *                         reserved.
+ * Copyright (c) 2004-2005 High Performance Computing Center Stuttgart, 
+ *                         University of Stuttgart.  All rights reserved.
+ * Copyright (c) 2004-2005 The Regents of the University of California.
+ *                         All rights reserved.
+ * $COPYRIGHT$
+ * 
+ * Additional copyrights may follow
+ * 
+ * $HEADER$
+ */
+/*
+ * This file is almost a complete re-write for Open MPI compared to the
+ * original mpiJava package. Its license and copyright are listed below.
+ * See <path to ompi/mpi/java/README> for more information.
+ */
+/*
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
     You may obtain a copy of the License at
@@ -22,6 +44,8 @@
  */
 
 package mpi;
+
+import java.nio.*;
 
 /**
  * The {@code Datatype} class represents {@code MPI_Datatype} handles.
@@ -239,19 +263,31 @@ public boolean isNull()
 
 /**
  * Java binding of {@code MPI_TYPE_DUP}.
+ * <p>It is recommended to use {@link #dup} instead of {@link #clone}
+ * because the last can't throw an {@link mpi.MPIException}.
  * @return new datatype
  */
 @Override public Datatype clone()
 {
     try
     {
-        MPI.check();
-        return new Datatype(this, dup(handle));
+        return dup();
     }
     catch(MPIException e)
     {
         throw new RuntimeException(e.getMessage());
     }
+}
+
+/**
+ * Java binding of {@code MPI_TYPE_DUP}.
+ * @return new datatype
+ * @throws MPIException 
+ */
+public Datatype dup() throws MPIException
+{
+    MPI.check();
+    return new Datatype(this, dup(handle));
 }
 
 private native long dup(long type) throws MPIException;
@@ -527,5 +563,15 @@ public void deleteAttr(int keyval) throws MPIException
 }
 
 private native void deleteAttr(long type, int keyval) throws MPIException;
+
+/**
+ * Gets the offset of a buffer in bytes.
+ * @param buffer buffer
+ * @return offset in bytes
+ */
+protected int getOffset(Object buffer)
+{
+    return baseSize * ((Buffer)buffer).arrayOffset();
+}
 
 } // Datatype

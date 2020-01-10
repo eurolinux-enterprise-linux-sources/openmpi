@@ -28,8 +28,6 @@ BEGIN_C_DECLS
 OSHMEM_MODULE_DECLSPEC extern mca_atomic_base_component_1_0_0_t
 mca_atomic_mxm_component;
 
-extern int mca_atomic_mxm_priority_param;
-
 /* this component works with spml:ikrit only */
 extern mca_spml_ikrit_t *mca_spml_self;
 
@@ -63,5 +61,15 @@ typedef struct mca_atomic_mxm_module_t mca_atomic_mxm_module_t;
 OBJ_CLASS_DECLARATION(mca_atomic_mxm_module_t);
 
 END_C_DECLS
+
+#if MXM_API >= MXM_VERSION(2,0)
+static inline mxm_mem_key_t *to_mxm_mkey(sshmem_mkey_t *mkey) {
+
+    if (0 == mkey->len) {
+        return &mxm_empty_mem_key;
+    }
+    return (mxm_mem_key_t *)mkey->u.data;
+}
+#endif
 
 #endif /* MCA_ATOMIC_MXM_H */

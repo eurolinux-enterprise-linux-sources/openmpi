@@ -1,12 +1,14 @@
 ! -*- f90 -*-
 !
-! Copyright (c) 2009-2014 Cisco Systems, Inc.  All rights reserved.
+! Copyright (c) 2009-2015 Cisco Systems, Inc.  All rights reserved.
 ! Copyright (c) 2009-2012 Los Alamos National Security, LLC.
 !                         All rights reserved.
 ! Copyright (c) 2012      The University of Tennessee and The University
 !                         of Tennessee Research Foundation.  All rights
 !                         reserved.
 ! Copyright (c) 2012      Inria.  All rights reserved.
+! Copyright (c) 2015      Research Organization for Information Science
+!                         and Technology (RIST). All rights reserved.
 ! $COPYRIGHT$
 !
 ! This file provides the interface specifications for the MPI Fortran
@@ -187,10 +189,14 @@ subroutine ompi_buffer_attach_f(buffer,size,ierror) &
    INTEGER, INTENT(OUT) :: ierror
 end subroutine ompi_buffer_attach_f
 
+! Note that we have an F08-specific C implementation function for
+! MPI_BUFFER_DETACH (i.e., it is different than the mpif.h / mpi
+! module C implementation function).
 subroutine ompi_buffer_detach_f(buffer_addr,size,ierror) &
-   BIND(C, name="ompi_buffer_detach_f")
+   BIND(C, name="ompi_buffer_detach_f08")
+   USE, INTRINSIC ::  ISO_C_BINDING, ONLY : C_PTR
    implicit none
-   OMPI_FORTRAN_IGNORE_TKR_TYPE, INTENT(IN) :: buffer_addr
+   TYPE(C_PTR), INTENT(OUT) ::  buffer_addr
    INTEGER, INTENT(OUT) :: size
    INTEGER, INTENT(OUT) :: ierror
 end subroutine ompi_buffer_detach_f
@@ -1243,11 +1249,10 @@ subroutine ompi_comm_create_keyval_f(comm_copy_attr_fn,comm_delete_attr_fn, &
                                      comm_keyval,extra_state,ierror) &
    BIND(C, name="ompi_comm_create_keyval_f")
    use :: mpi_f08_types, only : MPI_ADDRESS_KIND
-   use :: mpi_f08_interfaces_callbacks, only : MPI_Comm_copy_attr_function
-   use :: mpi_f08_interfaces_callbacks, only : MPI_Comm_delete_attr_function
+   use, intrinsic :: iso_c_binding, only: c_funptr
    implicit none
-   OMPI_PROCEDURE(MPI_Comm_copy_attr_function) :: comm_copy_attr_fn
-   OMPI_PROCEDURE(MPI_Comm_delete_attr_function) :: comm_delete_attr_fn
+   type(c_funptr), value :: comm_copy_attr_fn
+   type(c_funptr), value :: comm_delete_attr_fn
    INTEGER, INTENT(OUT) :: comm_keyval
    INTEGER(MPI_ADDRESS_KIND), INTENT(IN) :: extra_state
    INTEGER, INTENT(OUT) :: ierror
@@ -1363,7 +1368,7 @@ subroutine ompi_comm_set_attr_f(comm,comm_keyval,attribute_val,ierror) &
 end subroutine ompi_comm_set_attr_f
 
 subroutine ompi_comm_set_info_f(comm,info,ierror) &
-   BIND(C, name="ompi_comm_get_info_f")
+   BIND(C, name="ompi_comm_set_info_f")
    implicit none
    INTEGER, INTENT(IN) :: comm
    INTEGER, INTENT(IN) :: info
@@ -1519,11 +1524,10 @@ subroutine ompi_type_create_keyval_f(type_copy_attr_fn,type_delete_attr_fn, &
                                      type_keyval,extra_state,ierror) &
    BIND(C, name="ompi_type_create_keyval_f")
    use :: mpi_f08_types, only : MPI_ADDRESS_KIND
-   use :: mpi_f08_interfaces_callbacks, only : MPI_Type_copy_attr_function
-   use :: mpi_f08_interfaces_callbacks, only : MPI_Type_delete_attr_function
+   use, intrinsic :: iso_c_binding, only: c_funptr
    implicit none
-   OMPI_PROCEDURE(MPI_Type_copy_attr_function) :: type_copy_attr_fn
-   OMPI_PROCEDURE(MPI_Type_delete_attr_function) :: type_delete_attr_fn
+   type(c_funptr), value :: type_copy_attr_fn
+   type(c_funptr), value :: type_delete_attr_fn
    INTEGER, INTENT(OUT) :: type_keyval
    INTEGER(MPI_ADDRESS_KIND), INTENT(IN) :: extra_state
    INTEGER, INTENT(OUT) :: ierror
@@ -1575,15 +1579,40 @@ subroutine ompi_type_set_name_f(type,type_name,ierror,type_name_len) &
    INTEGER, VALUE, INTENT(IN) :: type_name_len
 end subroutine ompi_type_set_name_f
 
+subroutine ompi_win_allocate_f(size, disp_unit, info, comm, &
+      baseptr, win, ierror) BIND(C, name="ompi_win_allocate_f")
+  USE, INTRINSIC ::  ISO_C_BINDING, ONLY : C_PTR
+  use :: mpi_f08_types, only : MPI_ADDRESS_KIND
+  INTEGER(KIND=MPI_ADDRESS_KIND), INTENT(IN) ::  size
+  INTEGER, INTENT(IN) ::  disp_unit
+  INTEGER, INTENT(IN) ::  info
+  INTEGER, INTENT(IN) ::  comm
+  TYPE(C_PTR), INTENT(OUT) ::  baseptr
+  INTEGER, INTENT(OUT) ::  win
+  INTEGER, INTENT(OUT) ::  ierror
+end subroutine ompi_win_allocate_f
+
+subroutine ompi_win_allocate_shared_f(size, disp_unit, info, comm, &
+      baseptr, win, ierror) BIND(C, name="ompi_win_allocate_shared_f")
+  USE, INTRINSIC ::  ISO_C_BINDING, ONLY : C_PTR
+  use :: mpi_f08_types, only : MPI_ADDRESS_KIND
+  INTEGER(KIND=MPI_ADDRESS_KIND), INTENT(IN) ::  size
+  INTEGER, INTENT(IN) ::  disp_unit
+  INTEGER, INTENT(IN) ::  info
+  INTEGER, INTENT(IN) ::  comm
+  TYPE(C_PTR), INTENT(OUT) ::  baseptr
+  INTEGER, INTENT(OUT) ::  win
+  INTEGER, INTENT(OUT) ::  ierror
+end subroutine ompi_win_allocate_shared_f
+
 subroutine ompi_win_create_keyval_f(win_copy_attr_fn,win_delete_attr_fn, &
                                     win_keyval,extra_state,ierror) &
    BIND(C, name="ompi_win_create_keyval_f")
    use :: mpi_f08_types, only : MPI_ADDRESS_KIND
-   use :: mpi_f08_interfaces_callbacks, only : MPI_Win_copy_attr_function
-   use :: mpi_f08_interfaces_callbacks, only : MPI_Win_delete_attr_function
+   use, intrinsic :: iso_c_binding, only: c_funptr
    implicit none
-   OMPI_PROCEDURE(MPI_Win_copy_attr_function) :: win_copy_attr_fn
-   OMPI_PROCEDURE(MPI_Win_delete_attr_function) :: win_delete_attr_fn
+   type(c_funptr), value :: win_copy_attr_fn
+   type(c_funptr), value :: win_delete_attr_fn
    INTEGER, INTENT(OUT) :: win_keyval
    INTEGER(MPI_ADDRESS_KIND), INTENT(IN) :: extra_state
    INTEGER, INTENT(OUT) :: ierror
@@ -1755,6 +1784,24 @@ function  ompi_wtime_f() &
    DOUBLE PRECISION :: ompi_wtime_f
 end function  ompi_wtime_f
 
+function ompi_aint_add_f(base,diff) &
+   BIND(C, name="ompi_aint_add_f")
+   use :: mpi_f08_types, only : MPI_ADDRESS_KIND
+   implicit none
+   INTEGER(MPI_ADDRESS_KIND), INTENT(IN) :: base
+   INTEGER(MPI_ADDRESS_KIND), INTENT(IN) :: diff
+   INTEGER(MPI_ADDRESS_KIND) :: ompi_aint_add_f
+end function ompi_aint_add_f
+
+function ompi_aint_diff_f(addr1,addr2) &
+   BIND(C, name="ompi_aint_diff_f")
+   use :: mpi_f08_types, only : MPI_ADDRESS_KIND
+   implicit none
+   INTEGER(MPI_ADDRESS_KIND), INTENT(IN) :: addr1
+   INTEGER(MPI_ADDRESS_KIND), INTENT(IN) :: addr2
+   INTEGER(MPI_ADDRESS_KIND) :: ompi_aint_diff_f
+end function ompi_aint_diff_f
+
 subroutine ompi_abort_f(comm,errorcode,ierror) &
    BIND(C, name="ompi_abort_f")
    implicit none
@@ -1809,9 +1856,9 @@ end subroutine ompi_comm_call_errhandler_f
 
 subroutine ompi_comm_create_errhandler_f(comm_errhandler_fn,errhandler,ierror) &
    BIND(C, name="ompi_comm_create_errhandler_f")
-   use :: mpi_f08_interfaces_callbacks, only : MPI_Comm_errhandler_function
+   use, intrinsic :: iso_c_binding, only: c_funptr
    implicit none
-   OMPI_PROCEDURE(MPI_Comm_errhandler_function) :: comm_errhandler_fn
+   type(c_funptr), value :: comm_errhandler_fn
    INTEGER, INTENT(OUT) :: errhandler
    INTEGER, INTENT(OUT) :: ierror
 end subroutine ompi_comm_create_errhandler_f
@@ -1870,9 +1917,9 @@ end subroutine ompi_file_call_errhandler_f
 
 subroutine ompi_file_create_errhandler_f(file_errhandler_fn,errhandler,ierror) &
    BIND(C, name="ompi_file_create_errhandler_f")
-   use :: mpi_f08_interfaces_callbacks, only : MPI_File_errhandler_function
+   use, intrinsic :: iso_c_binding, only: c_funptr
    implicit none
-   OMPI_PROCEDURE(MPI_File_errhandler_function) :: file_errhandler_fn
+   type(c_funptr), value :: file_errhandler_fn
    INTEGER, INTENT(OUT) :: errhandler
    INTEGER, INTENT(OUT) :: ierror
 end subroutine ompi_file_create_errhandler_f
@@ -1943,9 +1990,9 @@ end subroutine ompi_win_call_errhandler_f
 
 subroutine ompi_win_create_errhandler_f(win_errhandler_fn,errhandler,ierror) &
    BIND(C, name="ompi_win_create_errhandler_f")
-   use :: mpi_f08_interfaces_callbacks, only : MPI_Win_errhandler_function
+   use, intrinsic :: iso_c_binding, only: c_funptr
    implicit none
-   OMPI_PROCEDURE(MPI_Win_errhandler_function) :: win_errhandler_fn
+   type(c_funptr), value :: win_errhandler_fn
    INTEGER, INTENT(OUT) :: errhandler
    INTEGER, INTENT(OUT) :: ierror
 end subroutine ompi_win_create_errhandler_f
@@ -2346,6 +2393,34 @@ subroutine ompi_win_create_f(base,size,disp_unit,info,comm,win,ierror) &
    INTEGER, INTENT(OUT) :: ierror
 end subroutine ompi_win_create_f
 
+subroutine ompi_win_create_dynamic_f(info,comm,win,ierror) &
+   BIND(C, name="ompi_win_create_dynamic_f")
+   implicit none
+   INTEGER, INTENT(IN) :: info
+   INTEGER, INTENT(IN) :: comm
+   INTEGER, INTENT(OUT) :: win
+   INTEGER, INTENT(OUT) :: ierror
+end subroutine ompi_win_create_dynamic_f
+
+subroutine ompi_win_attach_f(win,base,size,ierror) &
+   BIND(C, name="ompi_win_attach_f")
+   use :: mpi_f08_types, only : MPI_ADDRESS_KIND
+   implicit none
+   OMPI_FORTRAN_IGNORE_TKR_TYPE, INTENT(IN) :: base
+   INTEGER(MPI_ADDRESS_KIND), INTENT(IN) :: size
+   INTEGER, INTENT(IN) :: win
+   INTEGER, INTENT(OUT) :: ierror
+end subroutine ompi_win_attach_f
+
+subroutine ompi_win_detach_f(win,base,ierror) &
+   BIND(C, name="ompi_win_detach_f")
+   use :: mpi_f08_types, only : MPI_ADDRESS_KIND
+   implicit none
+   OMPI_FORTRAN_IGNORE_TKR_TYPE, INTENT(IN) :: base
+   INTEGER, INTENT(IN) :: win
+   INTEGER, INTENT(OUT) :: ierror
+end subroutine ompi_win_detach_f
+
 subroutine ompi_win_flush_f(rank,win,ierror) &
    BIND(C, name="ompi_win_flush_f")
    implicit none
@@ -2407,6 +2482,14 @@ subroutine ompi_win_lock_f(lock_type,rank,assert,win,ierror) &
    INTEGER, INTENT(OUT) :: ierror
 end subroutine ompi_win_lock_f
 
+subroutine ompi_win_lock_all_f(assert,win,ierror) &
+   BIND(C, name="ompi_win_lock_all_f")
+   implicit none
+   INTEGER, INTENT(IN) :: assert
+   INTEGER, INTENT(IN) :: win
+   INTEGER, INTENT(OUT) :: ierror
+end subroutine ompi_win_lock_all_f
+
 subroutine ompi_win_post_f(group,assert,win,ierror) &
    BIND(C, name="ompi_win_post_f")
    implicit none
@@ -2415,6 +2498,18 @@ subroutine ompi_win_post_f(group,assert,win,ierror) &
    INTEGER, INTENT(IN) :: win
    INTEGER, INTENT(OUT) :: ierror
 end subroutine ompi_win_post_f
+
+subroutine ompi_win_shared_query_f(win, rank, size, disp_unit, baseptr,&
+      ierror) BIND(C, name="ompi_win_shared_query_f")
+  USE, INTRINSIC ::  ISO_C_BINDING, ONLY : C_PTR
+  use :: mpi_f08_types, only : MPI_ADDRESS_KIND
+  INTEGER, INTENT(IN) ::  win
+  INTEGER, INTENT(IN) ::  rank
+  INTEGER(KIND=MPI_ADDRESS_KIND), INTENT(OUT) ::  size
+  INTEGER, INTENT(OUT) ::  disp_unit
+  TYPE(C_PTR), INTENT(OUT) ::  baseptr
+  INTEGER, INTENT(OUT) ::  ierror
+end subroutine ompi_win_shared_query_f
 
 subroutine ompi_win_start_f(group,assert,win,ierror) &
    BIND(C, name="ompi_win_start_f")
@@ -2425,6 +2520,13 @@ subroutine ompi_win_start_f(group,assert,win,ierror) &
    INTEGER, INTENT(OUT) :: ierror
 end subroutine ompi_win_start_f
 
+subroutine ompi_win_sync_f(win,ierror) &
+   BIND(C, name="ompi_win_sync_f")
+   implicit none
+   INTEGER, INTENT(IN) :: win
+   INTEGER, INTENT(OUT) :: ierror
+end subroutine ompi_win_sync_f
+
 subroutine ompi_win_unlock_f(rank,win,ierror) &
    BIND(C, name="ompi_win_unlock_f")
    implicit none
@@ -2432,6 +2534,13 @@ subroutine ompi_win_unlock_f(rank,win,ierror) &
    INTEGER, INTENT(IN) :: win
    INTEGER, INTENT(OUT) :: ierror
 end subroutine ompi_win_unlock_f
+
+subroutine ompi_win_unlock_all_f(win,ierror) &
+   BIND(C, name="ompi_win_unlock_all_f")
+   implicit none
+   INTEGER, INTENT(IN) :: win
+   INTEGER, INTENT(OUT) :: ierror
+end subroutine ompi_win_unlock_all_f
 
 subroutine ompi_win_wait_f(win,ierror) &
    BIND(C, name="ompi_win_wait_f")
@@ -2451,13 +2560,11 @@ subroutine ompi_grequest_start_f(query_fn,free_fn,cancel_fn, &
                                  extra_state,request,ierror) &
    BIND(C, name="ompi_grequest_start_f")
    use :: mpi_f08_types, only : MPI_ADDRESS_KIND
-   use :: mpi_f08_interfaces_callbacks, only : MPI_Grequest_query_function
-   use :: mpi_f08_interfaces_callbacks, only : MPI_Grequest_free_function
-   use :: mpi_f08_interfaces_callbacks, only : MPI_Grequest_cancel_function
+   use, intrinsic :: iso_c_binding, only: c_funptr
    implicit none
-   OMPI_PROCEDURE(MPI_Grequest_query_function) :: query_fn
-   OMPI_PROCEDURE(MPI_Grequest_free_function) :: free_fn
-   OMPI_PROCEDURE(MPI_Grequest_cancel_function) :: cancel_fn
+   type(c_funptr), value :: query_fn
+   type(c_funptr), value :: free_fn
+   type(c_funptr), value :: cancel_fn
    INTEGER(MPI_ADDRESS_KIND), INTENT(IN) :: extra_state
    INTEGER, INTENT(OUT) :: request
    INTEGER, INTENT(OUT) :: ierror
@@ -3034,12 +3141,11 @@ subroutine ompi_register_datarep_f(datarep,read_conversion_fn, &
    BIND(C, name="ompi_register_datarep_f")
    use, intrinsic :: ISO_C_BINDING, only : C_CHAR
    use :: mpi_f08_types, only : MPI_ADDRESS_KIND
-   use :: mpi_f08_interfaces_callbacks, only : MPI_Datarep_conversion_function
-   use :: mpi_f08_interfaces_callbacks, only : MPI_Datarep_extent_function
+   use, intrinsic :: iso_c_binding, only: c_funptr
    implicit none
-   OMPI_PROCEDURE(MPI_Datarep_conversion_function) :: read_conversion_fn
-   OMPI_PROCEDURE(MPI_Datarep_conversion_function) :: write_conversion_fn
-   OMPI_PROCEDURE(MPI_Datarep_extent_function) :: dtype_file_extent_fn
+   type(c_funptr), value :: read_conversion_fn
+   type(c_funptr), value :: write_conversion_fn
+   type(c_funptr), value :: dtype_file_extent_fn
    CHARACTER(KIND=C_CHAR), DIMENSION(*), INTENT(IN) :: datarep
    INTEGER(MPI_ADDRESS_KIND), INTENT(IN) :: extra_state
    INTEGER, INTENT(OUT) :: ierror

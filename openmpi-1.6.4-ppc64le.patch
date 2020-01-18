@@ -1,0 +1,30 @@
+diff -up openmpi-1.6.4/configure.ppc64le openmpi-1.6.4/configure
+--- openmpi-1.6.4/configure.ppc64le	2014-09-09 09:33:10.960054144 +0000
++++ openmpi-1.6.4/configure	2014-09-09 09:34:37.930058864 +0000
+@@ -27239,7 +27239,7 @@ _ACEOF
+             OMPI_GCC_INLINE_ASSIGN='"or %0,$0,$0" : "=&r"(ret)'
+             ;;
+ 
+-        powerpc-*|powerpc64-*)
++        powerpc-*|powerpc64-*|powerpc64le-*)
+ 
+     { $as_echo "$as_me:${as_lineno-$LINENO}: checking if PowerPC registers have r prefix" >&5
+ $as_echo_n "checking if PowerPC registers have r prefix... " >&6; }
+@@ -79533,7 +79533,7 @@ $as_echo "$compile_mode" >&6; }
+ 
+ 
+    case "${host}" in
+-   i?86-*linux*|x86_64*linux*|ia64-*linux*|powerpc-*linux*|powerpc64-*linux*|sparc*-*linux*)
++   i?86-*linux*|x86_64*linux*|ia64-*linux*|powerpc-*linux*|powerpc64-*linux*|powerpc64le-*linux*|sparc*-*linux*)
+               if test -r "/proc/cpuinfo"; then :
+   pstat_linux_happy="yes"
+ else
+@@ -85999,7 +85999,7 @@ fi
+ fi
+ 
+    case "${host}" in
+-   i?86-*linux*|x86_64*linux*|ia64-*linux*|powerpc-*linux*|powerpc64-*linux*|sparc*-*linux*)
++   i?86-*linux*|x86_64*linux*|ia64-*linux*|powerpc-*linux*|powerpc64-*linux*|powerpc64le-*linux*|sparc*-*linux*)
+         if test "$timer_linux_happy" = "yes"; then :
+   if test -r "/proc/cpuinfo"; then :
+   timer_linux_happy="yes"

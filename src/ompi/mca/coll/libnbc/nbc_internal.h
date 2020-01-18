@@ -9,6 +9,10 @@
  *
  * Copyright (c) 2012      Oracle and/or its affiliates.  All rights reserved.
  * Copyright (c) 2014      NVIDIA Corporation.  All rights reserved.
+ * Copyright (c) 2015-2016 Research Organization for Information Science
+ *                         and Technology (RIST). All rights reserved.
+ * Copyright (c) 2015      Los Alamos National Security, LLC. All rights
+ *                         reserved.
  *
  */
 #ifndef __NBC_INTERNAL_H__
@@ -28,6 +32,7 @@
 #include "ompi/include/ompi/constants.h"
 #include "ompi/request/request.h"
 #include "ompi/datatype/ompi_datatype.h"
+#include "ompi/communicator/communicator.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -85,6 +90,7 @@ typedef struct {
   int count;
   MPI_Datatype datatype;
   int dest;
+  bool local;
 } NBC_Args_send;
 
 /* the receive argument struct */
@@ -94,6 +100,7 @@ typedef struct {
   int count;
   MPI_Datatype datatype;
   int source;
+  bool local;
 } NBC_Args_recv;
 
 /* the operation argument struct */
@@ -102,11 +109,9 @@ typedef struct {
   char tmpbuf1;
   void *buf2;
   char tmpbuf2;
-  void *buf3;
-  char tmpbuf3;
-  int count;
   MPI_Op op;
   MPI_Datatype datatype;
+  int count;
 } NBC_Args_op;
 
 /* the copy argument struct */
@@ -134,8 +139,11 @@ typedef struct {
 /* internal function prototypes */
 int NBC_Sched_create(NBC_Schedule* schedule);
 int NBC_Sched_send(void* buf, char tmpbuf, int count, MPI_Datatype datatype, int dest, NBC_Schedule *schedule);
+int NBC_Sched_local_send (void* buf, char tmpbuf, int count, MPI_Datatype datatype, int dest,NBC_Schedule *schedule);
 int NBC_Sched_recv(void* buf, char tmpbuf, int count, MPI_Datatype datatype, int source, NBC_Schedule *schedule);
-int NBC_Sched_op(void* buf3, char tmpbuf3, void* buf1, char tmpbuf1, void* buf2, char tmpbuf2, int count, MPI_Datatype datatype, MPI_Op op, NBC_Schedule *schedule);
+int NBC_Sched_local_recv (void* buf, char tmpbuf, int count, MPI_Datatype datatype, int source, NBC_Schedule *schedule);
+int NBC_Sched_op (void* buf1, char tmpbuf1, void* buf2, char tmpbuf2, int count, MPI_Datatype datatype,
+                  MPI_Op op, NBC_Schedule *schedule);
 int NBC_Sched_copy(void *src, char tmpsrc, int srccount, MPI_Datatype srctype, void *tgt, char tmptgt, int tgtcount, MPI_Datatype tgttype, NBC_Schedule *schedule);
 int NBC_Sched_unpack(void *inbuf, char tmpinbuf, int count, MPI_Datatype datatype, void *outbuf, char tmpoutbuf, NBC_Schedule *schedule);
 int NBC_Sched_barrier(NBC_Schedule *schedule);
@@ -485,7 +493,6 @@ static inline int NBC_Type_intrinsic(MPI_Datatype type) {
 /* let's give a try to inline functions */
 static inline int NBC_Copy(void *src, int srccount, MPI_Datatype srctype, void *tgt, int tgtcount, MPI_Datatype tgttype, MPI_Comm comm) {
   int size, pos, res;
-  OPAL_PTRDIFF_TYPE ext, lb;
   void *packbuf;
 
 #if OPAL_CUDA_SUPPORT
@@ -495,9 +502,10 @@ static inline int NBC_Copy(void *src, int srccount, MPI_Datatype srctype, void *
 #endif /* OPAL_CUDA_SUPPORT */
     /* if we have the same types and they are contiguous (intrinsic
      * types are contiguous), we can just use a single memcpy */
-    res = ompi_datatype_get_extent(srctype, &lb, &ext);
-    if (OMPI_SUCCESS != res) { printf("MPI Error in MPI_Type_extent() (%i)\n", res); return res; }
-    memcpy(tgt, src, srccount*ext);
+    ptrdiff_t gap, span;
+    span = opal_datatype_span(&srctype->super, srccount, &gap);
+
+    memcpy(tgt, src, span);
   } else {
     /* we have to pack and unpack */
     res = MPI_Pack_size(srccount, srctype, comm, &size);
@@ -507,7 +515,7 @@ static inline int NBC_Copy(void *src, int srccount, MPI_Datatype srctype, void *
     }
 
     if (0 == size) {
-        return OMPI_SUCCESS;
+        return NBC_OK;
     }
     packbuf = malloc(size);
     if (NULL == packbuf) { printf("Error in malloc()\n"); return res; }

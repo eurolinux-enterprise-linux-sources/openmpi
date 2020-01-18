@@ -9,8 +9,10 @@
 
 #include "ompi_config.h"
 #include "coll_hcoll.h"
+#include "coll_hcoll_dtypes.h"
 
 int hcoll_comm_attr_keyval;
+int hcoll_type_attr_keyval;
 
 /*
  * Initial query function that is invoked during MPI_INIT, allowing
@@ -107,11 +109,12 @@ static void mca_coll_hcoll_module_destruct(mca_coll_hcoll_module_t *hcoll_module
         OBJ_RELEASE(hcoll_module->previous_reduce_scatter_module);
         OBJ_RELEASE(hcoll_module->previous_reduce_module);
         */
-
+#if !defined(HAVE_HCOLL_CONTEXT_FREE)
         context_destroyed = 0;
         hcoll_destroy_context(hcoll_module->hcoll_context,
                               (rte_grp_handle_t)hcoll_module->comm,
                               &context_destroyed);
+#endif
     }
     mca_coll_hcoll_module_clear(hcoll_module);
 }
@@ -174,7 +177,11 @@ int hcoll_comm_attr_del_fn(MPI_Comm comm, int keyval, void *attr_val, void *extr
     mca_coll_hcoll_module_t *hcoll_module;
     hcoll_module = (mca_coll_hcoll_module_t*) attr_val;
 
+#ifdef HAVE_HCOLL_CONTEXT_FREE
+    hcoll_context_free(hcoll_module->hcoll_context, (rte_grp_handle_t)comm);
+#else
     hcoll_group_destroy_notify(hcoll_module->hcoll_context);
+#endif
     return OMPI_SUCCESS;
 
 }
@@ -210,6 +217,10 @@ int mca_coll_hcoll_progress(void)
     return OMPI_SUCCESS;
 }
 
+
+OBJ_CLASS_INSTANCE(mca_coll_hcoll_dtype_t,
+                   opal_free_list_item_t,
+                   NULL,NULL);
 
 /*
  * Invoked when there's a new communicator that has been created.
@@ -288,6 +299,24 @@ mca_coll_hcoll_comm_query(struct ompi_communicator_t *comm, int *priority)
             HCOL_ERROR("Hcol comm keyval create failed");
             return NULL;
         }
+
+        if (mca_coll_hcoll_component.derived_types_support_enabled) {
+            copy_fn.attr_datatype_copy_fn = (MPI_Type_internal_copy_attr_function *) MPI_TYPE_NULL_COPY_FN;
+            del_fn.attr_datatype_delete_fn = hcoll_type_attr_del_fn;
+            err = ompi_attr_create_keyval(TYPE_ATTR, copy_fn, del_fn, &hcoll_type_attr_keyval, NULL ,0, NULL);
+            if (OMPI_SUCCESS != err) {
+                cm->hcoll_enable = 0;
+                hcoll_finalize();
+                opal_progress_unregister(mca_coll_hcoll_progress);
+                HCOL_ERROR("Hcol type keyval create failed");
+                return NULL;
+            }
+        }
+        OBJ_CONSTRUCT(&cm->dtypes, opal_free_list_t);
+        opal_free_list_init(&cm->dtypes, sizeof(mca_coll_hcoll_dtype_t),
+                            OBJ_CLASS(mca_coll_hcoll_dtype_t),
+                            32, -1, 32);
+
     }
 
     hcoll_module = OBJ_NEW(mca_coll_hcoll_module_t);
@@ -346,8 +375,11 @@ mca_coll_hcoll_comm_query(struct ompi_communicator_t *comm, int *priority)
     hcoll_module->super.coll_gather = /*hcoll_collectives.coll_gather ? mca_coll_hcoll_gather :*/ NULL;
     hcoll_module->super.coll_igatherv = hcoll_collectives.coll_igatherv ? mca_coll_hcoll_igatherv : NULL;
     hcoll_module->super.coll_ialltoall = /*hcoll_collectives.coll_ialltoall ? mca_coll_hcoll_ialltoall : */ NULL;
-    hcoll_module->super.coll_ialltoallv = /*hcoll_collectives.coll_ialltoallv ? mca_coll_hcoll_ialltoallv : */ NULL;
-
+#if HCOLL_API >= HCOLL_VERSION(3,7)
+    hcoll_module->super.coll_ialltoallv = hcoll_collectives.coll_ialltoallv ? mca_coll_hcoll_ialltoallv : NULL;
+#else
+    hcoll_module->super.coll_ialltoallv = NULL;
+#endif
     *priority = cm->hcoll_priority;
     module = &hcoll_module->super;
 

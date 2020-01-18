@@ -14,7 +14,9 @@
  *                         reserved.
  * Copyright (c) 2010-2012 Oracle and/or its affiliates.  All rights reserved.
  * Copyright (c) 2011      Sandia National Laboratories. All rights reserved.
- * Copyright (c) 2014 Cisco Systems, Inc.  All rights reserved.
+ * Copyright (c) 2014      Cisco Systems, Inc.  All rights reserved.
+ * Copyright (c) 2016      Research Organization for Information Science
+ *                         and Technology (RIST). All rights reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -28,6 +30,7 @@
 #include "pml_ob1_recvfrag.h"
 #include "ompi/peruse/peruse-internal.h"
 #include "ompi/message/message.h"
+#include "ompi/memchecker.h"
 
 mca_pml_ob1_recv_request_t *mca_pml_ob1_recvreq = NULL;
 
@@ -44,6 +47,7 @@ int mca_pml_ob1_irecv_init(void *addr,
     if (NULL == recvreq)
         return OMPI_ERR_TEMP_OUT_OF_RESOURCE;
 
+    recvreq->req_recv.req_base.req_type = MCA_PML_REQUEST_RECV;
     MCA_PML_OB1_RECV_REQUEST_INIT(recvreq,
                                    addr,
                                    count, datatype, src, tag, comm, true);
@@ -69,6 +73,7 @@ int mca_pml_ob1_irecv(void *addr,
     if (NULL == recvreq)
         return OMPI_ERR_TEMP_OUT_OF_RESOURCE;
 
+    recvreq->req_recv.req_base.req_type = MCA_PML_REQUEST_RECV;
     MCA_PML_OB1_RECV_REQUEST_INIT(recvreq,
                                    addr,
                                    count, datatype, src, tag, comm, false);
@@ -107,6 +112,7 @@ int mca_pml_ob1_recv(void *addr,
 #endif  /* !OMPI_ENABLE_THREAD_MULTIPLE */
         }
 
+    recvreq->req_recv.req_base.req_type = MCA_PML_REQUEST_RECV;
     MCA_PML_OB1_RECV_REQUEST_INIT(recvreq, addr, count, datatype,
                                   src, tag, comm, false);
 
@@ -122,6 +128,17 @@ int mca_pml_ob1_recv(void *addr,
     }
 
     rc = recvreq->req_recv.req_base.req_ompi.req_status.MPI_ERROR;
+
+    if (recvreq->req_recv.req_base.req_pml_complete) {
+        /* make buffer defined when the request is compeleted,
+           and before releasing the objects. */
+        MEMCHECKER(
+            memchecker_call(&opal_memchecker_base_mem_defined,
+                            recvreq->req_recv.req_base.req_addr,
+                            recvreq->req_recv.req_base.req_count,
+                            recvreq->req_recv.req_base.req_datatype);
+        );
+    }
 
 #if OMPI_ENABLE_THREAD_MULTIPLE
     MCA_PML_OB1_RECV_REQUEST_RETURN(recvreq);

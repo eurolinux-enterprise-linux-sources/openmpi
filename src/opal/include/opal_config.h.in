@@ -363,6 +363,9 @@
 /* Define to 1 if you have the <hcoll/api/hcoll_api.h> header file. */
 #undef HAVE_HCOLL_API_HCOLL_API_H
 
+/* Define to 1 if you have the `hcoll_context_free' function. */
+#undef HAVE_HCOLL_CONTEXT_FREE
+
 /* Define to 1 if you have the <hostLib.h> header file. */
 #undef HAVE_HOSTLIB_H
 
@@ -1251,8 +1254,7 @@
 /* Define to 1 on x86_64 */
 #undef HWLOC_X86_64_ARCH
 
-/* Define to the sub-directory in which libtool stores uninstalled libraries.
-   */
+/* Define to the sub-directory where libtool stores uninstalled libraries. */
 #undef LT_OBJDIR
 
 /* Header to include for event implementation */
@@ -1355,9 +1357,6 @@
 /* Whether we want to check MPI parameters always, never, or decide at
    run-time */
 #undef MPI_PARAM_CHECK
-
-/* Define to 1 if your C compiler doesn't accept -c and -o together. */
-#undef NO_MINUS_C_MINUS_O
 
 /* Alignment of Fortran CHARACTER */
 #undef OMPI_ALIGNMENT_FORTRAN_CHARACTER

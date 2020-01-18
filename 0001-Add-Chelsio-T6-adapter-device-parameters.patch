@@ -1,0 +1,33 @@
+From 0d4d36a2dd40bddb866d10fe056e371a8441a116 Mon Sep 17 00:00:00 2001
+From: Potnuri Bharat Teja <bharat@chelsio.com>
+Date: Tue, 23 Aug 2016 10:38:13 +0530
+Subject: [PATCH] Add Chelsio T6 adapter device parameters.
+
+Signed-off-by: Potnuri Bharat Teja <bharat@chelsio.com>
+(cherry picked from commit 9b7f9ece2031531d159283000ebeecb0eaa1ef0d)
+---
+ ompi/mca/btl/openib/mca-btl-openib-device-params.ini | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/ompi/mca/btl/openib/mca-btl-openib-device-params.ini b/ompi/mca/btl/openib/mca-btl-openib-device-params.ini
+index a61b91ffcb..406f2f917e 100644
+--- a/ompi/mca/btl/openib/mca-btl-openib-device-params.ini
++++ b/ompi/mca/btl/openib/mca-btl-openib-device-params.ini
+@@ -253,6 +253,14 @@ mtu = 2048
+ receive_queues = P,65536,64
+ max_inline_data = 280
+ 
++[Chelsio T6]
++vendor_id = 0x1425
++vendor_part_id = 0x6400,0x6401,0x6402,0x6403,0x6404,0x6405,0x6406,0x6407,0x6408,0x6409,0x640d,0x6410,0x6411,0x6414,0x6415
++use_eager_rdma = 1
++mtu = 2048
++receive_queues = P,65536,64
++max_inline_data = 280
++
+ ############################################################################
+ 
+ # I'm *assuming* that 0x4040 is the PCI ID...
+-- 
+2.9.3
+

@@ -4,7 +4,12 @@
 #else
 #include <asm.h>
 #endif
+#include <features.h>
+#ifdef __UCLIBC__
+#include <sys/regdef.h>
+#else
 #include <regdef.h>
+#endif
 	
 	.text
 

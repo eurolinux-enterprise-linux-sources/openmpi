@@ -1,0 +1,37 @@
+From 5efe6f70f310858f554287bcf7883442380a0701 Mon Sep 17 00:00:00 2001
+From: Nathan Hjelm <hjelmn@lanl.gov>
+Date: Tue, 28 Jun 2016 10:26:16 -0600
+Subject: [PATCH] btl/openib: fix segmentation fault
+
+This commit fixes a segmentation fault that occurs if a device can be
+initialized but not used. In this case the devices_count is not equal
+to the number of usable devices in the devices pointer array.
+
+Thanks to @artpol84 for tracking this down.
+
+Fixes open-mpi/ompi#1823
+
+Signed-off-by: Nathan Hjelm <hjelmn@lanl.gov>
+(cherry picked from commit 8128c8eb29d6adde288fca5db3f71fb98e1727f6)
+---
+ ompi/mca/btl/openib/btl_openib_component.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/ompi/mca/btl/openib/btl_openib_component.c b/ompi/mca/btl/openib/btl_openib_component.c
+index 40831f2373..d1376e0a58 100644
+--- a/ompi/mca/btl/openib/btl_openib_component.c
++++ b/ompi/mca/btl/openib/btl_openib_component.c
+@@ -3630,7 +3630,9 @@ static int btl_openib_component_progress(void)
+     for(i = 0; i < mca_btl_openib_component.devices_count; i++) {
+         mca_btl_openib_device_t *device =
+             (mca_btl_openib_device_t *) opal_pointer_array_get_item(&mca_btl_openib_component.devices, i);
+-        count += progress_one_device(device);
++        if (NULL != device) {
++            count += progress_one_device(device);
++        }
+     }
+ 
+ #if OPAL_CUDA_SUPPORT /* CUDA_ASYNC_SEND */
+-- 
+2.13.5
+

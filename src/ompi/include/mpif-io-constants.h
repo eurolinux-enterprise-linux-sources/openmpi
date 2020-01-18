@@ -15,6 +15,8 @@
 !                         All rights reserved.
 ! Copyright (c) 2006-2012 Cisco Systems, Inc.  All rights reserved.
 ! Copyright (c) 2009      Oak Ridge National Labs.  All rights reserved.
+! Copyright (c) 2016      Research Organization for Information Science
+!                         and Technology (RIST). All rights reserved.
 ! $COPYRIGHT$
 !
 ! Additional copyrights may follow
@@ -22,7 +24,6 @@
 ! $HEADER$
 !
 
-        integer MPI_DISPLACEMENT_CURRENT
         integer MPI_MODE_APPEND
         integer MPI_MODE_CREATE
         integer MPI_MODE_DELETE_ON_CLOSE
@@ -35,8 +36,8 @@
         integer MPI_SEEK_CUR
         integer MPI_SEEK_END
         integer MPI_SEEK_SET
+        integer(KIND=MPI_OFFSET_KIND) MPI_DISPLACEMENT_CURRENT
 
-        parameter (MPI_DISPLACEMENT_CURRENT=-54278278)
         parameter (MPI_MODE_APPEND=128)
         parameter (MPI_MODE_CREATE=1)
         parameter (MPI_MODE_DELETE_ON_CLOSE=16)
@@ -49,3 +50,4 @@
         parameter (MPI_SEEK_CUR=602)
         parameter (MPI_SEEK_END=604)
         parameter (MPI_SEEK_SET=600)
+        parameter (MPI_DISPLACEMENT_CURRENT=-54278278)

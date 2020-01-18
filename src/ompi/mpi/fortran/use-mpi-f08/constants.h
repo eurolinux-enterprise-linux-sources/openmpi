@@ -19,6 +19,8 @@
  * Copyright (c) 2009      Oak Ridge National Labs.  All rights reserved.
  * Copyright (c) 2009-2012 Los Alamos National Security, LLC.
  *                         All rights reserved.
+ * Copyright (c) 2016      Research Organization for Information Science
+ *                         and Technology (RIST). All rights reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -268,7 +270,6 @@
 #define OMPI_MPI_WIN_NULL 0
 
 #if OMPI_PROVIDE_MPI_FILE_INTERFACE
-#define OMPI_MPI_DISPLACEMENT_CURRENT -54278278
 #define OMPI_MPI_MODE_APPEND 128
 #define OMPI_MPI_MODE_CREATE 1
 #define OMPI_MPI_MODE_DELETE_ON_CLOSE 16
@@ -281,6 +282,7 @@
 #define OMPI_MPI_SEEK_CUR 602
 #define OMPI_MPI_SEEK_END 604
 #define OMPI_MPI_SEEK_SET 600
+#define OMPI_MPI_DISPLACEMENT_CURRENT -54278278
 
 #define OMPI_MPI_FILE_NULL 0
 #endif /* OMPI_PROVIDE_MPI_FILE_INTERFACE */

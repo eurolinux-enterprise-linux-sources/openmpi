@@ -22,19 +22,19 @@
 # Copyright (c) 2004-2005 The University of Tennessee and The University
 #                         of Tennessee Research Foundation.  All rights
 #                         reserved.
-# Copyright (c) 2004-2005 High Performance Computing Center Stuttgart, 
+# Copyright (c) 2004-2005 High Performance Computing Center Stuttgart,
 #                         University of Stuttgart.  All rights reserved.
 # Copyright (c) 2004-2005 The Regents of the University of California.
 #                         All rights reserved.
 # Copyright (c) 2006-2015 Cisco Systems, Inc.  All rights reserved.
 # Copyright (c) 2007      Los Alamos National Security, LLC.  All rights
-#                         reserved. 
-# Copyright (c) 2014-2015 Research Organization for Information Science
+#                         reserved.
+# Copyright (c) 2014-2016 Research Organization for Information Science
 #                         and Technology (RIST). All rights reserved.
 # $COPYRIGHT$
-# 
+#
 # Additional copyrights may follow
-# 
+#
 # $HEADER$
 #
 
@@ -1764,7 +1764,11 @@ ompi__v_GEN_0 = @echo "  GENERATE" $@;
 # directives properly).
 EXTRA_DIST = \
      mpi-f90-interfaces.h \
-     mpi-f90-cptr-interfaces.F90
+     mpi-f90-file-interfaces.h \
+     mpi-f90-cptr-interfaces.h \
+     pmpi-f90-interfaces.h \
+     pmpi-f90-file-interfaces.h \
+     pmpi-f90-cptr-interfaces.h
 
 all: all-am
 
@@ -2114,8 +2118,12 @@ uninstall-am: uninstall-libLTLIBRARIES uninstall-local
 
 @OMPI_BUILD_FORTRAN_USEMPI_TKR_BINDINGS_TRUE@mpi.lo: mpi.F90
 @OMPI_BUILD_FORTRAN_USEMPI_TKR_BINDINGS_TRUE@mpi.lo: mpi-f90-interfaces.h
+@OMPI_BUILD_FORTRAN_USEMPI_TKR_BINDINGS_TRUE@mpi.lo: mpi-f90-file-interfaces.h
 @OMPI_BUILD_FORTRAN_USEMPI_TKR_BINDINGS_TRUE@mpi.lo: $(top_builddir)/ompi/mpi/fortran/configure-fortran-output.h
-@OMPI_BUILD_FORTRAN_USEMPI_TKR_BINDINGS_TRUE@mpi.lo: mpi-f90-cptr-interfaces.F90
+@OMPI_BUILD_FORTRAN_USEMPI_TKR_BINDINGS_TRUE@mpi.lo: mpi-f90-cptr-interfaces.h
+@OMPI_BUILD_FORTRAN_USEMPI_TKR_BINDINGS_TRUE@mpi.lo: pmpi-f90-interfaces.h
+@OMPI_BUILD_FORTRAN_USEMPI_TKR_BINDINGS_TRUE@mpi.lo: pmpi-f90-file-interfaces.h
+@OMPI_BUILD_FORTRAN_USEMPI_TKR_BINDINGS_TRUE@mpi.lo: pmpi-f90-cptr-interfaces.h
 
 @OMPI_BUILD_FORTRAN_USEMPI_TKR_BINDINGS_TRUE@mpi-tkr-sizeof.h: $(top_builddir)/config.status
 @OMPI_BUILD_FORTRAN_USEMPI_TKR_BINDINGS_TRUE@mpi-tkr-sizeof.h: $(sizeof_pl)

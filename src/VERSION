@@ -15,7 +15,7 @@
 
 major=1
 minor=10
-release=6
+release=7
 
 # greek is generally used for alpha or beta release tags.  If it is
 # non-empty, it will be appended to the version number.  It does not
@@ -31,7 +31,7 @@ greek=
 # command, or with the date (if "git describe" fails) in the form of
 # "date<date>".
 
-repo_rev=v1.10.5-47-g9f72c7c
+repo_rev=v1.10.6-48-g5e373bf
 
 # If tarball_version is not empty, it is used as the version string in
 # the tarball filename, regardless of all other versions listed in
@@ -45,7 +45,7 @@ tarball_version=
 
 # The date when this release was created
 
-date="Feb 17, 2017"
+date="May 16, 2017"
 
 # The shared library version of each of Open MPI's public libraries.
 # These versions are maintained in accordance with the "Library
@@ -82,10 +82,10 @@ date="Feb 17, 2017"
 # Version numbers are described in the Libtool current:revision:age
 # format.
 
-libmpi_so_version=12:6:0
+libmpi_so_version=12:7:0
 libmpi_cxx_so_version=2:3:1
 libmpi_mpifh_so_version=12:1:0
-libmpi_usempi_tkr_so_version=6:0:1
+libmpi_usempi_tkr_so_version=7:0:2
 libmpi_usempi_ignore_tkr_so_version=8:0:2
 libmpi_usempif08_so_version=12:1:1
 libopen_rte_so_version=12:4:0

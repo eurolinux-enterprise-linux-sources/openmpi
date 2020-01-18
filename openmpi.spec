@@ -21,11 +21,11 @@
 
 %global majmin 1.10
 %global mainversion	%{majmin}.7
-%global ompi3ver	3.0.2
+%global ompi3ver	3.1.3
 
 Name:			openmpi%{?_cc_name_suffix}
 Version:		%{mainversion}
-Release:		2%{?dist}
+Release:		5%{?dist}
 Summary:		Open Message Passing Interface
 Group:			Development/Libraries
 License:		BSD and MIT and Romio
@@ -50,7 +50,7 @@ Patch102:		openmpi-1.6.4-ppc64le.patch
 # Backport of gcc atomics needed for AArch64
 Patch103:		openmpi-1.6.4-aarch64.patch
 
-Source300:              https://www.open-mpi.org/software/ompi/v3.0/downloads/openmpi-%{ompi3ver}.tar.bz2
+Source300:              https://www.open-mpi.org/software/ompi/v3.1/downloads/openmpi-%{ompi3ver}.tar.bz2
 Source301:              openmpi3.module.in
 Source302:              macros.openmpi3
 # Only for ppc64le
@@ -69,6 +69,9 @@ BuildRequires:		hwloc-devel
 BuildRequires:		python libtool-ltdl-devel
 BuildRequires:		libesmtp-devel
 BuildRequires:		libfabric-devel
+%ifarch x86_64 ppc64le aarch64
+BuildRequires:		ucx-devel
+%endif
 %ifarch x86_64
 BuildRequires:		infinipath-psm-devel libpsm2-devel
 %endif
@@ -118,7 +121,7 @@ Contains development headers and libraries for openmpi
 Summary:        Open Message Passing Interface 3
 Group:          Development/Libraries
 Version:        %{ompi3ver}
-Release:        1%{?dist}
+Release:        2%{?dist}
 Provides:       mpi
 Requires:       environment-modules
 Requires:       openssh-clients
@@ -167,7 +170,7 @@ Contains development headers and libraries for openmpi3.
 Summary:        Open MPI 1.6 compat library
 Group:          Development/Libraries
 Version:        1.6.4
-Release:        10.7%{?dist}
+Release:        10.7.2%{?dist}
 Provides:       mpi
 Requires:       environment-modules
 
@@ -267,6 +270,10 @@ cd ..
 	--sysconfdir=%{_sysconfdir}/%{namearch} \
 	--disable-silent-rules \
 	--with-verbs=/usr \
+%ifarch x86_64 ppc64le aarch64
+	--with-ucx=/usr \
+	--with-ucx-libdir=%{_libdir} \
+%endif
 	--with-sge \
 %ifnarch %{sparc} s390
 	--with-valgrind \
@@ -308,6 +315,9 @@ cd openmpi-%{ompi3ver}
 	--enable-memchecker \
 %endif
 	--with-hwloc=/usr \
+%ifarch x86_64 ppc64le aarch64
+	--with-ucx \
+%endif
 	CC=%{opt_cc} CXX=%{opt_cxx} \
 	LDFLAGS='%{__global_ldflags}' \
 	CFLAGS="%{?opt_cflags} %{!?opt_cflags:$RPM_OPT_FLAGS}" \
@@ -612,13 +622,16 @@ cd ..
 %{_libdir}/%{libname}/bin/orte[-dr_]*
 %{_libdir}/%{libname}/bin/oshmem_info
 %{_libdir}/%{libname}/bin/oshrun
+%{_libdir}/%{libname}/bin/prun
 %{_libdir}/%{libname}/bin/shmemrun
+%{_libdir}/%{libname}/bin/*.pl
 %{_libdir}/%{libname}/lib/*.so.*
 %{_mandir}/%{namearch}/man1/mpi[er]*
 %{_mandir}/%{namearch}/man1/ompi*
 %{_mandir}/%{namearch}/man1/orte[-dr_]*
 %{_mandir}/%{namearch}/man1/oshmem_info*
 %{_mandir}/%{namearch}/man1/oshrun*
+%{_mandir}/%{namearch}/man1/prun*
 %{_mandir}/%{namearch}/man1/shmemrun*
 %{_mandir}/%{namearch}/man7/orte*
 %{_mandir}/%{namearch}/man7/ompi*
@@ -720,6 +733,19 @@ cd ..
 %endif
 
 %changelog
+* Tue Apr 09 2019 Jarod Wilson <jarod@redhat.com> - 1.10.7-5
+- Build with UCX support enabled
+- Resolves #1586034
+
+* Tue Feb 05 2019 Jarod Wilson <jarod@redhat.com> - 1.10.7-4
+- Fix compat-openmpi16 version number
+
+* Fri Jan 25 2019 Jarod Wilson <jarod@redhat.com> - 1.10.7-3
+- Update openmpi3 sub-package to OpenMPI v3.1.3
+- Resolves: #1637247
+- Rebuild against latest opensm
+- Resolves: #1670688
+
 * Wed Jun 13 2018 Jarod Wilson <jarod@redhat.com> - 1.10.7-2
 - Update openmpi3 sub-package to OpenMPI v3.0.2
 - Resolves: #1483570
